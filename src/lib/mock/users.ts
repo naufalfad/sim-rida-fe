@@ -1,0 +1,36 @@
+import { User } from '@/types/auth';
+
+export const MOCK_USERS: User[] = [
+  {
+    id: 'usr-001',
+    name: 'Budi Santoso, S.T., M.Si.',
+    username: 'opd',
+    role: 'OPD',
+    department: 'Bappeda Litbang Daerah',
+    email: 'budi.santoso@pemda.go.id',
+  },
+  {
+    id: 'usr-002',
+    name: 'Dr. Herianto, M.Si.',
+    username: 'brida',
+    role: 'BRIDA',
+    department: 'Bidang Riset dan Inovasi BRIDA',
+    email: 'herianto@brida.go.id',
+  },
+  {
+    id: 'usr-003',
+    name: 'Prof. Dr. Ir. Wahyudi, M.T.',
+    username: 'kepala',
+    role: 'KEPALA_BRIDA',
+    department: 'Kepala BRIDA',
+    email: 'wahyudi@brida.go.id',
+  },
+  {
+    id: 'usr-004',
+    name: 'Dr. Rian Nugroho (Tim UI)',
+    username: 'peneliti',
+    role: 'RESEARCHER',
+    department: 'Pusat Studi Kebijakan Publik',
+    email: 'rian.nugroho@ui.ac.id',
+  },
+];

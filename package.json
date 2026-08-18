@@ -1,0 +1,37 @@
+{
+  "name": "sim-rida_fe",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev --webpack",
+    "build": "next build --webpack",
+    "start": "next start",
+    "lint": "eslint"
+  },
+  "dependencies": {
+    "@hookform/resolvers": "^3.9.0",
+    "clsx": "^2.1.1",
+    "date-fns": "^4.1.0",
+    "is-extglob": "^2.1.1",
+    "is-glob": "^4.0.3",
+    "lightningcss": "^1.33.0",
+    "lightningcss-win32-x64-msvc": "^1.33.0",
+    "lucide-react": "^0.435.0",
+    "next": "16.3.1",
+    "react": "19.2.8",
+    "react-dom": "19.2.8",
+    "react-hook-form": "^7.53.0",
+    "tailwind-merge": "^2.5.2",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "autoprefixer": "^10.4.20",
+    "eslint": "^9",
+    "eslint-config-next": "16.3.1",
+    "tailwindcss": "^3.4.1",
+    "typescript": "^5"
+  }
+}
