@@ -22,7 +22,9 @@ import {
   TrendingUp,
   FileBadge,
   ShieldCheck,
-  FolderLock
+  FolderLock,
+  Award,
+  FileCheck
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Dropdown, DropdownItem } from '@/components/ui/dropdown';
@@ -84,12 +86,17 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       case 'BRIDA':
         return [
           { name: 'Dashboard', path: '/brida/dashboard', icon: <LayoutDashboard className="h-5 w-5" /> },
-          { name: 'Verifikasi Usulan', path: '/brida/verification', icon: <ShieldCheck className="h-5 w-5" /> },
+          { name: 'Daftar Usulan', path: '/brida/usulan', icon: <FileSpreadsheet className="h-5 w-5" /> },
+          { name: 'Verifikasi Administrasi', path: '/brida/verifikasi', icon: <ShieldCheck className="h-5 w-5" /> },
           { name: 'Review Substansi', path: '/brida/review', icon: <Eye className="h-5 w-5" /> },
-          { name: 'Penilaian Seleksi', path: '/brida/selection', icon: <FolderLock className="h-5 w-5" /> },
-          { name: 'Kelola Peneliti', path: '/brida/researchers', icon: <Users className="h-5 w-5" /> },
+          { name: 'Seleksi Prioritas', path: '/brida/seleksi', icon: <FolderLock className="h-5 w-5" /> },
+          { name: 'Kelola Peneliti', path: '/brida/peneliti', icon: <Users className="h-5 w-5" /> },
+          { name: 'Pelaksanaan Penelitian', path: '/brida/penelitian', icon: <ClipboardList className="h-5 w-5" /> },
           { name: 'Monitoring Riset', path: '/brida/monitoring', icon: <ClipboardList className="h-5 w-5" /> },
+          { name: 'Review Laporan Akhir', path: '/brida/laporan', icon: <FileCheck className="h-5 w-5" /> },
           { name: 'Policy Brief', path: '/brida/policy-brief', icon: <FileBadge className="h-5 w-5" /> },
+          { name: 'Rekomendasi Bupati', path: '/brida/rekomendasi', icon: <Award className="h-5 w-5" /> },
+          { name: 'Tindak Lanjut OPD', path: '/brida/tindak-lanjut', icon: <CheckSquare className="h-5 w-5" /> },
         ];
       case 'KEPALA_BRIDA':
         return [

@@ -8,6 +8,7 @@ export type WorkflowStatus =
   | 'SELECTION_RECOMMENDED'
   | 'APPROVED'
   | 'REJECTED'
+  | 'RESERVE'
   | 'RESEARCHER_SELECTION'
   | 'RESEARCHER_APPROVAL'
   | 'IN_PROGRESS'
@@ -34,6 +35,7 @@ export const WORKFLOW_STATUS: Record<WorkflowStatus, WorkflowStatus> = {
   SELECTION_RECOMMENDED: 'SELECTION_RECOMMENDED',
   APPROVED: 'APPROVED',
   REJECTED: 'REJECTED',
+  RESERVE: 'RESERVE',
   RESEARCHER_SELECTION: 'RESEARCHER_SELECTION',
   RESEARCHER_APPROVAL: 'RESEARCHER_APPROVAL',
   IN_PROGRESS: 'IN_PROGRESS',
@@ -61,6 +63,7 @@ export const STATUS_LABELS: Record<WorkflowStatus, string> = {
   SELECTION_RECOMMENDED: 'Rekomendasi Seleksi',
   APPROVED: 'Disetujui',
   REJECTED: 'Ditolak',
+  RESERVE: 'Cadangan Riset',
   RESEARCHER_SELECTION: 'Seleksi Peneliti',
   RESEARCHER_APPROVAL: 'Persetujuan Peneliti',
   IN_PROGRESS: 'Pelaksanaan Penelitian',
@@ -88,6 +91,7 @@ export const STATUS_COLORS: Record<WorkflowStatus, { bg: string; text: string; b
   SELECTION_RECOMMENDED: { bg: 'bg-teal-50 dark:bg-teal-950/30', text: 'text-teal-700 dark:text-teal-400', border: 'border-teal-200 dark:border-teal-900/50' },
   APPROVED: { bg: 'bg-emerald-50 dark:bg-emerald-950/30', text: 'text-emerald-700 dark:text-emerald-400', border: 'border-emerald-200 dark:border-emerald-900/50' },
   REJECTED: { bg: 'bg-red-50 dark:bg-red-950/30', text: 'text-red-700 dark:text-red-400', border: 'border-red-200 dark:border-red-900/50' },
+  RESERVE: { bg: 'bg-yellow-50 dark:bg-yellow-950/30', text: 'text-yellow-750 dark:text-yellow-405', border: 'border-yellow-200 dark:border-yellow-900/50' },
   RESEARCHER_SELECTION: { bg: 'bg-sky-50 dark:bg-sky-950/30', text: 'text-sky-700 dark:text-sky-400', border: 'border-sky-200 dark:border-sky-900/50' },
   RESEARCHER_APPROVAL: { bg: 'bg-violet-50 dark:bg-violet-950/30', text: 'text-violet-700 dark:text-violet-400', border: 'border-violet-200 dark:border-violet-900/50' },
   IN_PROGRESS: { bg: 'bg-cyan-50 dark:bg-cyan-950/30', text: 'text-cyan-700 dark:text-cyan-400', border: 'border-cyan-200 dark:border-cyan-900/50' },

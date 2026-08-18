@@ -1,210 +1,341 @@
 'use client';
 
-import React, { useState } from 'react';
-import { Award, ShieldCheck, CheckCircle2, TrendingUp, AlertTriangle } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import Link from 'next/link';
+import {
+  Briefcase,
+  PlayCircle,
+  CheckCircle,
+  AlertTriangle,
+  FolderLock,
+  Users,
+  FileCheck,
+  Award,
+  ChevronRight,
+  TrendingUp,
+  DollarSign
+} from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { StatusBadge } from '@/components/ui/status-badge';
-import { useToast } from '@/components/ui/toast';
-import { WorkflowStatus } from '@/constants/status';
+import { LoadingState } from '@/components/ui/loading-state';
+import { proposalService } from '@/lib/api/proposals';
+import { Proposal, FollowUp } from '@/types/proposals';
 
 export default function KepalaBridaDashboard() {
-  const { toast } = useToast();
+  const [proposals, setProposals] = useState<Proposal[]>([]);
+  const [followUps, setFollowUps] = useState<FollowUp[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const [pendingApprovals, setPendingApprovals] = useState([
-    {
-      id: 'PRP-2026-003',
-      title: 'Strategi Pengembangan Destinasi Wisata Sejarah',
-      opd: 'Dinas Pariwisata',
-      researcher: 'Dr. Rian Nugroho (Tim UI)',
-      status: 'RESEARCHER_APPROVAL' as WorkflowStatus,
-    },
-    {
-      id: 'PRP-2026-002',
-      title: 'Evaluasi Sistem Transportasi Publik Berbasis Listrik',
-      opd: 'Dinas Perhubungan',
-      researcher: 'Prof. Dr. Anton (ITB)',
-      status: 'POLICY_BRIEF_REVIEW' as WorkflowStatus,
-    },
-  ]);
+  useEffect(() => {
+    const loadDashboard = async () => {
+      try {
+        const pList = await proposalService.getProposals();
+        const fList = await proposalService.getFollowUps();
+        setProposals(pList);
+        setFollowUps(fList);
+      } catch (err) {
+        console.error('Failed to load Kepala BRIDA dashboard:', err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    loadDashboard();
+  }, []);
 
-  const handleApprove = (id: string, actionName: string) => {
-    toast(`Persetujuan Berhasil: ${actionName} untuk usulan ${id} telah disetujui secara strategis.`, 'success');
-    setPendingApprovals(pendingApprovals.filter((p) => p.id !== id));
-  };
+  if (isLoading) {
+    return <LoadingState message="Memuat dasbor eksekutif Kepala BRIDA..." />;
+  }
+
+  // Portfolio calculations
+  const totalStudies = proposals.filter((p) =>
+    ['IN_PROGRESS', 'MONITORING', 'REPORT_SUBMITTED', 'RECOMMENDATION_PENDING', 'RECOMMENDATION_APPROVED', 'COMPLETED'].includes(p.status)
+  ).length;
+
+  const activeStudies = proposals.filter((p) => p.status === 'IN_PROGRESS' || p.status === 'MONITORING').length;
+  const completedStudies = proposals.filter((p) => p.status === 'RECOMMENDATION_APPROVED' || p.status === 'COMPLETED').length;
+  
+  // Delayed: active projects with severity HIGH open issues
+  const delayedStudies = proposals.filter((p) =>
+    (p.status === 'IN_PROGRESS' || p.status === 'MONITORING') &&
+    p.issues && p.issues.some((i) => i.severity === 'HIGH' && i.status === 'OPEN')
+  ).length;
+
+  // Queues counts
+  const selectionQueue = proposals.filter((p) => p.status === 'SELECTION_RECOMMENDED');
+  const researcherQueue = proposals.filter((p) => p.status === 'RESEARCHER_APPROVAL');
+  const reportQueue = proposals.filter((p) => p.status === 'REPORT_SUBMITTED');
+  const recommendationQueue = proposals.filter((p) => p.status === 'RECOMMENDATION_PENDING');
+
+  // Follow-up performance calculations
+  const totalRecs = followUps.length;
+  const fuCompleted = followUps.filter((f) => f.status === 'COMPLETED').length;
+  const fuInProgress = followUps.filter((f) => f.status === 'IN_PROGRESS').length;
+  const fuOverdue = followUps.filter((f) => {
+    if (f.status === 'COMPLETED') return false;
+    if (!f.targetDate) return false;
+    return new Date(f.targetDate).getTime() < new Date().getTime();
+  }).length;
+
+  // Sector classification counts for simple charts
+  const sectorsMap: Record<string, number> = {};
+  proposals.forEach((p) => {
+    const sector = p.problem.bidang || 'Lain-lain';
+    sectorsMap[sector] = (sectorsMap[sector] || 0) + 1;
+  });
+
+  const sectorData = Object.entries(sectorsMap).map(([name, value]) => ({ name, value }));
+
+  // OPD classification counts
+  const opdMap: Record<string, number> = {};
+  proposals.forEach((p) => {
+    const opd = p.opdName || 'Lainnya';
+    opdMap[opd] = (opdMap[opd] || 0) + 1;
+  });
+  const opdData = Object.entries(opdMap).slice(0, 5).map(([name, value]) => ({ name, value }));
+
+  // Budget calculations
+  const totalBudget = proposals.reduce((acc, p) => acc + (p.kak?.anggaran || 0), 0);
+  const activeBudget = proposals
+    .filter((p) => ['IN_PROGRESS', 'MONITORING', 'REPORT_SUBMITTED'].includes(p.status))
+    .reduce((acc, p) => acc + (p.kak?.anggaran || 0), 0);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-fade-in">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold tracking-tight">Dashboard Strategis Kepala BRIDA</h1>
-        <p className="text-slate-550 dark:text-slate-400">
-          Panel pembuat keputusan strategis dan pengawasan dampak riset pembangunan daerah.
+        <h1 className="text-2xl font-bold tracking-tight text-slate-800 dark:text-slate-200">
+          Executive Decision Layer
+        </h1>
+        <p className="text-slate-500 dark:text-slate-400">
+          Monitor portofolio strategis daerah, persetujuan program, penetapan mitra peneliti, dan realisasi rencana aksi tindak lanjut.
         </p>
       </div>
 
-      {/* Grid of stats */}
-      <div className="grid gap-4 md:grid-cols-4">
-        <Card className="bg-white dark:bg-slate-900 border-slate-200">
-          <CardContent className="p-6 flex items-center justify-between">
-            <div className="space-y-1">
-              <p className="text-xs font-semibold text-slate-555 uppercase">Persetujuan Peneliti</p>
-              <p className="text-2xl font-bold">
-                {pendingApprovals.filter((p) => p.status === 'RESEARCHER_APPROVAL').length}
-              </p>
+      {/* Row 1: Executive Stats */}
+      <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-4">
+        <Card className="bg-white dark:bg-slate-900 border-slate-200/80">
+          <CardContent className="p-5 flex items-center justify-between">
+            <div>
+              <p className="text-2xs font-bold text-slate-400 uppercase tracking-wider">Total Portfolio Riset</p>
+              <h3 className="text-2xl font-extrabold mt-1">{totalStudies}</h3>
             </div>
-            <div className="h-10 w-10 bg-amber-50 dark:bg-amber-950/30 text-amber-600 dark:text-amber-400 rounded-lg flex items-center justify-center">
-              <ShieldCheck className="h-5 w-5 animate-pulse" />
+            <div className="h-10 w-10 rounded-full bg-blue-50 text-blue-600 flex items-center justify-between dark:bg-blue-950/20 dark:text-blue-400">
+              <Briefcase className="h-5 w-5 mx-auto" />
             </div>
           </CardContent>
         </Card>
 
-        <Card className="bg-white dark:bg-slate-900 border-slate-200">
-          <CardContent className="p-6 flex items-center justify-between">
-            <div className="space-y-1">
-              <p className="text-xs font-semibold text-slate-550 uppercase">Pengesahan Policy Brief</p>
-              <p className="text-2xl font-bold">
-                {pendingApprovals.filter((p) => p.status === 'POLICY_BRIEF_REVIEW').length}
-              </p>
+        <Card className="bg-white dark:bg-slate-900 border-slate-200/80">
+          <CardContent className="p-5 flex items-center justify-between">
+            <div>
+              <p className="text-2xs font-bold text-slate-400 uppercase tracking-wider">Penelitian Aktif</p>
+              <h3 className="text-2xl font-extrabold text-cyan-650 mt-1">{activeStudies}</h3>
             </div>
-            <div className="h-10 w-10 bg-indigo-50 dark:bg-indigo-950/30 text-indigo-700 dark:text-indigo-400 rounded-lg flex items-center justify-center">
-              <Award className="h-5 w-5" />
+            <div className="h-10 w-10 rounded-full bg-cyan-50 text-cyan-600 flex items-center justify-between dark:bg-cyan-950/20 dark:text-cyan-450">
+              <PlayCircle className="h-5 w-5 mx-auto" />
             </div>
           </CardContent>
         </Card>
 
-        <Card className="bg-white dark:bg-slate-900 border-slate-200">
-          <CardContent className="p-6 flex items-center justify-between">
-            <div className="space-y-1">
-              <p className="text-xs font-semibold text-slate-555 uppercase">Total Riset Rampung</p>
-              <p className="text-2xl font-bold">8</p>
+        <Card className="bg-white dark:bg-slate-900 border-slate-200/80">
+          <CardContent className="p-5 flex items-center justify-between">
+            <div>
+              <p className="text-2xs font-bold text-slate-400 uppercase tracking-wider">Kajian Selesai</p>
+              <h3 className="text-2xl font-extrabold text-emerald-650 mt-1">{completedStudies}</h3>
             </div>
-            <div className="h-10 w-10 bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-455 rounded-lg flex items-center justify-center">
-              <CheckCircle2 className="h-5 w-5" />
+            <div className="h-10 w-10 rounded-full bg-emerald-50 text-emerald-650 flex items-center justify-between dark:bg-emerald-950/20 dark:text-emerald-450">
+              <CheckCircle className="h-5 w-5 mx-auto" />
             </div>
           </CardContent>
         </Card>
 
-        <Card className="bg-white dark:bg-slate-900 border-slate-200">
-          <CardContent className="p-6 flex items-center justify-between">
-            <div className="space-y-1">
-              <p className="text-xs font-semibold text-slate-550 uppercase">Indeks Capaian Dampak</p>
-              <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">84.2%</p>
+        <Card className="bg-white dark:bg-slate-900 border-slate-200/80">
+          <CardContent className="p-5 flex items-center justify-between">
+            <div>
+              <p className="text-2xs font-bold text-slate-400 uppercase tracking-wider">Kajian Terhambat (High Risk)</p>
+              <h3 className="text-2xl font-extrabold text-red-600 mt-1">{delayedStudies}</h3>
             </div>
-            <div className="h-10 w-10 bg-blue-50 dark:bg-blue-950/30 text-blue-700 dark:text-blue-400 rounded-lg flex items-center justify-center">
-              <TrendingUp className="h-5 w-5" />
+            <div className={`h-10 w-10 rounded-full flex items-center justify-between ${
+              delayedStudies > 0 ? 'bg-red-50 text-red-650 animate-pulse' : 'bg-slate-100 text-slate-400'
+            }`}>
+              <AlertTriangle className="h-5 w-5 mx-auto" />
             </div>
           </CardContent>
         </Card>
       </div>
 
-      {/* Content layout grid */}
-      <div className="grid gap-6 md:grid-cols-3">
-        {/* Strategic Approvals Table Card */}
-        <div className="md:col-span-2 space-y-6">
-          <Card className="bg-white dark:bg-slate-900 border-slate-200 shadow-sm">
-            <CardHeader>
-              <CardTitle>Keputusan & Approval Strategis</CardTitle>
-              <CardDescription>
-                Persetujuan yang memerlukan tanda tangan digital Kepala BRIDA untuk melanjutkan workflow penelitian.
-              </CardDescription>
+      {/* Row 2: Approval Queues Cards */}
+      <div className="space-y-3">
+        <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider">
+          Antrean Persetujuan Kepala BRIDA (Approval Queues)
+        </h3>
+
+        <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-4">
+          {/* Seleksi Queue */}
+          <Card className="bg-white dark:bg-slate-900 border-slate-200/80 hover:border-slate-350 transition-all">
+            <CardHeader className="pb-2">
+              <div className="flex justify-between items-center">
+                <span className="p-1 rounded bg-blue-50 text-blue-750 text-3xs font-bold dark:bg-blue-950/20 dark:text-blue-400">SELEKSI</span>
+                <span className="text-xs font-bold font-mono text-slate-655 bg-slate-100 px-2 py-0.5 rounded-full dark:bg-slate-800">
+                  {selectionQueue.length}
+                </span>
+              </div>
+              <CardTitle className="text-sm mt-3">Persetujuan Seleksi</CardTitle>
+              <CardDescription className="text-3xs">Pengesahan lolos seleksi program daerah.</CardDescription>
             </CardHeader>
-            <CardContent>
-              {pendingApprovals.length === 0 ? (
-                <div className="text-center py-10 text-slate-500">
-                  <CheckCircle2 className="mx-auto h-8 w-8 text-emerald-500 mb-2" />
-                  <p>Seluruh persetujuan strategis telah diproses!</p>
-                </div>
-              ) : (
-                <div className="overflow-x-auto">
-                  <table className="w-full text-left text-sm border-collapse">
-                    <thead>
-                      <tr className="border-b border-slate-100 dark:border-slate-800 text-slate-500 font-medium">
-                        <th className="py-3 font-semibold">Usulan / Penelitian</th>
-                        <th className="py-3 px-4 font-semibold">Rekomendasi Peneliti</th>
-                        <th className="py-3 font-semibold">Jenis Approval</th>
-                        <th className="py-3 text-right font-semibold">Aksi</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-                      {pendingApprovals.map((item) => (
-                        <tr key={item.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-850/20 transition-all">
-                          <td className="py-4">
-                            <p className="font-mono text-xs font-semibold text-blue-650 dark:text-blue-400">{item.id}</p>
-                            <p className="font-medium text-slate-800 dark:text-slate-200 mt-0.5 max-w-xs truncate">{item.title}</p>
-                          </td>
-                          <td className="py-4 px-4">
-                            <p className="text-xs font-semibold text-slate-700 dark:text-slate-300">{item.researcher}</p>
-                            <p className="text-[10px] text-slate-500">{item.opd}</p>
-                          </td>
-                          <td className="py-4">
-                            <StatusBadge status={item.status} />
-                          </td>
-                          <td className="py-4 text-right">
-                            {item.status === 'RESEARCHER_APPROVAL' && (
-                              <Button
-                                size="sm"
-                                variant="primary"
-                                onClick={() => handleApprove(item.id, 'Persetujuan Peneliti')}
-                              >
-                                Setujui Mitra
-                              </Button>
-                            )}
-                            {item.status === 'POLICY_BRIEF_REVIEW' && (
-                              <Button
-                                size="sm"
-                                variant="success"
-                                onClick={() => handleApprove(item.id, 'Pengesahan Policy Brief')}
-                              >
-                                Sahkan Policy Brief
-                              </Button>
-                            )}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              )}
+            <CardContent className="pt-2">
+              <Link href="/kepala-brida/persetujuan-seleksi">
+                <Button size="sm" className="w-full text-3xs h-8 flex items-center justify-center gap-1">
+                  <span>Buka Antrean</span>
+                  <ChevronRight className="h-3.5 w-3.5" />
+                </Button>
+              </Link>
+            </CardContent>
+          </Card>
+
+          {/* Peneliti Queue */}
+          <Card className="bg-white dark:bg-slate-900 border-slate-200/80 hover:border-slate-350 transition-all">
+            <CardHeader className="pb-2">
+              <div className="flex justify-between items-center">
+                <span className="p-1 rounded bg-purple-50 text-purple-750 text-3xs font-bold dark:bg-purple-950/20 dark:text-purple-400">MITRA PENELITI</span>
+                <span className="text-xs font-bold font-mono text-slate-655 bg-slate-100 px-2 py-0.5 rounded-full dark:bg-slate-800">
+                  {researcherQueue.length}
+                </span>
+              </div>
+              <CardTitle className="text-sm mt-3">Persetujuan Peneliti</CardTitle>
+              <CardDescription className="text-3xs">SK penunjukan pakar/universitas pelaksana.</CardDescription>
+            </CardHeader>
+            <CardContent className="pt-2">
+              <Link href="/kepala-brida/persetujuan-peneliti">
+                <Button size="sm" className="w-full text-3xs h-8 flex items-center justify-center gap-1">
+                  <span>Buka Antrean</span>
+                  <ChevronRight className="h-3.5 w-3.5" />
+                </Button>
+              </Link>
+            </CardContent>
+          </Card>
+
+          {/* Laporan Queue */}
+          <Card className="bg-white dark:bg-slate-900 border-slate-200/80 hover:border-slate-350 transition-all">
+            <CardHeader className="pb-2">
+              <div className="flex justify-between items-center">
+                <span className="p-1 rounded bg-emerald-50 text-emerald-750 text-3xs font-bold dark:bg-emerald-950/20 dark:text-emerald-450">LAPORAN AKHIR</span>
+                <span className="text-xs font-bold font-mono text-slate-655 bg-slate-100 px-2 py-0.5 rounded-full dark:bg-slate-800">
+                  {reportQueue.length}
+                </span>
+              </div>
+              <CardTitle className="text-sm mt-3">Persetujuan Laporan</CardTitle>
+              <CardDescription className="text-3xs">Pemeriksaan & pengesahan naskah riset akhir.</CardDescription>
+            </CardHeader>
+            <CardContent className="pt-2">
+              <Link href="/kepala-brida/persetujuan-laporan">
+                <Button size="sm" className="w-full text-3xs h-8 flex items-center justify-center gap-1">
+                  <span>Buka Antrean</span>
+                  <ChevronRight className="h-3.5 w-3.5" />
+                </Button>
+              </Link>
+            </CardContent>
+          </Card>
+
+          {/* Rekomendasi Queue */}
+          <Card className="bg-white dark:bg-slate-900 border-slate-200/80 hover:border-slate-350 transition-all">
+            <CardHeader className="pb-2">
+              <div className="flex justify-between items-center">
+                <span className="p-1 rounded bg-teal-50 text-teal-750 text-3xs font-bold dark:bg-teal-950/20 dark:text-teal-400">REKOMENDASI BUPATI</span>
+                <span className="text-xs font-bold font-mono text-slate-655 bg-slate-100 px-2 py-0.5 rounded-full dark:bg-slate-800">
+                  {recommendationQueue.length}
+                </span>
+              </div>
+              <CardTitle className="text-sm mt-3">TTD SK Rekomendasi</CardTitle>
+              <CardDescription className="text-3xs">Tanda tangan SK rekomendasi aksi kebijakan.</CardDescription>
+            </CardHeader>
+            <CardContent className="pt-2">
+              <Link href="/kepala-brida/persetujuan-rekomendasi">
+                <Button size="sm" className="w-full text-3xs h-8 flex items-center justify-center gap-1">
+                  <span>Buka Antrean</span>
+                  <ChevronRight className="h-3.5 w-3.5" />
+                </Button>
+              </Link>
             </CardContent>
           </Card>
         </div>
+      </div>
 
-        {/* Impact metrics overview card */}
-        <div>
-          <Card className="bg-white dark:bg-slate-900 border-slate-200 shadow-sm">
-            <CardHeader>
-              <CardTitle>Ringkasan Kinerja Riset</CardTitle>
-              <CardDescription>Rasio kontribusi rekomendasi riset daerah.</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div>
-                <div className="flex justify-between text-xs font-semibold mb-1">
-                  <span>Rencana Aksi OPD Aktif</span>
-                  <span>78%</span>
+      {/* Row 3: Strategic Visuals (Charts) */}
+      <div className="grid gap-6 md:grid-cols-2">
+        {/* Research by Sector */}
+        <Card className="bg-white dark:bg-slate-900 border-slate-200/80 p-6">
+          <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-4">
+            Distribusi Portofolio Berdasarkan Sektor Kajian
+          </h3>
+          <div className="space-y-4">
+            {sectorData.map((item, idx) => {
+              const pct = Math.round((item.value / proposals.length) * 100);
+              return (
+                <div key={idx} className="space-y-1 text-xs">
+                  <div className="flex justify-between text-2xs font-semibold">
+                    <span className="font-bold text-slate-800 dark:text-slate-200">{item.name}</span>
+                    <span>{item.value} Kajian ({pct}%)</span>
+                  </div>
+                  <div className="h-2 w-full bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+                    <div className="h-full bg-blue-600 rounded-full" style={{ width: `${pct}%` }} />
+                  </div>
                 </div>
-                <div className="w-full bg-slate-100 dark:bg-slate-800 h-2 rounded-full overflow-hidden">
-                  <div className="bg-blue-600 h-full rounded-full" style={{ width: '78%' }} />
-                </div>
-              </div>
+              );
+            })}
+          </div>
+        </Card>
 
-              <div>
-                <div className="flex justify-between text-xs font-semibold mb-1">
-                  <span>Evaluasi Efisiensi Anggaran</span>
-                  <span>92%</span>
-                </div>
-                <div className="w-full bg-slate-100 dark:bg-slate-800 h-2 rounded-full overflow-hidden">
-                  <div className="bg-emerald-500 h-full rounded-full" style={{ width: '92%' }} />
-                </div>
-              </div>
-
-              <div className="rounded-lg bg-blue-50/50 dark:bg-blue-950/20 border border-blue-100 dark:border-blue-900/30 p-3 mt-4 text-xs leading-relaxed text-blue-800 dark:text-blue-300">
-                <AlertTriangle className="h-4 w-4 text-blue-600 dark:text-blue-400 mb-1" />
-                <span>
-                  <strong>Tip Strategis:</strong> Seluruh rekomendasi riset stunting telah ditindaklanjuti oleh Dinas Kesehatan melalui APBD Perubahan 2026.
+        {/* Budget overview & follow-up performance */}
+        <div className="space-y-6">
+          {/* Budget Info */}
+          <Card className="bg-white dark:bg-slate-900 border-slate-200/80 p-6">
+            <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-4">
+              Rekapitulasi Anggaran Pagu Daerah (APBD)
+            </h3>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div className="p-3 border rounded-lg bg-slate-50/50 dark:bg-slate-950/20 dark:border-slate-850 text-xs">
+                <span className="text-slate-450 font-bold uppercase text-[9px] flex items-center gap-1">
+                  <DollarSign className="h-3 w-3 text-slate-400" />
+                  <span>Total Anggaran Diajukan</span>
                 </span>
+                <p className="text-base font-mono font-extrabold text-slate-800 dark:text-slate-200 mt-1">
+                  Rp {totalBudget.toLocaleString('id-ID')}
+                </p>
               </div>
-            </CardContent>
+
+              <div className="p-3 border rounded-lg bg-slate-50/50 dark:bg-slate-950/20 dark:border-slate-850 text-xs">
+                <span className="text-slate-450 font-bold uppercase text-[9px] flex items-center gap-1">
+                  <DollarSign className="h-3 w-3 text-cyan-500" />
+                  <span>Anggaran Proyek Aktif</span>
+                </span>
+                <p className="text-base font-mono font-extrabold text-cyan-600 dark:text-cyan-400 mt-1">
+                  Rp {activeBudget.toLocaleString('id-ID')}
+                </p>
+              </div>
+            </div>
+          </Card>
+
+          {/* Follow-up Performance */}
+          <Card className="bg-white dark:bg-slate-900 border-slate-200/80 p-6">
+            <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">
+              Kinerja Tindak Lanjut Rekomendasi OPD
+            </h3>
+            
+            <div className="grid gap-4 grid-cols-2 text-center text-xs">
+              <div className="p-2 border rounded-lg bg-slate-50/50 dark:bg-slate-950/20 dark:border-slate-850">
+                <span className="text-[10px] text-slate-450 font-bold uppercase">Selesai Realisasi</span>
+                <p className="text-xl font-bold mt-1 text-emerald-650">{fuCompleted} / {totalRecs}</p>
+              </div>
+
+              <div className="p-2 border rounded-lg bg-slate-50/50 dark:bg-slate-950/20 dark:border-slate-850">
+                <span className="text-[10px] text-slate-450 font-bold uppercase">Terlambat Tindak Lanjut</span>
+                <p className={`text-xl font-bold mt-1 ${fuOverdue > 0 ? 'text-red-600 animate-pulse font-extrabold' : 'text-slate-655'}`}>
+                  {fuOverdue}
+                </p>
+              </div>
+            </div>
           </Card>
         </div>
       </div>

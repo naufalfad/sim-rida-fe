@@ -2,6 +2,7 @@ import { Proposal, FollowUp } from '@/types/proposals';
 import { WorkflowStatus } from '@/constants/status';
 
 export const INITIAL_PROPOSALS: Proposal[] = [
+  // 1. PRP-2026-001 (ADMINISTRATIVE_REVIEW - In Review 1)
   {
     id: 'PRP-2026-001',
     title: 'Kajian Efektivitas Penanganan Stunting Terintegrasi di Wilayah Pesisir',
@@ -50,10 +51,10 @@ export const INITIAL_PROPOSALS: Proposal[] = [
       { status: 'DRAFT', label: 'Usulan Draf Masalah', date: '10 Agt 2026', actor: 'Bappeda Litbang', isCompleted: true },
       { status: 'SUBMITTED', label: 'KAK Selesai & Diajukan', date: '11 Agt 2026', actor: 'Bappeda Litbang', isCompleted: true },
       { status: 'ADMINISTRATIVE_REVIEW', label: 'Verifikasi Administrasi BRIDA', date: '12 Agt 2026', actor: 'Admin BRIDA', isCompleted: false },
-      { status: 'SUBSTANTIVE_REVIEW', label: 'Review Substansi & Scoring', date: '', actor: 'Tim Reviewer', isCompleted: false },
-      { status: 'APPROVED', label: 'Persetujuan Kepala BRIDA', date: '', actor: 'Kepala BRIDA', isCompleted: false },
     ],
   },
+
+  // 2. PRP-2026-002 (IN_PROGRESS - Active Project 1 - Monitored)
   {
     id: 'PRP-2026-002',
     title: 'Evaluasi Sistem Transportasi Publik Berbasis Listrik untuk Pengurangan Emisi',
@@ -85,17 +86,17 @@ export const INITIAL_PROPOSALS: Proposal[] = [
     },
     kak: {
       identitas: 'KAK Studi Kelayakan BRT Listrik Perkotaan',
-      latarBelakang: 'Dishub bekerja sama dengan BRIDA melakukan studi kelayakan transisi bus listrik.',
+      latarBelakang: 'Studi kelayakan transisi bus listrik untuk mendukung ramah lingkungan.',
       dasarPemikiran: 'Perpres No. 55 Tahun 2019 tentang Percepatan Program Kendaraan Bermotor Listrik.',
-      maksudTujuan: 'Memberikan dasar pengambilan keputusan investasi pengadaan bus listrik.',
-      ruangLingkup: 'Survei penumpang, analisis infrastruktur listrik grid PLN, simulasi biaya.',
-      metodologi: 'Analisis finansial Benefit-Cost Ratio (BCR) dan Net Present Value (NPV).',
+      maksudTujuan: 'Memberikan dasar keputusan investasi pengadaan bus listrik.',
+      ruangLingkup: 'Survei penumpang, analisis infrastruktur PLN, simulasi biaya.',
+      metodologi: 'Analisis finansial Benefit-Cost Ratio (BCR) dan NPV.',
       output: 'Dokumen Studi Kelayakan Operasional, Draf Peta Koridor BRT.',
       outcome: 'Investasi bus listrik daerah terarah.',
-      indikator: 'Laporan disahkan Dishub, disetujui Komisi III DPRD.',
+      indikator: 'Laporan disahkan Dishub.',
       jadwal: 'Agustus - November 2026',
       anggaran: 120000000,
-      penutup: 'Studi ini diharapkan selesai tepat waktu untuk penganggaran tahun depan.',
+      penutup: 'Studi kelayakan diselesaikan tepat waktu.',
     },
     timeline: [
       { status: 'DRAFT', label: 'Usulan Draf Masalah', date: '01 Agt 2026', actor: 'Dinas Perhubungan', isCompleted: true },
@@ -107,14 +108,22 @@ export const INITIAL_PROPOSALS: Proposal[] = [
       { status: 'IN_PROGRESS', label: 'Pelaksanaan Penelitian (Tim ITB)', date: '07 Agt 2026', actor: 'Prof. Anton (ITB)', isCompleted: true },
     ],
     researcherId: 'usr-004',
-    researcherName: 'Prof. Dr. Anton (ITB)',
+    researcherName: 'Prof. Dr. Anton Wibowo',
+    issues: [
+      { id: 'iss-001', description: 'Keterlambatan izin survei kelistrikan gardu induk PLN.', severity: 'MEDIUM', status: 'OPEN', dateReported: '2026-08-12' }
+    ],
+    risks: [
+      { id: 'rsk-001', description: 'Fluktuasi harga baterai bus impor.', mitigation: 'Menggunakan opsi kontrak jangka panjang harga terkunci.', riskLevel: 'HIGH' }
+    ]
   },
+
+  // 3. PRP-2026-003 (REPORT_SUBMITTED - Active Project 2 - Report Submitted)
   {
     id: 'PRP-2026-003',
     title: 'Strategi Pengembangan Destinasi Wisata Sejarah dan Budaya Unggulan Daerah',
     opdName: 'Dinas Pariwisata',
     status: 'REPORT_SUBMITTED',
-    progress: 90,
+    progress: 95,
     createdAt: '2026-07-20T10:00:00.000Z',
     updatedAt: '2026-08-15T09:00:00.000Z',
     problem: {
@@ -140,17 +149,17 @@ export const INITIAL_PROPOSALS: Proposal[] = [
     },
     kak: {
       identitas: 'KAK Masterplan Pariwisata Sejarah Terpadu',
-      latarBelakang: 'Studi kolaborasi riset cagar budaya dan pengembangan ekonomi kreatif pariwisata.',
-      dasarPemikiran: 'UU No. 11 Tahun 2010 tentang Cagar Budaya dan UU No. 10 Tahun 2009 tentang Kepariwisataan.',
-      maksudTujuan: 'Mengarahkan investasi pembangunan akses fisik dan promosi wisata sejarah.',
-      ruangLingkup: 'Survei kepuasan wisman, wawancara kurator situs, dan workshop pemuda lokal.',
-      metodologi: 'Kualitatif partisipatif dan studi banding tata kelola museum nasional.',
-      output: 'Buku Masterplan Pariwisata Sejarah, Draf Perda Pengelolaan Situs.',
-      outcome: 'Revitalisasi situs sejarah yang ramah wisatawan.',
-      indikator: 'Penerapan roadmap oleh Dinas Pariwisata.',
+      latarBelakang: 'Studi pariwisata berbasis pelestarian cagar budaya dan pengembangan ekonomi lokal.',
+      dasarPemikiran: 'UU No. 11 Tahun 2010 tentang Cagar Budaya.',
+      maksudTujuan: 'Mengarahkan investasi pembangunan akses promosi sejarah.',
+      ruangLingkup: 'Survei wisman, FGD kurator situs.',
+      metodologi: 'Kualitatif deskriptif.',
+      output: 'Buku Masterplan Pariwisata Sejarah.',
+      outcome: 'Revitalisasi situs sejarah.',
+      indikator: 'Penerapan roadmap oleh Dinas.',
       jadwal: 'Juli - September 2026',
       anggaran: 75000000,
-      penutup: 'Kajian ini krusial untuk menyelamatkan cagar budaya daerah yang terbengkalai.',
+      penutup: 'Studi diselesaikan tepat waktu.',
     },
     timeline: [
       { status: 'DRAFT', label: 'Usulan Draf Masalah', date: '20 Jul 2026', actor: 'Dinas Pariwisata', isCompleted: true },
@@ -161,9 +170,13 @@ export const INITIAL_PROPOSALS: Proposal[] = [
       { status: 'IN_PROGRESS', label: 'Pelaksanaan Penelitian', date: '26 Jul 2026', actor: 'Dr. Rian Nugroho (Tim UI)', isCompleted: true },
       { status: 'REPORT_SUBMITTED', label: 'Laporan Akhir Kajian Diajukan', date: '15 Agt 2026', actor: 'Dr. Rian Nugroho (Tim UI)', isCompleted: true },
     ],
-    researcherId: 'usr-004',
-    researcherName: 'Dr. Rian Nugroho (Tim UI)',
+    researcherId: 'usr-005',
+    researcherName: 'Dr. Rian Nugroho',
+    issues: [],
+    risks: [],
   },
+
+  // 4. PRP-2026-004 (SUBSTANTIVE_REVIEW - In Review 2)
   {
     id: 'PRP-2026-004',
     title: 'Kajian Pemetaan Potensi Pertanian Organik Hortikultura',
@@ -183,7 +196,7 @@ export const INITIAL_PROPOSALS: Proposal[] = [
       targetPenyelesaian: 'Desember 2026',
     },
     research: {
-      judul: 'Pemetaan Karakteristik Tanah & Kelayakan Pasar Sayur Organik',
+      judul: 'Pemetaan Karakteristik Lahan & Kelayakan Pasar Sayur Organik',
       tujuan: 'Menghasilkan peta zonasi kelayakan pertanian organik dan memetakan potensi rantai pasok.',
       pertanyaanPenelitian: '1. Wilayah mana saja yang tanahnya memenuhi syarat sertifikasi organik?\n2. Bagaimana kelayakan ekonomi konversi lahan organik bagi petani gurem?',
       ruangLingkup: 'Kecamatan Dataran Tinggi Argo.',
@@ -196,16 +209,16 @@ export const INITIAL_PROPOSALS: Proposal[] = [
     kak: {
       identitas: 'KAK Studi Pemetaan Potensi Hortikultura Organik',
       latarBelakang: 'Dinas Pertanian bermaksud mengganti sebagian ketergantungan pupuk kimia ke pupuk kompos alami.',
-      dasarPemikiran: 'Perda Ketahanan Pangan Daerah dan UU No. 22 Tahun 2019 tentang Sistem Budi Daya Pertanian Berkelanjutan.',
+      dasarPemikiran: 'Perda Ketahanan Pangan Daerah.',
       maksudTujuan: 'Memberikan acuan teknis klasterisasi produk pertanian unggulan.',
-      ruangLingkup: 'Analisis lab sampel tanah di 10 titik, wawancara 100 petani, uji pasar hotel & resto.',
-      metodologi: 'Geospatial mapping (GIS) dan survei pasar terstruktur.',
-      output: 'Peta Kesuburan Lahan Pertanian Organik, Buku Profil Potensi Agribisnis Organik.',
+      ruangLingkup: 'Analisis lab sampel tanah di 10 titik.',
+      metodologi: 'Geospatial mapping (GIS).',
+      output: 'Peta Kesuburan Lahan Pertanian Organik.',
       outcome: 'Zonasi pertanian organik yang efektif.',
-      indikator: 'Laporan akhir diserahkan ke Dinas Pertanian untuk penyusunan RKPD.',
+      indikator: 'Laporan akhir diserahkan ke Dinas.',
       jadwal: 'September - Desember 2026',
       anggaran: 90000000,
-      penutup: 'Kajian ini mendesak agar alokasi bantuan alat komposer organik daerah tepat sasaran.',
+      penutup: 'Kajian ini mendesak agar alokasi pupuk kompos tepat sasaran.',
     },
     timeline: [
       { status: 'DRAFT', label: 'Usulan Draf Masalah', date: '02 Agt 2026', actor: 'Dinas Pertanian', isCompleted: true },
@@ -214,6 +227,8 @@ export const INITIAL_PROPOSALS: Proposal[] = [
       { status: 'SUBSTANTIVE_REVIEW', label: 'Review Substansi oleh Reviewer Ahli', date: '12 Agt 2026', actor: 'Reviewer BRIDA', isCompleted: false },
     ],
   },
+
+  // 5. PRP-2026-005 (DRAFT - Draft 1)
   {
     id: 'PRP-2026-005',
     title: 'Studi Kelayakan Relokasi Pasar Tradisional Terpadu',
@@ -236,6 +251,8 @@ export const INITIAL_PROPOSALS: Proposal[] = [
       { status: 'DRAFT', label: 'Draf Usulan Dibuat', date: '15 Agt 2026', actor: 'Dinas Perdagangan', isCompleted: true },
     ],
   },
+
+  // 6. PRP-2026-006 (DRAFT - Draft 2)
   {
     id: 'PRP-2026-006',
     title: 'Strategi Digitalisasi Pelayanan Administrasi Desa Terintegrasi',
@@ -258,6 +275,8 @@ export const INITIAL_PROPOSALS: Proposal[] = [
       { status: 'DRAFT', label: 'Draf Usulan Dibuat', date: '16 Agt 2026', actor: 'DPMD', isCompleted: true },
     ],
   },
+
+  // 7. PRP-2026-007 (COMPLETED - Completed 1 - Report Approved)
   {
     id: 'PRP-2026-007',
     title: 'Kajian Sistem Drainase dan Pencegahan Genangan Air Perkotaan',
@@ -289,28 +308,31 @@ export const INITIAL_PROPOSALS: Proposal[] = [
     },
     kak: {
       identitas: 'KAK Audit Drainase Perkotaan',
-      latarBelakang: 'PUPR bekerja sama dengan BRIDA merekrut konsultan geospasial hidrologi.',
-      dasarPemikiran: 'UU No. 38 Tahun 2004 tentang Jalan dan Standar Teknis Drainase PU.',
+      latarBelakang: 'Audit drainase perkotaan terpadu.',
+      dasarPemikiran: 'UU No. 38 Tahun 2004 tentang Jalan.',
       maksudTujuan: 'Mengarahkan perbaikan fisik drainase APBD 2027.',
-      ruangLingkup: 'Survei elevasi jalan, audit dimensi gorong-gorong, dan simulasi limpasan air.',
-      metodologi: 'Pemodelan hidrolika 2D menggunakan software hidrologi.',
-      output: 'Peta Masterplan Drainase Perkotaan, Rekomendasi Normalisasi.',
+      ruangLingkup: 'Survei elevasi jalan.',
+      metodologi: 'Pemodelan hidrolika 2D.',
+      output: 'Peta Masterplan Drainase Perkotaan.',
       outcome: 'Normalisasi fisik drainase terarah.',
-      indikator: 'Laporan disahkan dan diaplikasikan dalam pembangunan fisik drainase.',
+      indikator: 'Laporan disahkan.',
       jadwal: 'Mei - Juli 2026',
       anggaran: 95000000,
-      penutup: 'Studi ini adalah syarat mutlak pelaksanaan proyek normalisasi jalan.',
+      penutup: 'Studi ini adalah syarat proyek fisik.',
     },
     timeline: [
       { status: 'DRAFT', label: 'Usulan Draf Masalah', date: '10 Mei 2026', actor: 'Dinas PUPR', isCompleted: true },
       { status: 'SUBMITTED', label: 'KAK Selesai & Diajukan', date: '12 Mei 2026', actor: 'Dinas PUPR', isCompleted: true },
       { status: 'APPROVED', label: 'Disetujui Kepala BRIDA', date: '20 Mei 2026', actor: 'Kepala BRIDA', isCompleted: true },
-      { status: 'IN_PROGRESS', label: 'Pelaksanaan Kajian (Tim UGM)', date: '25 Mei 2026', actor: 'Pusat Studi Teknik UGM', isCompleted: true },
+      { status: 'IN_PROGRESS', label: 'Pelaksanaan Kajian (Tim UGM)', date: '25 Mei 2026', actor: 'UGM', isCompleted: true },
       { status: 'COMPLETED', label: 'Riset Selesai & Laporan Akhir Disahkan', date: '28 Jul 2026', actor: 'Kepala BRIDA', isCompleted: true },
     ],
-    researcherId: 'usr-004',
-    researcherName: 'Pusat Riset Hidrologi UGM',
+    researcherId: 'usr-006',
+    researcherName: 'Dr. Ir. Joko Prasetyo, M.T.',
+    reportReview: { reviewerNotes: 'Kajian drainase sangat lengkap dan roadmap normalisasi gorong-gorong layak dijalankan.', status: 'APPROVED', reviewedAt: '2026-07-28T14:00:00.000Z' }
   },
+
+  // 8. PRP-2026-008 (RECOMMENDATION_APPROVED - Completed 2 - Report Approved)
   {
     id: 'PRP-2026-008',
     title: 'Kajian Sistem Pengolahan Sampah Pasar Tradisional Menjadi Bahan Kompos Organik',
@@ -342,28 +364,477 @@ export const INITIAL_PROPOSALS: Proposal[] = [
     },
     kak: {
       identitas: 'KAK Kajian Pabrik Kompos Pasar Raya',
-      latarBelakang: 'DLH berencana membangun hanggar pengolahan sampah mandiri di pasar induk.',
+      latarBelakang: 'Kajian tekno ekonomi pengolahan kompos sampah pasar.',
       dasarPemikiran: 'UU No. 18 Tahun 2008 tentang Pengelolaan Sampah.',
-      maksudTujuan: 'Menyediakan kajian kelayakan sebelum pengadaan mesin pengolah di APBD.',
-      ruangLingkup: 'Analisis timbulan sampah harian, analisis kadar air, dan uji coba mesin komposter.',
-      metodologi: 'Kuantitatif eksperimental uji coba fermentasi sampah pasar.',
-      output: 'Buku Rekomendasi Teknis, Skema Kelayakan Finansial Kompos.',
-      outcome: 'Pengurangan beban sampah TPA kabupaten.',
-      indikator: 'Rekomendasi disahkan dan masuk prioritas pengadaan dinas.',
+      maksudTujuan: 'Kajian kelayakan sebelum pengadaan APBD.',
+      ruangLingkup: 'Analisis timbulan sampah.',
+      metodologi: 'Kuantitatif eksperimental.',
+      output: 'Rekomendasi Teknis, Skema Finansial.',
+      outcome: 'Pengurangan beban sampah TPA.',
+      indikator: 'Rekomendasi disahkan.',
       jadwal: 'April - Juni 2026',
       anggaran: 80000000,
-      penutup: 'Studi kelayakan ini menjadi dasar pengadaan barang dan jasa APBD.',
+      penutup: 'Kajian selesai tepat waktu.',
     },
     timeline: [
       { status: 'DRAFT', label: 'Usulan Draf Masalah', date: '10 Apr 2026', actor: 'Dinas LH', isCompleted: true },
       { status: 'SUBMITTED', label: 'KAK Selesai & Diajukan', date: '12 Apr 2026', actor: 'Dinas LH', isCompleted: true },
       { status: 'APPROVED', label: 'Disetujui Kepala BRIDA', date: '20 Apr 2026', actor: 'Kepala BRIDA', isCompleted: true },
-      { status: 'IN_PROGRESS', label: 'Kajian Berjalan', date: '25 Apr 2026', actor: 'Pusat Studi Biologi IPB', isCompleted: true },
+      { status: 'IN_PROGRESS', label: 'Kajian Berjalan', date: '25 Apr 2026', actor: 'IPB', isCompleted: true },
       { status: 'COMPLETED', label: 'Riset Selesai & Disahkan', date: '20 Jun 2026', actor: 'Kepala BRIDA', isCompleted: true },
       { status: 'RECOMMENDATION_APPROVED', label: 'Rekomendasi Kebijakan Disahkan', date: '25 Jun 2026', actor: 'Kepala BRIDA', isCompleted: true },
     ],
+    researcherId: 'usr-007',
+    researcherName: 'Dr. Sarah Amalia',
+    reportReview: { reviewerNotes: 'Metodologi fermentasi kompos terarah dan rencana aksi pengadaan mesin LPSE valid.', status: 'APPROVED', reviewedAt: '2026-06-20T11:00:00.000Z' }
+  },
+
+  // 9. PRP-2026-009 (SUBMITTED - In Review 3)
+  {
+    id: 'PRP-2026-009',
+    title: 'Kajian Ekologis Terumbu Karang dan Potensi Bahari Nelayan Tradisional',
+    opdName: 'Dinas Kelautan dan Perikanan',
+    status: 'SUBMITTED',
+    progress: 10,
+    createdAt: '2026-08-14T09:00:00.000Z',
+    updatedAt: '2026-08-14T09:00:00.000Z',
+    problem: {
+      judul: 'Kerusakan Ekosistem Terumbu Karang Akibat Penangkapan Ikan Ilegal',
+      bidang: 'Lingkungan Hidup dan Kehutanan',
+      opd: 'Dinas Kelautan dan Perikanan',
+      latarBelakang: 'Zona terumbu karang mengalami degradasi 35% karena bahan kimia pembiusan dan bom ikan liar.',
+      masalahUtama: 'Kurangnya patroli kawasan pesisir dan rendahnya mata pencaharian alternatif nelayan.',
+      dampak: 'Penurunan drastis hasil tangkapan nelayan lokal dan terganggunya rantai ekosistem laut.',
+      urgensi: 'Penyelamatan biota terumbu karang sebelum mengalami kerusakan permanen.',
+      targetPenyelesaian: 'Maret 2027',
+    },
+    timeline: [
+      { status: 'DRAFT', label: 'Usulan Draf Masalah', date: '12 Agt 2026', actor: 'Dinas Kelautan', isCompleted: true },
+      { status: 'SUBMITTED', label: 'Usulan KAK Diserahkan', date: '14 Agt 2026', actor: 'Dinas Kelautan', isCompleted: true },
+    ],
+  },
+
+  // 10. PRP-2026-010 (SUBSTANTIVE_REVIEW - In Review 4)
+  {
+    id: 'PRP-2026-010',
+    title: 'Perencanaan Kawasan Smart City Desa Wisata Lereng Pegunungan',
+    opdName: 'Dinas Pariwisata',
+    status: 'SUBSTANTIVE_REVIEW',
+    progress: 30,
+    createdAt: '2026-08-05T08:00:00.000Z',
+    updatedAt: '2026-08-10T10:00:00.000Z',
+    problem: {
+      judul: 'Keterbatasan Jaringan Digital dan Pemasaran Destinasi Desa Lereng Gunung',
+      bidang: 'Teknologi Informasi dan Pemerintahan',
+      opd: 'Dinas Pariwisata',
+      latarBelakang: 'Desa lereng gunung memiliki pemandangan alam eksotis namun sepi pengunjung karena terisolasi digital.',
+      masalahUtama: 'Ketiadaan konektivitas internet (blankspot) dan minimnya literasi promosi media sosial warga.',
+      dampak: 'Warga desa tertinggal ekonomi dan potensi wisata alam lokal terbengkalai.',
+      urgensi: 'Target Rencana Aksi Daerah untuk digitalisasi pariwisata pedesaan.',
+      targetPenyelesaian: 'Desember 2026',
+    },
+    timeline: [
+      { status: 'DRAFT', label: 'Usulan Draf Masalah', date: '03 Agt 2026', actor: 'Dinas Pariwisata', isCompleted: true },
+      { status: 'SUBMITTED', label: 'Usulan KAK Diserahkan', date: '05 Agt 2026', actor: 'Dinas Pariwisata', isCompleted: true },
+      { status: 'ADMINISTRATIVE_REVIEW', label: 'Verifikasi Administrasi BRIDA', date: '10 Agt 2026', actor: 'Admin BRIDA', isCompleted: true },
+    ],
+  },
+
+  // 11. PRP-2026-011 (SCORING - In Review 5)
+  {
+    id: 'PRP-2026-011',
+    title: 'Kajian Mitigasi Bencana Tanah Longsor pada Lereng Rawan Gempa',
+    opdName: 'Badan Penanggulangan Bencana Daerah',
+    status: 'SCORING',
+    progress: 45,
+    createdAt: '2026-07-28T09:00:00.000Z',
+    updatedAt: '2026-08-12T14:00:00.000Z',
+    problem: {
+      judul: 'Tingginya Risiko Tanah Longsor Pemukiman Lereng Gunung Kelud',
+      bidang: 'Kesehatan dan Kesejahteraan Sosial', // or Mitigasi
+      opd: 'Badan Penanggulangan Bencana Daerah',
+      latarBelakang: 'Curah hujan ekstrem di lereng Kelud mengakibatkan longsoran yang mengancam keselamatan 240 kepala keluarga.',
+      masalahUtama: 'Belum dipasangnya sensor pendeteksi pergeseran tanah (Early Warning System) dan jalur evakuasi tidak memadai.',
+      dampak: 'Ancaman korban jiwa massal dan kerusakan jalan penghubung antar kecamatan.',
+      urgensi: 'Musim hujan ekstrem diprediksi terjadi pada kuartal akhir tahun ini.',
+      targetPenyelesaian: 'November 2026',
+    },
+    research: {
+      judul: 'Analisis Titik Rawan Pergeseran Lereng & Rencana Jalur Evakuasi Kelud',
+      tujuan: 'Menyediakan peta risiko bencana tanah longsor skala mikro.',
+      pertanyaanPenelitian: '1. Di mana koordinat lereng paling kritis pergeseran?\n2. Bagaimana simulasi rute evakuasi teraman?',
+      ruangLingkup: 'Lereng Selatan Gunung Kelud.',
+      outputDiharapkan: 'Peta kerawanan longsor GIS, rekomendasi titik pemasangan sensor.',
+      outcomeDiharapkan: 'Kesiapsiagaan warga lereng 100% menghadapi ancaman longsor.',
+      indikator: 'Zero korban jiwa jika terjadi pergeseran tanah.',
+      estimasiWaktu: '3 Bulan',
+      estimasiAnggaran: 80000000,
+    },
+    kak: {
+      identitas: 'KAK Mitigasi Longsor Lereng Kelud',
+      latarBelakang: 'Mitigasi darurat risiko longsor.',
+      dasarPemikiran: 'UU Penanggulangan Bencana.',
+      maksudTujuan: 'Mengarahkan pemasangan sensor EWS darurat.',
+      ruangLingkup: 'Pemetaan topografi lereng.',
+      metodologi: 'Geotechnical assessment.',
+      output: 'Peta Evakuasi & Titik Sensor.',
+      outcome: 'Warga terselamatkan dari bencana.',
+      indikator: 'Laporan disahkan BPBD.',
+      jadwal: 'Agustus - Oktober 2026',
+      anggaran: 80000000,
+      penutup: 'Studi mitigasi ini bersifat darurat kemanusiaan.',
+    },
+    timeline: [
+      { status: 'DRAFT', label: 'Usulan Draf Masalah', date: '25 Jul 2026', actor: 'BPBD', isCompleted: true },
+      { status: 'SUBMITTED', label: 'Usulan KAK Diserahkan', date: '28 Jul 2026', actor: 'BPBD', isCompleted: true },
+      { status: 'ADMINISTRATIVE_REVIEW', label: 'Verifikasi Administrasi BRIDA', date: '05 Agt 2026', actor: 'Admin BRIDA', isCompleted: true },
+      { status: 'SUBSTANTIVE_REVIEW', label: 'Review Substansi & Scoring', date: '12 Agt 2026', actor: 'Tim Reviewer', isCompleted: true },
+    ],
+    // Has partial scoring already
+    review: {
+      relevansi: 85,
+      urgensi: 95,
+      novelty: 70,
+      feasibility: 80,
+      impact: 90,
+      alignment: 85,
+      totalScore: 84.2,
+      recommendation: 'RECOMMENDED',
+      reviewerNotes: 'Kajian mitigasi longsor sangat krusial dikarenakan taruhan nyawa penduduk lereng. Sangat mendesak.',
+    },
+  },
+
+  // 12. PRP-2026-012 (SELECTION_RECOMMENDED - In Review 6)
+  {
+    id: 'PRP-2026-012',
+    title: 'Kajian Pengolahan Limbah Cair Industri Batik Rakyat Ramah Lingkungan',
+    opdName: 'Dinas Perindustrian',
+    status: 'SELECTION_RECOMMENDED',
+    progress: 50,
+    createdAt: '2026-07-15T08:00:00.000Z',
+    updatedAt: '2026-08-14T11:00:00.000Z',
+    problem: {
+      judul: 'Pencemaran Limbah Cair Kimia Industri Batik di Aliran Sungai Kalimas',
+      bidang: 'Lingkungan Hidup dan Kehutanan',
+      opd: 'Dinas Perindustrian',
+      latarBelakang: 'Industri batik rumahan membuang air limbah pencelupan warna langsung ke sungai tanpa diolah.',
+      masalahUtama: 'Tingginya kadar racun logam berat air sungai dan ketidakmampuan perajin membeli alat IPAL individu.',
+      dampak: 'Kematian biota sungai, bau menyengat, dan keluhan gatal-gatal warga bantaran sungai.',
+      urgensi: 'Bupati merencanakan program pembersihan sungai Kalimas Bersih tahun depan.',
+      targetPenyelesaian: 'Desember 2026',
+    },
+    research: {
+      judul: 'Kajian Teknis IPAL Komunal Perajin Batik Terintegrasi',
+      tujuan: 'Merancang instalasi pengolahan limbah cair komunal hemat energi.',
+      pertanyaanPenelitian: '1. Bagaimana model filter zat warna batik terbaik?\n2. Bagaimana membagi beban biaya operasional IPAL antar perajin?',
+      ruangLingkup: 'Sentra Perajin Batik Kampung Canting.',
+      outputDiharapkan: 'Desain teknis IPAL, tata kelola kelembagaan perajin.',
+      outcomeDiharapkan: 'Penurunan 90% polusi zat warna sungai Kalimas.',
+      indikator: 'Kadar BOD dan COD air sungai memenuhi baku mutu lingkungan.',
+      estimasiWaktu: '4 Bulan',
+      estimasiAnggaran: 85000000,
+    },
+    kak: {
+      identitas: 'KAK IPAL Komunal Batik Rakyat',
+      latarBelakang: 'Penyusunan desain teknis pengolahan limbah batik.',
+      dasarPemikiran: 'UU Perlindungan Lingkungan Hidup.',
+      maksudTujuan: 'Mengarahkan pengadaan fisik IPAL komunal APBD.',
+      ruangLingkup: 'Uji kimia limbah cair batik.',
+      metodologi: 'Kombinasi fisika-kimia penjernihan.',
+      output: 'Draf Desain IPAL.',
+      outcome: 'Air sungai kembali jernih.',
+      indikator: 'Kadar racun COD menurun.',
+      jadwal: 'Agustus - November 2026',
+      anggaran: 85000000,
+      penutup: 'Kajian ini adalah bentuk pendampingan UMKM batik.',
+    },
+    timeline: [
+      { status: 'DRAFT', label: 'Usulan Draf Masalah', date: '10 Jul 2026', actor: 'Dinas Perindustrian', isCompleted: true },
+      { status: 'SUBMITTED', label: 'Usulan KAK Diserahkan', date: '15 Jul 2026', actor: 'Dinas Perindustrian', isCompleted: true },
+      { status: 'ADMINISTRATIVE_REVIEW', label: 'Verifikasi Administrasi BRIDA', date: '20 Jul 2026', actor: 'Admin BRIDA', isCompleted: true },
+      { status: 'SUBSTANTIVE_REVIEW', label: 'Review Substansi & Scoring', date: '01 Agt 2026', actor: 'Tim Reviewer', isCompleted: true },
+      { status: 'SCORING', label: 'Nilai Review Disubmit', date: '14 Agt 2026', actor: 'Reviewer BRIDA', isCompleted: true },
+    ],
+    review: {
+      relevansi: 90,
+      urgensi: 88,
+      novelty: 80,
+      feasibility: 85,
+      impact: 92,
+      alignment: 90,
+      totalScore: 87.5,
+      recommendation: 'RECOMMENDED',
+      reviewerNotes: 'Kajian limbah batik sangat dibutuhkan untuk merawat lingkungan sekaligus melindungi kelangsungan UMKM daerah.',
+    },
+  },
+
+  // 13. PRP-2026-013 (APPROVED - In Review 7 - Waiting researcher assignment)
+  {
+    id: 'PRP-2026-013',
+    title: 'Model Layanan Pendidikan Anak Usia Dini Pedalaman Berbasis Komunitas',
+    opdName: 'Dinas Pendidikan',
+    status: 'APPROVED',
+    progress: 55,
+    createdAt: '2026-07-02T10:00:00.000Z',
+    updatedAt: '2026-08-05T09:00:00.000Z',
+    problem: {
+      judul: 'Rendahnya Partisipasi PAUD di Desa Terpencil Wilayah Pegunungan Kidul',
+      bidang: 'Kesehatan dan Kesejahteraan Sosial', // or Pendidikan
+      opd: 'Dinas Pendidikan',
+      latarBelakang: 'Lebih dari 60% anak usia 3-6 tahun di pegunungan Kidul tidak mengecap PAUD karena ketiadaan gedung sekolah dan guru.',
+      masalahUtama: 'Jarak geografis pemukiman yang terisolasi dan kurangnya kesadaran orang tua nelayan/petani akan pentingnya stimulasi otak anak.',
+      dampak: 'Rendahnya kesiapan anak memasuki SD dan peningkatan buta aksara dini.',
+      urgensi: 'Upaya meningkatkan skor IPM sektor pendidikan dasar kabupaten.',
+      targetPenyelesaian: 'Desember 2026',
+    },
+    research: {
+      judul: 'Kajian PAUD Keliling & Pendampingan Orang Tua Berbasis Posyandu',
+      tujuan: 'Menguji efisiensi model PAUD keliling (mobile) terintegrasi dengan pelayanan posyandu.',
+      pertanyaanPenelitian: '1. Bagaimana efisiensi biaya PAUD keliling dibanding membangun gedung PAUD?\n2. Bagaimana merancang modul ajar ramah orang tua pedalaman?',
+      ruangLingkup: 'Kawasan Pegunungan Kidul.',
+      outputDiharapkan: 'Pedoman operasional PAUD keliling, modul ajar berbasis kearifan lokal.',
+      outcomeDiharapkan: 'Peningkatan 50% partisipasi belajar PAUD di pedalaman.',
+      indikator: 'Jumlah kader PAUD pedalaman terlatih, tingkat literasi baca-tulis anak meningkat.',
+      estimasiWaktu: '3 Bulan',
+      estimasiAnggaran: 60000000,
+    },
+    kak: {
+      identitas: 'KAK PAUD Keliling Pedalaman',
+      latarBelakang: 'Kajian efisiensi model pembelajaran anak pedalaman.',
+      dasarPemikiran: 'UU Sisdiknas.',
+      maksudTujuan: 'Pedoman operasional pengadaan unit PAUD keliling APBD.',
+      ruangLingkup: 'Survei minat belajar anak pedalaman.',
+      metodologi: 'Kombinasi survei dan uji coba modul posyandu.',
+      output: 'Roadmap PAUD Keliling.',
+      outcome: 'Meningkatnya partisipasi pendidikan PAUD.',
+      indikator: 'Roadmap diimplementasikan Dinas.',
+      jadwal: 'September - November 2026',
+      anggaran: 60000000,
+      penutup: 'Studi ini didedikasikan untuk pemerataan akses pendidikan.',
+    },
+    timeline: [
+      { status: 'DRAFT', label: 'Usulan Draf Masalah', date: '01 Jul 2026', actor: 'Dinas Pendidikan', isCompleted: true },
+      { status: 'SUBMITTED', label: 'Usulan KAK Diserahkan', date: '02 Jul 2026', actor: 'Dinas Pendidikan', isCompleted: true },
+      { status: 'ADMINISTRATIVE_REVIEW', label: 'Verifikasi Administrasi BRIDA', date: '10 Jul 2026', actor: 'Admin BRIDA', isCompleted: true },
+      { status: 'SUBSTANTIVE_REVIEW', label: 'Review Substansi & Scoring', date: '25 Jul 2026', actor: 'Tim Reviewer', isCompleted: true },
+      { status: 'APPROVED', label: 'Seleksi Disetujui Kepala BRIDA', date: '05 Agt 2026', actor: 'Kepala BRIDA', isCompleted: true },
+    ],
+    review: {
+      relevansi: 88,
+      urgensi: 85,
+      novelty: 82,
+      feasibility: 80,
+      impact: 86,
+      alignment: 85,
+      totalScore: 84.3,
+      recommendation: 'RECOMMENDED',
+      reviewerNotes: 'Sangat cocok untuk daerah pedalaman pegunungan. KAK terarah dan anggaran rasional.',
+    },
+  },
+
+  // 14. PRP-2026-014 (MONITORING - Active Project 3 - has reports pending)
+  {
+    id: 'PRP-2026-014',
+    title: 'Kajian Kelayakan Pembangkit Listrik Tenaga Biomassa Sampah Pertanian',
+    opdName: 'Dinas Pekerjaan Umum dan Penataan Ruang', // or ESDM
+    status: 'MONITORING',
+    progress: 80,
+    createdAt: '2026-06-01T08:00:00.000Z',
+    updatedAt: '2026-06-25T11:00:00.000Z',
+    problem: {
+      judul: 'Minimnya Pasokan Listrik Mandiri di Wilayah Pertanian Terpencil',
+      bidang: 'Transportasi dan Infrastruktur', // Biomassa
+      opd: 'Dinas Pekerjaan Umum',
+      latarBelakang: 'Petani kelapa sawit dan padi kesulitan pasokan energi untuk mesin penggilingan dan pompa irigasi pertanian.',
+      masalahUtama: 'Timbulan limbah sekam padi dan cangkang sawit melimpah tapi terbuang percuma tanpa diolah.',
+      dampak: 'Biaya solar industri pertanian tinggi, serta pembakaran sekam padi mencemari udara.',
+      urgensi: 'Kebutuhan transisi energi bersih pedesaan.',
+      targetPenyelesaian: 'September 2026',
+    },
+    research: {
+      judul: 'Studi Kelayakan Pembangkit Listrik Biomassa Skala Komunal',
+      tujuan: 'Menghitung potensi daya listrik dari limbah sekam padi.',
+      pertanyaanPenelitian: '1. Berapa megawatt daya biomassa yang dihasilkan?\n2. Bagaimana skema operasional turbin komunal?',
+      ruangLingkup: 'Kawasan Sentra Padi Argo Lestari.',
+      outputDiharapkan: 'Buku studi kelayakan teknis biomassa.',
+      outcomeDiharapkan: 'Kemandirian energi penggilingan padi desa.',
+      indikator: 'Terbangunnya 1 unit turbin percontohan.',
+      estimasiWaktu: '4 Bulan',
+      estimasiAnggaran: 110000000,
+    },
+    kak: {
+      identitas: 'KAK Studi Kelayakan Biomassa Desa',
+      latarBelakang: 'Studi potensi transisi energi biomassa pertanian.',
+      dasarPemikiran: 'UU Energi Nasional.',
+      maksudTujuan: 'Mengarahkan pengadaan turbin komunal.',
+      ruangLingkup: 'Analisis timbulan sekam padi.',
+      metodologi: 'Kuantitatif kalorimetri.',
+      output: 'Buku Feasibility Study Biomassa.',
+      outcome: 'Kemandirian listrik kelompok tani.',
+      indikator: 'Turbin beroperasi normal.',
+      jadwal: 'Juni - September 2026',
+      anggaran: 110000000,
+      penutup: 'Studi kelayakan transisi energi pedesaan.',
+    },
+    timeline: [
+      { status: 'DRAFT', label: 'Usulan Draf Masalah', date: '01 Jun 2026', actor: 'Dinas PU', isCompleted: true },
+      { status: 'SUBMITTED', label: 'Usulan KAK Diserahkan', date: '03 Jun 2026', actor: 'Dinas PU', isCompleted: true },
+      { status: 'APPROVED', label: 'Disetujui Kepala BRIDA', date: '10 Jun 2026', actor: 'Kepala BRIDA', isCompleted: true },
+      { status: 'IN_PROGRESS', label: 'Kajian Berjalan', date: '15 Jun 2026', actor: 'Prof. Anton Wibowo (ITB)', isCompleted: true },
+    ],
     researcherId: 'usr-004',
-    researcherName: 'Pusat Studi Lingkungan IPB',
+    researcherName: 'Prof. Dr. Anton Wibowo',
+    issues: [
+      { id: 'iss-014-1', description: 'Sampel jerami padi basah terendam hujan sehingga menghambat uji kalori.', severity: 'LOW', status: 'RESOLVED', dateReported: '2026-07-05' }
+    ],
+    risks: [
+      { id: 'rsk-014-1', description: 'Kurangnya minat petani memilah limbah kering.', mitigation: 'Mengadakan sosialisasi pengumpulan insentif pupuk.', riskLevel: 'MEDIUM' }
+    ]
+  },
+
+  // 15. PRP-2026-015 (MONITORING - Active Project 4 - Under Monitoring)
+  {
+    id: 'PRP-2026-015',
+    title: 'Model Digitalisasi Pelayanan Rekam Medis Terintegrasi Puskesmas Daerah',
+    opdName: 'Dinas Kesehatan',
+    status: 'MONITORING',
+    progress: 70,
+    createdAt: '2026-05-15T08:00:00.000Z',
+    updatedAt: '2026-05-28T10:00:00.000Z',
+    problem: {
+      judul: 'Keterlambatan Penanganan Pasien Akibat Rekam Medis Manual',
+      bidang: 'Kesehatan dan Kesejahteraan Sosial',
+      opd: 'Dinas Kesehatan',
+      latarBelakang: 'Puskesmas masih menulis riwayat sakit pasien di kertas, memperlambat rujukan darurat ke RSUD.',
+      masalahUtama: 'Belum adanya sinkronisasi rekam medis antar puskesmas dan penumpukan map pasien di loket.',
+      dampak: 'Risiko salah diagnosa karena rekam medis lama hilang dan antrean pasien membeludak.',
+      urgensi: 'Instruksi Kemenkes tentang digitalisasi rekam medis puskesmas (SatuSehat).',
+      targetPenyelesaian: 'Oktober 2026',
+    },
+    research: {
+      judul: 'Kajian Integrasi Sistem Informasi Puskesmas Pintar',
+      tujuan: 'Menganalisis arsitektur data rekam medis puskesmas.',
+      pertanyaanPenelitian: '1. Bagaimana skema keamanan data pasien digital?\n2. Bagaimana melatih staf puskesmas yang gagap teknologi?',
+      ruangLingkup: '15 Puskesmas Rawat Inap Daerah.',
+      outputDiharapkan: 'Spesifikasi software rekam medis terpadu.',
+      outcomeDiharapkan: 'Antrean loket puskesmas berkurang dari 30 menit menjadi < 5 menit.',
+      indikator: 'Konektivitas rekam medis puskesmas 100%.',
+      estimasiWaktu: '4 Bulan',
+      estimasiAnggaran: 90000000,
+    },
+    kak: {
+      identitas: 'KAK Integrasi Puskesmas Pintar',
+      latarBelakang: 'Perencanaan transisi rekam medis elektronik.',
+      dasarPemikiran: 'Permenkes Rekam Medis Elektronik.',
+      maksudTujuan: 'Dasar spesifikasi pengadaan sistem digital Dinkes.',
+      ruangLingkup: 'Survei sarana komputer puskesmas.',
+      metodologi: 'System development life cycle analysis.',
+      output: 'Buku Rekomendasi Arsitektur IT.',
+      outcome: 'Pelayanan puskesmas cepat terintegrasi.',
+      indikator: 'Sistem disetujui Dinkes.',
+      jadwal: 'Juni - September 2026',
+      anggaran: 90000000,
+      penutup: 'Studi rekam medis elektronik.',
+    },
+    timeline: [
+      { status: 'DRAFT', label: 'Usulan Draf Masalah', date: '10 Mei 2026', actor: 'Dinas Kesehatan', isCompleted: true },
+      { status: 'SUBMITTED', label: 'Usulan KAK Diserahkan', date: '15 Mei 2026', actor: 'Dinas Kesehatan', isCompleted: true },
+      { status: 'APPROVED', label: 'Disetujui Kepala BRIDA', date: '22 Mei 2026', actor: 'Kepala BRIDA', isCompleted: true },
+      { status: 'IN_PROGRESS', label: 'Kajian Berjalan', date: '28 Mei 2026', actor: 'Dr. Budi Utomo (Unair)', isCompleted: true },
+    ],
+    researcherId: 'usr-009',
+    researcherName: 'Dr. Budi Utomo, M.PH.',
+    issues: [
+      { id: 'iss-15-1', description: 'Beberapa komputer puskesmas terpencil terinfeksi malware sistem.', severity: 'HIGH', status: 'OPEN', dateReported: '2026-07-20' }
+    ],
+    risks: [
+      { id: 'rsk-15-1', description: 'Kebocoran data pasien jika server daerah diretas.', mitigation: 'Menggunakan enkripsi AES-256 dan firewall BRIDA.', riskLevel: 'HIGH' }
+    ]
+  },
+
+  // 16. PRP-2026-016 (IN_PROGRESS - Active Project 5 - Under Execution)
+  {
+    id: 'PRP-2026-016',
+    title: 'Kajian Pemberdayaan Ekonomi Masyarakat Miskin Ekstrem Pedesaan',
+    opdName: 'Dinas Sosial',
+    status: 'IN_PROGRESS',
+    progress: 35,
+    createdAt: '2026-06-10T10:00:00.000Z',
+    updatedAt: '2026-06-28T15:00:00.000Z',
+    problem: {
+      judul: 'Tingginya Angka Kemiskinan Ekstrem di 3 Desa Terpencil Pegunungan',
+      bidang: 'Kesehatan dan Kesejahteraan Sosial',
+      opd: 'Dinas Sosial',
+      latarBelakang: 'Sebanyak 340 keluarga hidup di bawah garis kemiskinan ekstrem dengan penghasilan < Rp 350.000 per bulan.',
+      masalahUtama: 'Ketiadaan keterampilan wirausaha, lahan pertanian gersang, dan tidak adanya akses modal pinjaman mikro.',
+      dampak: 'Tingginya urbanisasi pemuda desa dan rendahnya asupan nutrisi anak sekolah.',
+      urgensi: 'Program penanggulangan kemiskinan ekstrem nasional target zero persen tahun depan.',
+      targetPenyelesaian: 'November 2026',
+    },
+    research: {
+      judul: 'Studi Model Kelompok Usaha Bersama (KUBE) Kerajinan Tangan',
+      tujuan: 'Merancang model pelatihan usaha berbasis kerajinan bambu lokal.',
+      pertanyaanPenelitian: '1. Bagaimana model pemasaran online produk bambu?\n2. Bagaimana membentuk koperasi simpan pinjam desa?',
+      ruangLingkup: 'Desa Argosari, Argomulyo, dan Argopeni.',
+      outputDiharapkan: 'Roadmap pengembangan KUBE, draf pembentukan koperasi desa.',
+      outcomeDiharapkan: 'Kenaikan 50% pendapatan warga sasaran dalam 6 bulan.',
+      indikator: 'Berdirinya Koperasi KUBE Mandiri, jumlah warga teredukasi.',
+      estimasiWaktu: '4 Bulan',
+      estimasiAnggaran: 70000000,
+    },
+    kak: {
+      identitas: 'KAK Model KUBE Kemiskinan',
+      latarBelakang: 'Studi model pengentasan kemiskinan berbasis kerajinan.',
+      dasarPemikiran: 'UU Penanganan Fakir Miskin.',
+      maksudTujuan: 'Mengarahkan penyaluran dana bantuan modal KUBE.',
+      ruangLingkup: 'Survei aset bambu desa, FGD warga.',
+      metodologi: 'Participatory rural appraisal.',
+      output: 'Roadmap KUBE Kerajinan.',
+      outcome: 'Koperasi pengrajin bambu terbentuk.',
+      indikator: 'Masyarakat miskin mandiri wirausaha.',
+      jadwal: 'Juli - Oktober 2026',
+      anggaran: 70000000,
+      penutup: 'Studi pengentasan kemiskinan ekstrem.',
+    },
+    timeline: [
+      { status: 'DRAFT', label: 'Usulan Draf Masalah', date: '05 Jun 2026', actor: 'Dinas Sosial', isCompleted: true },
+      { status: 'SUBMITTED', label: 'Usulan KAK Diserahkan', date: '10 Jun 2026', actor: 'Dinas Sosial', isCompleted: true },
+      { status: 'APPROVED', label: 'Disetujui Kepala BRIDA', date: '20 Jun 2026', actor: 'Kepala BRIDA', isCompleted: true },
+      { status: 'IN_PROGRESS', label: 'Kajian Berjalan', date: '28 Jun 2026', actor: 'Dr. Rian Nugroho (UI)', isCompleted: true },
+    ],
+    researcherId: 'usr-005',
+    researcherName: 'Dr. Rian Nugroho',
+    issues: [
+      { id: 'iss-16-1', description: 'Beberapa warga lansia buta huruf kesulitan mengikuti modul materi koperasi.', severity: 'LOW', status: 'OPEN', dateReported: '2026-07-15' }
+    ],
+    risks: [
+      { id: 'rsk-16-1', description: 'Pemasaran produk kerajinan kalah saing dengan barang plastik.', mitigation: 'Desain inovatif bambu dikombinasi kulit sintetis.', riskLevel: 'MEDIUM' }
+    ]
+  },
+
+  // 17. PRP-2026-017 (SUBMITTED - In Review 8)
+  {
+    id: 'PRP-2026-017',
+    title: 'Kajian Pendirian Sentra Pengolahan Pupuk Kandang Mandiri',
+    opdName: 'Dinas Pertanian',
+    status: 'SUBMITTED',
+    progress: 10,
+    createdAt: '2026-08-17T14:00:00.000Z',
+    updatedAt: '2026-08-17T14:00:00.000Z',
+    problem: {
+      judul: 'Tumpukan Limbah Kotoran Sapi Peternakan Yang Mencemari Sungai',
+      bidang: 'Pertanian dan Ketahanan Pangan',
+      opd: 'Dinas Pertanian',
+      latarBelakang: 'Kawasan sentra susu sapi menghasilkan 15 ton kotoran ternak per hari yang dibuang begitu saja di parit air warga.',
+      masalahUtama: 'Belum adanya rumah kompos penampung limbah kotoran sapi dan rendahnya teknologi fermentasi.',
+      dampak: 'Pencemaran air parit desa dan polusi udara bau tak sedap.',
+      urgensi: 'Bupati mencanangkan program bantuan komposter peternakan terintegrasi.',
+      targetPenyelesaian: 'April 2027',
+    },
+    timeline: [
+      { status: 'DRAFT', label: 'Usulan Draf Masalah', date: '15 Agt 2026', actor: 'Dinas Pertanian', isCompleted: true },
+      { status: 'SUBMITTED', label: 'Usulan KAK Diserahkan', date: '17 Agt 2026', actor: 'Dinas Pertanian', isCompleted: true },
+    ],
   },
 ];
 
@@ -372,7 +843,7 @@ export const INITIAL_FOLLOW_UPS: FollowUp[] = [
     id: 'FT-2026-001',
     proposalId: 'PRP-2026-007',
     title: 'Kajian Sistem Drainase dan Pencegahan Genangan Air Perkotaan',
-    opdName: 'Bappeda Litbang Daerah', // or PU
+    opdName: 'Bappeda Litbang Daerah',
     recommendationText: 'Melakukan normalisasi gorong-gorong di sepanjang Jalan Sudirman sepanjang 1.2 KM dan membuat 2 sodetan air menuju Sungai Progo.',
     status: 'COMPLETED',
     progress: 100,
@@ -406,7 +877,7 @@ export const INITIAL_FOLLOW_UPS: FollowUp[] = [
     id: 'FT-2026-002',
     proposalId: 'PRP-2026-008',
     title: 'Kajian Sistem Pengolahan Sampah Pasar Tradisional Menjadi Bahan Kompos Organik',
-    opdName: 'Bappeda Litbang Daerah', // or DLH
+    opdName: 'Bappeda Litbang Daerah',
     recommendationText: 'Melakukan pengadaan 2 unit Mesin Pencacah Sampah Organik kapasitas 5 ton/hari dan hanggar komposter komunal di Pasar Raya.',
     status: 'IN_PROGRESS',
     progress: 45,
@@ -431,9 +902,9 @@ export const INITIAL_FOLLOW_UPS: FollowUp[] = [
   },
   {
     id: 'FT-2026-003',
-    proposalId: 'PRP-2026-008', // or other pending
+    proposalId: 'PRP-2026-008',
     title: 'Kajian Kebijakan Gizi Penanganan Stunting Terintegrasi Pesisir',
-    opdName: 'Bappeda Litbang Daerah', // or Dinkes
+    opdName: 'Bappeda Litbang Daerah',
     recommendationText: 'Melakukan penyuluhan gizi nelayan keliling dan perbaikan sistem sanitasi air bersih (wastafel komunal) di 4 desa pesisir.',
     status: 'PENDING',
     progress: 0,

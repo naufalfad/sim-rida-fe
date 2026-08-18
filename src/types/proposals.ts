@@ -48,6 +48,13 @@ export interface TimelineLog {
   isCompleted: boolean;
 }
 
+export interface ApprovalHistoryLog {
+  actor: string;
+  date: string;
+  action: 'APPROVE' | 'REJECT' | 'RETURN';
+  comment: string;
+}
+
 export interface Proposal {
   id: string;
   title: string;
@@ -62,6 +69,13 @@ export interface Proposal {
   timeline: TimelineLog[];
   researcherId?: string;
   researcherName?: string;
+  // BRIDA operational fields
+  verificationChecklist?: import('./brida').VerificationChecklist;
+  review?: import('./brida').SubstantiveReview;
+  issues?: import('./brida').ProjectIssue[];
+  risks?: import('./brida').ProjectRisk[];
+  reportReview?: import('./brida').ReportReview;
+  approvalHistory?: ApprovalHistoryLog[];
 }
 
 export interface FollowUpLog {
