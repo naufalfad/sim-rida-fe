@@ -131,8 +131,12 @@ export default function BridaLaporanDetailPage() {
               <div className="flex items-center gap-2">
                 <FileCheck className="h-5 w-5 text-emerald-500" />
                 <div>
-                  <p className="font-bold text-slate-800 dark:text-slate-200">final_report_{proposal.id.toLowerCase()}.pdf</p>
-                  <p className="text-[10px] text-slate-500">Naskah Kajian Akhir Komprehensif (3.4 MB)</p>
+                  <p className="font-bold text-slate-800 dark:text-slate-200">
+                    {proposal.finalReport ? proposal.finalReport.attachments?.[0]?.name || 'final_report_custom.pdf' : `final_report_${proposal.id.toLowerCase()}.pdf`}
+                  </p>
+                  <p className="text-[10px] text-slate-500">
+                    Naskah Kajian Akhir Komprehensif ({proposal.finalReport ? proposal.finalReport.attachments?.[0]?.size || '3.5 MB' : '3.4 MB'})
+                  </p>
                 </div>
               </div>
               <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-slate-450 hover:text-emerald-600 rounded-full">
@@ -153,6 +157,36 @@ export default function BridaLaporanDetailPage() {
               </Button>
             </div>
           </Card>
+
+          {/* Dynamic Final Report text summaries from researcher upload */}
+          {proposal.finalReport && (
+            <Card className="bg-white dark:bg-slate-900 border-slate-200/80 shadow-sm p-6 space-y-4">
+              <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider border-b pb-2 dark:border-slate-850">
+                Isi Naskah Utama Laporan Akhir Peneliti
+              </h3>
+              <div className="space-y-4 text-xs">
+                <div>
+                  <span className="font-bold text-slate-500 uppercase text-[9px] block">Ringkasan Eksekutif (Executive Summary)</span>
+                  <p className="text-slate-800 dark:text-slate-200 mt-1 leading-relaxed whitespace-pre-line">{proposal.finalReport.executiveSummary}</p>
+                </div>
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <div className="p-3 border rounded-lg bg-slate-50/20 dark:bg-slate-955">
+                    <span className="font-bold text-slate-500 uppercase text-[9px] block">Metodologi Kajian</span>
+                    <p className="text-slate-800 dark:text-slate-200 mt-1 leading-relaxed whitespace-pre-line">{proposal.finalReport.methodology}</p>
+                  </div>
+                  <div className="p-3 border rounded-lg bg-slate-50/20 dark:bg-slate-955">
+                    <span className="font-bold text-slate-500 uppercase text-[9px] block">Temuan Utama Riset</span>
+                    <p className="text-slate-800 dark:text-slate-200 mt-1 leading-relaxed whitespace-pre-line">{proposal.finalReport.findings}</p>
+                  </div>
+                </div>
+                <div className="p-3 border rounded-lg bg-emerald-50/10 dark:bg-emerald-950/10 border-emerald-100 dark:border-emerald-950">
+                  <span className="font-bold text-emerald-600 dark:text-emerald-450 uppercase text-[9px] block">Rekomendasi Kebijakan yang Diajukan</span>
+                  <p className="text-slate-850 dark:text-slate-200 mt-1 leading-relaxed font-semibold italic">&ldquo;{proposal.finalReport.recommendation}&rdquo;</p>
+                  <p className="text-slate-655 dark:text-slate-400 text-3xs mt-2">Kesimpulan: {proposal.finalReport.conclusion}</p>
+                </div>
+              </div>
+            </Card>
+          )}
 
           {/* Research Objectives vs Deliverables */}
           <Card className="bg-white dark:bg-slate-900 border-slate-200/80 shadow-sm p-6 space-y-4">

@@ -114,6 +114,17 @@ export const INITIAL_PROPOSALS: Proposal[] = [
     ],
     risks: [
       { id: 'rsk-001', description: 'Fluktuasi harga baterai bus impor.', mitigation: 'Menggunakan opsi kontrak jangka panjang harga terkunci.', riskLevel: 'HIGH' }
+    ],
+    milestones: [
+      { id: 'm-1', label: 'Preparation & Permitting', progress: 100, notes: 'Izin survei dan koordinasi Dishub selesai.', updatedAt: '2026-08-08' },
+      { id: 'm-2', label: 'Data Collection (Survei Lapangan)', progress: 80, notes: 'Pencacahan lalu lintas koridor utama selesai.', updatedAt: '2026-08-14' },
+      { id: 'm-3', label: 'Analysis & Kelayakan Finansial', progress: 50, notes: 'Simulasi NPV & BCR sedang dirumuskan.', updatedAt: '2026-08-18' },
+      { id: 'm-4', label: 'Draft Report', progress: 0 },
+      { id: 'm-5', label: 'Final Report', progress: 0 }
+    ],
+    documents: [
+      { id: 'doc-1', name: 'Proposal Riset Kelayakan Bus Listrik', type: 'PROPOSAL', fileName: 'Proposal_Riset_Bus_Listrik.pdf', fileSize: '2.8 MB', uploadedAt: '2026-08-08' },
+      { id: 'doc-2', name: 'Naskah Metodologi Analisis Transportasi', type: 'METHODOLOGY', fileName: 'Metodologi_Studi_Kelayakan.pdf', fileSize: '1.2 MB', uploadedAt: '2026-08-12' }
     ]
   },
 
@@ -689,6 +700,17 @@ export const INITIAL_PROPOSALS: Proposal[] = [
     ],
     risks: [
       { id: 'rsk-014-1', description: 'Kurangnya minat petani memilah limbah kering.', mitigation: 'Mengadakan sosialisasi pengumpulan insentif pupuk.', riskLevel: 'MEDIUM' }
+    ],
+    milestones: [
+      { id: 'm-1', label: 'Preparation & Permitting', progress: 100, notes: 'Studi literatur awal dan koordinasi dinas kelar.', updatedAt: '2026-06-20' },
+      { id: 'm-2', label: 'Data Collection (Survei Lapangan)', progress: 100, notes: 'Uji laboratorium kadar kalori limbah sekam selesai.', updatedAt: '2026-07-15' },
+      { id: 'm-3', label: 'Analysis & Kelayakan Finansial', progress: 80, notes: 'Draf kelayakan ekonomi PLTMh sekam dirampungkan.', updatedAt: '2026-08-10' },
+      { id: 'm-4', label: 'Draft Report', progress: 40, notes: 'Bab 1-3 draf naskah laporan tersusun.', updatedAt: '2026-08-18' },
+      { id: 'm-5', label: 'Final Report', progress: 0 }
+    ],
+    documents: [
+      { id: 'doc-1', name: 'Proposal Pemanfaatan Biomassa Sekam Padi', type: 'PROPOSAL', fileName: 'Proposal_Biomassa_Sekam.pdf', fileSize: '1.9 MB', uploadedAt: '2026-06-18' },
+      { id: 'doc-2', name: 'Laporan Progress Bulanan Kesatu', type: 'PROGRESS_REPORT', fileName: 'Laporan_Progress_M1_Biomassa.pdf', fileSize: '850 KB', uploadedAt: '2026-07-20' }
     ]
   },
 

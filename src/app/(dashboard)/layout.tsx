@@ -24,11 +24,16 @@ import {
   ShieldCheck,
   FolderLock,
   Award,
-  FileCheck
+  FileCheck,
+  AlertTriangle,
+  FileText,
+  RotateCcw,
+  UserCheck
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Dropdown, DropdownItem } from '@/components/ui/dropdown';
 import { authService } from '@/lib/api/auth';
+import { proposalService } from '@/lib/api/proposals';
 import { cn } from '@/lib/utils/cn';
 import { UserRole } from '@/constants/roles';
 import { User as AuthUser } from '@/types/auth';
@@ -57,6 +62,13 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const handleLogout = async () => {
     await authService.logout();
     router.push('/login');
+  };
+
+  const handleRoleSwitch = (role: UserRole, targetPath: string) => {
+    const switched = authService.switchRole(role);
+    if (switched) {
+      window.location.href = targetPath;
+    }
   };
 
   if (!currentUser) {
@@ -109,8 +121,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       case 'RESEARCHER':
         return [
           { name: 'Dashboard Peneliti', path: '/researcher/dashboard', icon: <LayoutDashboard className="h-5 w-5" /> },
-          { name: 'Proyek Riset', path: '/researcher/projects', icon: <ClipboardList className="h-5 w-5" /> },
-          { name: 'Kerangka Kerja (KAK)', path: '/researcher/kak', icon: <FileSpreadsheet className="h-5 w-5" /> },
+          { name: 'Proyek Riset', path: '/researcher/research', icon: <ClipboardList className="h-5 w-5" /> },
+          { name: 'Milestone Kerja', path: '/researcher/milestones', icon: <FileSpreadsheet className="h-5 w-5" /> },
+          { name: 'Monitoring Kendala', path: '/researcher/monitoring', icon: <AlertTriangle className="h-5 w-5" /> },
+          { name: 'File & Dokumen', path: '/researcher/documents', icon: <FileText className="h-5 w-5" /> },
           { name: 'Unggah Laporan', path: '/researcher/reports', icon: <FilePlus2 className="h-5 w-5" /> },
         ];
       default:
@@ -144,14 +158,53 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       id: 'profile-dept',
       label: currentUser.department || '-',
       disabled: true,
-      className: 'text-xs text-slate-500 dark:text-slate-450 pb-2',
+      className: 'text-xs text-slate-500 dark:text-slate-450 pb-2 border-b dark:border-slate-800',
+    },
+    {
+      id: 'switch-opd',
+      label: 'Beralih ke Demo OPD',
+      icon: <UserCheck className="h-4 w-4 text-blue-500" />,
+      onClick: () => handleRoleSwitch('OPD', '/opd/dashboard'),
+      className: 'text-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 py-1.5 text-[11px] font-semibold',
+    },
+    {
+      id: 'switch-brida',
+      label: 'Beralih ke Demo BRIDA',
+      icon: <UserCheck className="h-4 w-4 text-blue-500" />,
+      onClick: () => handleRoleSwitch('BRIDA', '/brida/dashboard'),
+      className: 'text-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 py-1.5 text-[11px] font-semibold',
+    },
+    {
+      id: 'switch-kepala',
+      label: 'Beralih ke Demo K. BRIDA',
+      icon: <UserCheck className="h-4 w-4 text-blue-500" />,
+      onClick: () => handleRoleSwitch('KEPALA_BRIDA', '/kepala-brida/dashboard'),
+      className: 'text-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 py-1.5 text-[11px] font-semibold',
+    },
+    {
+      id: 'switch-researcher',
+      label: 'Beralih ke Demo Peneliti',
+      icon: <UserCheck className="h-4 w-4 text-blue-500" />,
+      onClick: () => handleRoleSwitch('RESEARCHER', '/researcher/dashboard'),
+      className: 'text-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 py-1.5 text-[11px] font-semibold',
+    },
+    {
+      id: 'reset-demo',
+      label: 'Reset Seluruh Data Demo',
+      icon: <RotateCcw className="h-4 w-4 text-amber-500" />,
+      onClick: () => {
+        if (confirm('Apakah Anda yakin ingin mereset seluruh data simulasi ke kondisi awal?')) {
+          proposalService.resetDemoData();
+        }
+      },
+      className: 'text-amber-700 hover:bg-amber-50 border-t pt-2 mt-2 dark:hover:bg-amber-950/20 text-[11px] font-bold',
     },
     {
       id: 'logout',
       label: 'Keluar Aplikasi',
       icon: <LogOut className="h-4 w-4" />,
       onClick: handleLogout,
-      className: 'text-red-650 hover:bg-red-50 dark:hover:bg-red-950/20',
+      className: 'text-red-650 hover:bg-red-50 dark:hover:bg-red-950/20 border-t pt-2 mt-1',
     },
   ];
 

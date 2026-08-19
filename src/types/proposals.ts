@@ -55,6 +55,34 @@ export interface ApprovalHistoryLog {
   comment: string;
 }
 
+export interface ResearchMilestone {
+  id: string;
+  label: string;
+  progress: number;
+  notes?: string;
+  evidenceFile?: string;
+  updatedAt?: string;
+}
+
+export interface ProjectDocument {
+  id: string;
+  name: string;
+  type: 'PROPOSAL' | 'METHODOLOGY' | 'DATASET_METADATA' | 'PROGRESS_REPORT' | 'FINAL_REPORT';
+  fileName: string;
+  fileSize: string;
+  uploadedAt: string;
+}
+
+export interface FinalReport {
+  executiveSummary: string;
+  methodology: string;
+  findings: string;
+  conclusion: string;
+  recommendation: string;
+  attachments?: { name: string; size: string }[];
+  submittedAt: string;
+}
+
 export interface Proposal {
   id: string;
   title: string;
@@ -76,6 +104,36 @@ export interface Proposal {
   risks?: import('./brida').ProjectRisk[];
   reportReview?: import('./brida').ReportReview;
   approvalHistory?: ApprovalHistoryLog[];
+  milestones?: ResearchMilestone[];
+  documents?: ProjectDocument[];
+  finalReport?: FinalReport;
+  policyBrief?: PolicyBrief;
+  recommendation?: ResearchRecommendation;
+}
+
+export interface PolicyBrief {
+  policyIssue: string;
+  evidence: string;
+  researchFindings: string;
+  implication: string;
+  policyOptions: string;
+  preferredOption: string;
+  implementationConsideration: string;
+  status: 'DRAFT' | 'REVIEW' | 'REVISION' | 'APPROVED';
+  updatedAt: string;
+}
+
+export interface ResearchRecommendation {
+  recommendationTitle: string;
+  issue: string;
+  evidence: string;
+  recommendation: string;
+  responsibleOPD: string;
+  priority: 'LOW' | 'MEDIUM' | 'HIGH';
+  expectedImpact: string;
+  targetDate: string;
+  status: 'PENDING' | 'APPROVED' | 'RETURNED';
+  approvedAt?: string;
 }
 
 export interface FollowUpLog {
@@ -92,9 +150,11 @@ export interface FollowUp {
   title: string;
   opdName: string;
   recommendationText: string;
-  status: 'PENDING' | 'IN_PROGRESS' | 'COMPLETED';
+  status: 'PENDING' | 'ACCEPTED' | 'IN_PROGRESS' | 'COMPLETED' | 'OVERDUE';
   progress: number; // 0 to 100
   actionPlan?: string;
   targetDate?: string;
+  pic?: string;
+  evidenceFile?: string;
   logs: FollowUpLog[];
 }

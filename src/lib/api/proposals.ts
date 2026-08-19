@@ -620,12 +620,16 @@ export const proposalService = {
       if (action === 'APPROVE') {
         const hasFollowup = followUpsList.some((f) => f.proposalId === id);
         if (!hasFollowup) {
+          const recommendationTitle = existing.recommendation?.recommendationTitle || existing.title;
+          const responsibleOPD = existing.recommendation?.responsibleOPD || existing.opdName;
+          const recText = existing.recommendation?.recommendation || `Berdasarkan hasil kajian "${existing.title}", direkomendasikan kepada ${existing.opdName} untuk menindaklanjuti rencana aksi pembangunan terintegrasi.`;
+          
           const newF: FollowUp = {
             id: `FT-2026-00${followUpsList.length + 1}`,
             proposalId: id,
-            title: existing.title,
-            opdName: existing.opdName,
-            recommendationText: `Berdasarkan hasil kajian "${existing.title}", direkomendasikan kepada ${existing.opdName} untuk menindaklanjuti rencana aksi pembangunan terintegrasi.`,
+            title: recommendationTitle,
+            opdName: responsibleOPD,
+            recommendationText: recText,
             status: 'PENDING',
             progress: 0,
             logs: [],
@@ -648,6 +652,11 @@ export const proposalService = {
         progress: action === 'APPROVE' ? 100 : existing.progress,
         timeline: updatedTimeline,
         approvalHistory: [...(existing.approvalHistory || []), historyEntry],
+        recommendation: existing.recommendation ? {
+          ...existing.recommendation,
+          status: action === 'APPROVE' ? 'APPROVED' : 'RETURNED',
+          approvedAt: action === 'APPROVE' ? new Date().toISOString() : undefined,
+        } : undefined,
         updatedAt: new Date().toISOString(),
       };
 
@@ -836,6 +845,7 @@ export const proposalService = {
         progress,
         status: isCompleted ? 'COMPLETED' : 'IN_PROGRESS',
         logs: updatedLogs,
+        evidenceFile: evidenceFile || existing.evidenceFile,
       };
 
       list[idx] = updated;
@@ -843,5 +853,317 @@ export const proposalService = {
       return updated;
     }
     return null;
+  },
+
+  updateMilestoneProgress: async (proposalId: string, milestoneId: string, progress: number, notes?: string, evidenceFile?: string): Promise<Proposal | null> => {
+    await new Promise((resolve) => setTimeout(resolve, 300));
+    const list = getStorageItem<Proposal[]>(PROPOSALS_KEY, INITIAL_PROPOSALS);
+    const idx = list.findIndex((p) => p.id === proposalId);
+
+    if (idx !== -1) {
+      const existing = list[idx];
+      const todayStr = new Date().toLocaleDateString('en-CA');
+      
+      const updatedMilestones = (existing.milestones || []).map((m) => {
+        if (m.id === milestoneId) {
+          return {
+            ...m,
+            progress,
+            notes: notes || m.notes,
+            evidenceFile: evidenceFile || m.evidenceFile,
+            updatedAt: todayStr,
+          };
+        }
+        return m;
+      });
+
+      // Calculate total progress based on milestones average
+      const totalProgress = updatedMilestones.length > 0
+        ? Math.round(updatedMilestones.reduce((acc, m) => acc + m.progress, 0) / updatedMilestones.length)
+        : existing.progress;
+
+      const updated: Proposal = {
+        ...existing,
+        progress: Math.max(10, Math.min(90, totalProgress)), // Cap progress between 10% and 90% during active phase
+        milestones: updatedMilestones,
+        updatedAt: new Date().toISOString(),
+      };
+
+      list[idx] = updated;
+      setStorageItem(PROPOSALS_KEY, list);
+      return updated;
+    }
+    return null;
+  },
+
+  uploadProjectDocument: async (proposalId: string, type: import('@/types/proposals').ProjectDocument['type'], name: string, fileName: string, fileSize: string): Promise<Proposal | null> => {
+    await new Promise((resolve) => setTimeout(resolve, 300));
+    const list = getStorageItem<Proposal[]>(PROPOSALS_KEY, INITIAL_PROPOSALS);
+    const idx = list.findIndex((p) => p.id === proposalId);
+
+    if (idx !== -1) {
+      const existing = list[idx];
+      const todayStr = new Date().toLocaleDateString('en-CA');
+      
+      const newDoc: import('@/types/proposals').ProjectDocument = {
+        id: `doc-${Math.random().toString(36).substring(2, 9)}`,
+        name,
+        type,
+        fileName,
+        fileSize,
+        uploadedAt: todayStr,
+      };
+
+      const updated: Proposal = {
+        ...existing,
+        documents: [...(existing.documents || []), newDoc],
+        updatedAt: new Date().toISOString(),
+      };
+
+      list[idx] = updated;
+      setStorageItem(PROPOSALS_KEY, list);
+      return updated;
+    }
+    return null;
+  },
+
+  submitFinalReport: async (proposalId: string, reportData: Omit<import('@/types/proposals').FinalReport, 'submittedAt'>): Promise<Proposal | null> => {
+    await new Promise((resolve) => setTimeout(resolve, 500));
+    const list = getStorageItem<Proposal[]>(PROPOSALS_KEY, INITIAL_PROPOSALS);
+    const idx = list.findIndex((p) => p.id === proposalId);
+
+    if (idx !== -1) {
+      const existing = list[idx];
+      const todayStr = new Date().toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' });
+      const dateISO = new Date().toISOString();
+      const updatedTimeline = [...existing.timeline];
+
+      // Mark active steps completed
+      const activeStep = updatedTimeline.find((t) => t.status === 'IN_PROGRESS' || t.status === 'MONITORING');
+      if (activeStep) activeStep.isCompleted = true;
+
+      updatedTimeline.push({
+        status: 'REPORT_SUBMITTED',
+        label: 'Laporan Akhir Diserahkan Peneliti',
+        date: todayStr,
+        actor: existing.researcherName || 'Mitra Peneliti',
+        isCompleted: false, // BRIDA needs to verify it!
+      });
+
+      const finalReport: import('@/types/proposals').FinalReport = {
+        ...reportData,
+        submittedAt: dateISO,
+      };
+
+      // Automatically add final report to the documents list as well
+      const newDoc: import('@/types/proposals').ProjectDocument = {
+        id: `doc-final-${Math.random().toString(36).substring(2, 9)}`,
+        name: 'Laporan Akhir (Final Report)',
+        type: 'FINAL_REPORT',
+        fileName: reportData.attachments?.[0]?.name || 'Laporan_Akhir_Final.pdf',
+        fileSize: reportData.attachments?.[0]?.size || '3.5 MB',
+        uploadedAt: new Date().toLocaleDateString('en-CA'),
+      };
+
+      const updated: Proposal = {
+        ...existing,
+        status: 'REPORT_SUBMITTED',
+        progress: 90,
+        finalReport,
+        documents: [...(existing.documents || []), newDoc],
+        timeline: updatedTimeline,
+        updatedAt: dateISO,
+      };
+
+      list[idx] = updated;
+      setStorageItem(PROPOSALS_KEY, list);
+      return updated;
+    }
+    return null;
+  },
+
+  // Save or edit Policy Brief
+  savePolicyBrief: async (proposalId: string, briefData: Omit<import('@/types/proposals').PolicyBrief, 'updatedAt'>): Promise<Proposal | null> => {
+    await new Promise((resolve) => setTimeout(resolve, 300));
+    const list = getStorageItem<Proposal[]>(PROPOSALS_KEY, INITIAL_PROPOSALS);
+    const idx = list.findIndex((p) => p.id === proposalId);
+
+    if (idx !== -1) {
+      const existing = list[idx];
+      const todayStr = new Date().toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' });
+      const updatedTimeline = [...existing.timeline];
+
+      let nextStatus: WorkflowStatus = existing.status;
+      if (briefData.status === 'APPROVED') {
+        nextStatus = 'RECOMMENDATION_PENDING'; // Ready for recommendation
+        
+        // Add timeline node
+        const hasNode = updatedTimeline.some((t) => t.status === 'RECOMMENDATION_PENDING');
+        if (!hasNode) {
+          updatedTimeline.push({
+            status: 'RECOMMENDATION_PENDING',
+            label: 'Policy Brief Disahkan & Menunggu Rekomendasi',
+            date: todayStr,
+            actor: 'Admin BRIDA',
+            isCompleted: false
+          });
+        }
+      } else if (briefData.status === 'REVIEW') {
+        nextStatus = 'POLICY_BRIEF_REVIEW';
+      } else {
+        nextStatus = 'POLICY_BRIEF_DRAFT';
+      }
+
+      const policyBrief: import('@/types/proposals').PolicyBrief = {
+        ...briefData,
+        updatedAt: new Date().toISOString(),
+      };
+
+      const updated: Proposal = {
+        ...existing,
+        status: nextStatus,
+        policyBrief,
+        timeline: updatedTimeline,
+        updatedAt: new Date().toISOString(),
+      };
+
+      list[idx] = updated;
+      setStorageItem(PROPOSALS_KEY, list);
+      return updated;
+    }
+    return null;
+  },
+
+  // Save Recommendation
+  saveRecommendation: async (proposalId: string, recData: Omit<import('@/types/proposals').ResearchRecommendation, 'status'>): Promise<Proposal | null> => {
+    await new Promise((resolve) => setTimeout(resolve, 300));
+    const list = getStorageItem<Proposal[]>(PROPOSALS_KEY, INITIAL_PROPOSALS);
+    const idx = list.findIndex((p) => p.id === proposalId);
+
+    if (idx !== -1) {
+      const existing = list[idx];
+      const todayStr = new Date().toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' });
+      const updatedTimeline = [...existing.timeline];
+
+      const recommendation: import('@/types/proposals').ResearchRecommendation = {
+        ...recData,
+        status: 'PENDING',
+      };
+
+      const hasNode = updatedTimeline.some((t) => t.status === 'RECOMMENDATION_PENDING' && t.isCompleted);
+      const pendingNode = updatedTimeline.find((t) => t.status === 'RECOMMENDATION_PENDING');
+      if (pendingNode) {
+        pendingNode.label = 'Rekomendasi Kebijakan Diajukan ke Bupati';
+        pendingNode.actor = 'Admin BRIDA';
+      }
+
+      const updated: Proposal = {
+        ...existing,
+        status: 'RECOMMENDATION_PENDING',
+        recommendation,
+        timeline: updatedTimeline,
+        updatedAt: new Date().toISOString(),
+      };
+
+      list[idx] = updated;
+      setStorageItem(PROPOSALS_KEY, list);
+      return updated;
+    }
+    return null;
+  },
+
+  // OPD: Accept recommendation
+  acceptFollowUp: async (followUpId: string, pic: string): Promise<FollowUp | null> => {
+    await new Promise((resolve) => setTimeout(resolve, 300));
+    const list = getStorageItem<FollowUp[]>(FOLLOW_UPS_KEY, INITIAL_FOLLOW_UPS);
+    const idx = list.findIndex((f) => f.id === followUpId);
+
+    if (idx !== -1) {
+      const existing = list[idx];
+      const logId = `log-${Math.random().toString(36).substring(2, 9)}`;
+      const newLog: FollowUpLog = {
+        id: logId,
+        date: new Date().toLocaleDateString('en-CA'),
+        description: `Rekomendasi diterima oleh OPD pelaksana. PIC ditugaskan: ${pic}.`,
+        progress: 0,
+      };
+
+      const updated: FollowUp = {
+        ...existing,
+        status: 'ACCEPTED',
+        pic,
+        logs: [...existing.logs, newLog],
+      };
+
+      list[idx] = updated;
+      setStorageItem(FOLLOW_UPS_KEY, list);
+      return updated;
+    }
+    return null;
+  },
+
+  // OPD: Submit Action Plan
+  submitFollowUpActionPlan: async (followUpId: string, actionPlan: string, targetDate: string, pic: string): Promise<FollowUp | null> => {
+    await new Promise((resolve) => setTimeout(resolve, 400));
+    const list = getStorageItem<FollowUp[]>(FOLLOW_UPS_KEY, INITIAL_FOLLOW_UPS);
+    const idx = list.findIndex((f) => f.id === followUpId);
+
+    if (idx !== -1) {
+      const existing = list[idx];
+      const logId = `log-${Math.random().toString(36).substring(2, 9)}`;
+      const newLog: FollowUpLog = {
+        id: logId,
+        date: new Date().toLocaleDateString('en-CA'),
+        description: `Rencana Aksi disahkan: "${actionPlan}". Target penyelesaian: ${targetDate}.`,
+        progress: 10,
+      };
+
+      const updated: FollowUp = {
+        ...existing,
+        status: 'IN_PROGRESS',
+        actionPlan,
+        targetDate,
+        pic: pic || existing.pic,
+        progress: 10,
+        logs: [...existing.logs, newLog],
+      };
+
+      list[idx] = updated;
+      setStorageItem(FOLLOW_UPS_KEY, list);
+      
+      // Also update the proposal's timeline and status to FOLLOW_UP_IN_PROGRESS!
+      const pList = getStorageItem<Proposal[]>(PROPOSALS_KEY, INITIAL_PROPOSALS);
+      const pIdx = pList.findIndex((p) => p.id === existing.proposalId);
+      if (pIdx !== -1) {
+        const prop = pList[pIdx];
+        const updatedTimeline = [...prop.timeline];
+        updatedTimeline.push({
+          status: 'FOLLOW_UP_IN_PROGRESS',
+          label: 'Tindak Lanjut OPD Mulai Berjalan',
+          date: new Date().toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' }),
+          actor: existing.opdName,
+          isCompleted: false,
+        });
+        
+        pList[pIdx] = {
+          ...prop,
+          status: 'FOLLOW_UP_IN_PROGRESS',
+          timeline: updatedTimeline,
+          updatedAt: new Date().toISOString(),
+        };
+        setStorageItem(PROPOSALS_KEY, pList);
+      }
+
+      return updated;
+    }
+    return null;
+  },
+
+  resetDemoData: (): void => {
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem(PROPOSALS_KEY);
+      localStorage.removeItem(FOLLOW_UPS_KEY);
+      window.location.reload();
+    }
   },
 };

@@ -27,10 +27,10 @@ export const MOCK_USERS: User[] = [
   },
   {
     id: 'usr-004',
-    name: 'Dr. Rian Nugroho (Tim UI)',
+    name: 'Prof. Dr. Anton Wibowo (Tim ITB)',
     username: 'peneliti',
     role: 'RESEARCHER',
-    department: 'Pusat Studi Kebijakan Publik',
-    email: 'rian.nugroho@ui.ac.id',
+    department: 'Institut Teknologi Bandung (ITB)',
+    email: 'anton.wibowo@itb.ac.id',
   },
 ];

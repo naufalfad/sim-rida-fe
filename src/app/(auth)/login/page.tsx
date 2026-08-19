@@ -54,10 +54,18 @@ export default function LoginPage() {
     }
   };
 
-  const profileOptions = MOCK_USERS.map((user) => ({
-    value: user.id,
-    label: `${user.name} (${user.role})`,
-  }));
+  const profileOptions = MOCK_USERS.map((user) => {
+    let roleLabel = '';
+    if (user.role === 'OPD') roleLabel = 'Demo OPD';
+    else if (user.role === 'BRIDA') roleLabel = 'Demo BRIDA';
+    else if (user.role === 'KEPALA_BRIDA') roleLabel = 'Demo Kepala BRIDA';
+    else if (user.role === 'RESEARCHER') roleLabel = 'Demo Peneliti';
+
+    return {
+      value: user.id,
+      label: `${roleLabel} - ${user.name}`,
+    };
+  });
 
   return (
     <div className="relative min-h-screen flex items-center justify-center bg-slate-900 overflow-hidden font-sans">
@@ -147,7 +155,7 @@ export default function LoginPage() {
         {/* Footer info */}
         <p className="text-center text-xs text-slate-500 mt-6 flex items-center justify-center gap-1">
           <HelpCircle className="h-3.5 w-3.5" />
-          <span>Fase 1: Framework Fondasi & Reusable UI</span>
+          <span>Fase 7: Full End-to-End Demo & Final Polish</span>
         </p>
       </div>
     </div>

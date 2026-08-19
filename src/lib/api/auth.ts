@@ -44,4 +44,13 @@ export const authService = {
   isAuthenticated: (): boolean => {
     return authService.getCurrentUser() !== null;
   },
+
+  switchRole: (role: UserRole): User | null => {
+    const user = MOCK_USERS.find((u) => u.role === role);
+    if (user && typeof window !== 'undefined') {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(user));
+      return user;
+    }
+    return null;
+  },
 };

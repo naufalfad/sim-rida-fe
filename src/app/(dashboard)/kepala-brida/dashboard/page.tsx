@@ -262,7 +262,106 @@ export default function KepalaBridaDashboard() {
         </div>
       </div>
 
-      {/* Row 3: Strategic Visuals (Charts) */}
+      {/* Executive Monitoring Pipeline */}
+      <Card className="bg-white dark:bg-slate-900 border-slate-200/80 shadow-sm p-6 space-y-4">
+        <div className="flex justify-between items-center border-b pb-3 dark:border-slate-850">
+          <div>
+            <h3 className="text-sm font-bold text-slate-800 dark:text-slate-200">
+              Pipeline Pemantauan Rencana Aksi Eksekutif
+            </h3>
+            <p className="text-3xs text-slate-500 mt-0.5">
+              Alur status penyelesaian tindak lanjut rekomendasi Bupati (REC) secara real-time oleh dinas/OPD pelaksana.
+            </p>
+          </div>
+          <span className="text-[10px] bg-blue-50 text-blue-750 px-2.5 py-1 rounded-full font-bold dark:bg-blue-950/20 dark:text-blue-400">
+            Completion Rate: {totalRecs > 0 ? Math.round((fuCompleted / totalRecs) * 100) : 0}%
+          </span>
+        </div>
+
+        {followUps.length === 0 ? (
+          <p className="text-xs text-slate-500 italic py-6 text-center">Belum ada rekomendasi aktif yang diterbitkan.</p>
+        ) : (
+          <div className="space-y-6 pt-2">
+            {followUps.map((fu) => {
+              const isOverdue = fu.status !== 'COMPLETED' && fu.targetDate && new Date(fu.targetDate).getTime() < new Date().getTime();
+              
+              return (
+                <div key={fu.id} className="p-4 border rounded-xl bg-slate-50/30 border-slate-200 dark:bg-slate-955 dark:border-slate-850 space-y-4">
+                  {/* Stepper progress representation */}
+                  <div className="grid gap-2 grid-cols-5 text-center text-[10px] text-slate-500 font-bold relative">
+                    
+                    {/* Step 1: Recommendation */}
+                    <div className="space-y-1 relative">
+                      <span className="h-6 w-6 rounded-full bg-teal-500 text-white flex items-center justify-between mx-auto font-mono text-[10px] font-bold">1</span>
+                      <p className="truncate max-w-[90px] mx-auto text-slate-800 dark:text-slate-205 mt-1 font-semibold">{fu.id}</p>
+                      <span className="text-[8px] text-slate-400 block font-normal">Rekomendasi Terbit</span>
+                    </div>
+
+                    {/* Step 2: OPD */}
+                    <div className="space-y-1 relative">
+                      <span className={`h-6 w-6 rounded-full flex items-center justify-between mx-auto font-mono text-[10px] font-bold ${
+                        ['ACCEPTED', 'IN_PROGRESS', 'COMPLETED'].includes(fu.status) ? 'bg-blue-500 text-white' : 'bg-slate-200 text-slate-450 dark:bg-slate-800'
+                      }`}>2</span>
+                      <p className="truncate max-w-[90px] mx-auto text-slate-800 dark:text-slate-205 mt-1 font-semibold">{fu.opdName.substring(0, 15)}...</p>
+                      <span className="text-[8px] text-slate-400 block font-normal">Diterima OPD</span>
+                    </div>
+
+                    {/* Step 3: Action Plan */}
+                    <div className="space-y-1 relative">
+                      <span className={`h-6 w-6 rounded-full flex items-center justify-between mx-auto font-mono text-[10px] font-bold ${
+                        ['IN_PROGRESS', 'COMPLETED'].includes(fu.status) ? 'bg-purple-500 text-white' : 'bg-slate-200 text-slate-450 dark:bg-slate-800'
+                      }`}>3</span>
+                      <p className="truncate max-w-[90px] mx-auto text-slate-800 dark:text-slate-205 mt-1 font-semibold">{fu.actionPlan ? 'Disahkan' : 'Draft'}</p>
+                      <span className="text-[8px] text-slate-400 block font-normal">Rencana Aksi</span>
+                    </div>
+
+                    {/* Step 4: Progress */}
+                    <div className="space-y-1 relative">
+                      <span className={`h-6 w-6 rounded-full flex items-center justify-between mx-auto font-mono text-[10px] font-bold ${
+                        fu.progress > 0 ? 'bg-cyan-500 text-white' : 'bg-slate-200 text-slate-450 dark:bg-slate-800'
+                      }`}>4</span>
+                      <p className="font-bold text-slate-800 dark:text-slate-205 mt-1">{fu.progress}%</p>
+                      <span className="text-[8px] text-slate-400 block font-normal">Realisasi Fisik</span>
+                    </div>
+
+                    {/* Step 5: Completion */}
+                    <div className="space-y-1 relative">
+                      <span className={`h-6 w-6 rounded-full flex items-center justify-between mx-auto font-mono text-[10px] font-bold ${
+                        fu.status === 'COMPLETED' ? 'bg-emerald-500 text-white animate-pulse' : isOverdue ? 'bg-red-500 text-white' : 'bg-slate-200 text-slate-450 dark:bg-slate-800'
+                      }`}>5</span>
+                      <p className="truncate max-w-[90px] mx-auto text-slate-800 dark:text-slate-205 mt-1 font-semibold">{fu.status === 'COMPLETED' ? 'Selesai' : isOverdue ? 'Terlambat' : 'Berjalan'}</p>
+                      <span className="text-[8px] text-slate-400 block font-normal">Status Akhir</span>
+                    </div>
+                  </div>
+
+                  {/* Descriptions details */}
+                  <div className="pt-3 border-t text-2xs text-slate-500 grid gap-4 md:grid-cols-2 dark:border-slate-850">
+                    <div>
+                      <span className="font-bold text-slate-400 uppercase text-[8px] block">Rekomendasi Kebijakan</span>
+                      <p className="text-slate-700 dark:text-slate-350 leading-relaxed italic mt-1">&ldquo;{fu.recommendationText}&rdquo;</p>
+                    </div>
+                    {fu.actionPlan ? (
+                      <div className="p-2.5 bg-white dark:bg-slate-950 rounded-lg border dark:border-slate-850">
+                        <span className="font-bold text-slate-400 uppercase text-[8px] block">Rencana Aksi OPD (PIC: {fu.pic || '-'})</span>
+                        <p className="text-slate-850 dark:text-slate-200 font-semibold mt-1">{fu.actionPlan}</p>
+                        {fu.targetDate && (
+                          <p className="text-3xs text-slate-400 mt-2 font-mono">Tenggat Selesai: {fu.targetDate}</p>
+                        )}
+                      </div>
+                    ) : (
+                      <div className="flex items-center justify-center p-3 bg-amber-50/20 text-amber-600 rounded-lg border border-amber-100/50">
+                        <span className="font-semibold text-3xs">⚠ Menunggu OPD menyusun dan mensahkan Rencana Aksi</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </Card>
+
+      {/* Row 4: Strategic Visuals (Charts) */}
       <div className="grid gap-6 md:grid-cols-2">
         {/* Research by Sector */}
         <Card className="bg-white dark:bg-slate-900 border-slate-200/80 p-6">
@@ -320,20 +419,28 @@ export default function KepalaBridaDashboard() {
           {/* Follow-up Performance */}
           <Card className="bg-white dark:bg-slate-900 border-slate-200/80 p-6">
             <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">
-              Kinerja Tindak Lanjut Rekomendasi OPD
+              Indikator Kinerja Utama (IKU) Tindak Lanjut
             </h3>
             
-            <div className="grid gap-4 grid-cols-2 text-center text-xs">
-              <div className="p-2 border rounded-lg bg-slate-50/50 dark:bg-slate-950/20 dark:border-slate-850">
-                <span className="text-[10px] text-slate-450 font-bold uppercase">Selesai Realisasi</span>
-                <p className="text-xl font-bold mt-1 text-emerald-650">{fuCompleted} / {totalRecs}</p>
+            <div className="grid gap-3 grid-cols-2 text-center text-xs">
+              <div className="p-2.5 border rounded-lg bg-slate-50/50 dark:bg-slate-950/20 dark:border-slate-850">
+                <span className="text-[9px] text-slate-500 font-bold uppercase block">Rekomendasi Terbit</span>
+                <p className="text-lg font-extrabold mt-1 text-blue-655 dark:text-blue-400">{totalRecs}</p>
               </div>
 
-              <div className="p-2 border rounded-lg bg-slate-50/50 dark:bg-slate-950/20 dark:border-slate-850">
-                <span className="text-[10px] text-slate-450 font-bold uppercase">Terlambat Tindak Lanjut</span>
-                <p className={`text-xl font-bold mt-1 ${fuOverdue > 0 ? 'text-red-600 animate-pulse font-extrabold' : 'text-slate-655'}`}>
-                  {fuOverdue}
-                </p>
+              <div className="p-2.5 border rounded-lg bg-slate-50/50 dark:bg-slate-950/20 dark:border-slate-850">
+                <span className="text-[9px] text-slate-500 font-bold uppercase block">Completion Rate</span>
+                <p className="text-lg font-extrabold mt-1 text-emerald-650">{totalRecs > 0 ? Math.round((fuCompleted / totalRecs) * 100) : 0}%</p>
+              </div>
+
+              <div className="p-2.5 border rounded-lg bg-slate-50/50 dark:bg-slate-950/20 dark:border-slate-850">
+                <span className="text-[9px] text-slate-500 font-bold uppercase block">Dalam Progress</span>
+                <p className="text-lg font-extrabold mt-1 text-sky-600 dark:text-sky-400">{fuInProgress}</p>
+              </div>
+
+              <div className="p-2.5 border rounded-lg bg-slate-50/50 dark:bg-slate-950/20 dark:border-slate-850">
+                <span className="text-[9px] text-slate-500 font-bold uppercase block">Terlambat (Overdue)</span>
+                <p className={`text-lg font-extrabold mt-1 ${fuOverdue > 0 ? 'text-red-655 animate-pulse font-extrabold' : 'text-slate-550'}`}>{fuOverdue}</p>
               </div>
             </div>
           </Card>

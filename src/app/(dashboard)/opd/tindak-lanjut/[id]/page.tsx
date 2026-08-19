@@ -38,7 +38,9 @@ export default function OpdTindakLanjutDetailPage() {
   // Form states for creating Action Plan
   const [actionPlanText, setActionPlanText] = useState('');
   const [targetDate, setTargetDate] = useState('');
+  const [pic, setPic] = useState('');
   const [isPlanSaving, setIsPlanSaving] = useState(false);
+  const [isAcceptSaving, setIsAcceptSaving] = useState(false);
 
   // Form states for reporting log progress
   const [isLogDialogOpen, setIsLogDialogOpen] = useState(false);
@@ -54,6 +56,7 @@ export default function OpdTindakLanjutDetailPage() {
         setFollowUp(data);
         setActionPlanText(data.actionPlan || '');
         setTargetDate(data.targetDate || '');
+        setPic(data.pic || '');
         setLogProgress(data.progress);
       }
     } catch (err) {
@@ -84,6 +87,27 @@ export default function OpdTindakLanjutDetailPage() {
     );
   }
 
+  // Handle accepting recommendation
+  const handleAcceptRecommendation = async () => {
+    if (!pic) {
+      toast('Mohon masukkan nama PIC penanggungjawab.', 'error');
+      return;
+    }
+
+    setIsAcceptSaving(true);
+    try {
+      const updated = await proposalService.acceptFollowUp(followUp.id, pic);
+      if (updated) {
+        setFollowUp(updated);
+        toast('Rekomendasi Bupati berhasil diterima! Silakan susun Rencana Aksi.', 'success');
+      }
+    } catch {
+      toast('Gagal menerima rekomendasi.', 'error');
+    } finally {
+      setIsAcceptSaving(false);
+    }
+  };
+
   // Handle action plan submission
   const handleSaveActionPlan = async () => {
     if (!actionPlanText || !targetDate) {
@@ -93,7 +117,12 @@ export default function OpdTindakLanjutDetailPage() {
 
     setIsPlanSaving(true);
     try {
-      const updated = await proposalService.updateFollowUp(followUp.id, actionPlanText, targetDate);
+      const updated = await proposalService.submitFollowUpActionPlan(
+        followUp.id,
+        actionPlanText,
+        targetDate,
+        pic
+      );
       if (updated) {
         setFollowUp(updated);
         toast('Rencana aksi tindak lanjut berhasil disahkan.', 'success');
@@ -206,9 +235,38 @@ export default function OpdTindakLanjutDetailPage() {
           {followUp.status === 'PENDING' ? (
             <Card className="bg-white dark:bg-slate-900 border-slate-200/80 shadow-sm p-6 space-y-4">
               <h3 className="text-sm font-bold text-slate-800 dark:text-slate-200">
+                Terima Rekomendasi Kebijakan
+              </h3>
+              <p className="text-xs text-slate-500">
+                Sebelum menyusun rencana aksi konkret, mohon terima rekomendasi bupati ini dan tunjuk PIC Penanggungjawab dari OPD Anda.
+              </p>
+              
+              <div>
+                <label className="text-3xs font-bold text-slate-455 uppercase block mb-1">Nama PIC Penanggungjawab</label>
+                <Input
+                  placeholder="Contoh: Ir. H. Ahmad Fauzi, M.T. (Kabid Litbang)"
+                  value={pic}
+                  onChange={(e) => setPic(e.target.value)}
+                />
+              </div>
+
+              <div className="border-t pt-4 flex justify-end dark:border-slate-850">
+                <Button onClick={handleAcceptRecommendation} isLoading={isAcceptSaving} className="bg-blue-650 hover:bg-blue-750">
+                  <CheckCircle className="h-4 w-4 mr-2" />
+                  <span>Terima & Tunjuk PIC</span>
+                </Button>
+              </div>
+            </Card>
+          ) : followUp.status === 'ACCEPTED' ? (
+            <Card className="bg-white dark:bg-slate-900 border-slate-200/80 shadow-sm p-6 space-y-4">
+              <h3 className="text-sm font-bold text-slate-800 dark:text-slate-200">
                 Susun Rencana Aksi Tindak Lanjut
               </h3>
               
+              <div className="p-3 border rounded-lg bg-slate-50/50 dark:bg-slate-950/20 text-xs">
+                <strong>PIC Terdaftar:</strong> {pic}
+              </div>
+
               <Textarea
                 label="Uraian Rencana Aksi (Action Plan)"
                 placeholder="Jelaskan langkah konkret fisik, anggaran, atau program regulasi yang akan dijalankan OPD Anda untuk merealisasikan rekomendasi di atas."
@@ -227,8 +285,8 @@ export default function OpdTindakLanjutDetailPage() {
               </div>
 
               <div className="border-t pt-4 flex justify-end dark:border-slate-850">
-                <Button onClick={handleSaveActionPlan} isLoading={isPlanSaving} className="bg-blue-650 hover:bg-blue-750">
-                  <FileCheck className="h-4 w-4 mr-2" />
+                <Button onClick={handleSaveActionPlan} isLoading={isPlanSaving} className="bg-blue-655 hover:bg-blue-755 text-white font-bold flex items-center gap-1.5">
+                  <FileCheck className="h-4 w-4" />
                   <span>Sahkan Rencana Aksi</span>
                 </Button>
               </div>
@@ -238,17 +296,23 @@ export default function OpdTindakLanjutDetailPage() {
               <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider">
                 Rencana Aksi OPD Yang Disepakati
               </h3>
-              <div className="p-3 border rounded-lg bg-slate-50/50 dark:bg-slate-950/20 dark:border-slate-800 space-y-3">
+              <div className="p-3 border rounded-lg bg-slate-50/50 dark:bg-slate-955 border-slate-200 text-xs space-y-3">
                 <div>
                   <p className="text-3xs font-bold text-slate-400 uppercase">Uraian Kegiatan</p>
-                  <p className="text-xs text-slate-800 dark:text-slate-200 font-semibold mt-1 leading-relaxed">
+                  <p className="text-xs text-slate-800 dark:text-slate-250 font-semibold mt-1 leading-relaxed">
                     {followUp.actionPlan}
                   </p>
                 </div>
-                <div className="flex justify-between items-center text-[10px] text-slate-500 font-semibold pt-2 border-t dark:border-slate-850">
-                  <div className="flex items-center gap-1">
-                    <Calendar className="h-3.5 w-3.5" />
-                    <span>Target Penyelesaian: {new Date(followUp.targetDate || '').toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' })}</span>
+                <div className="grid grid-cols-2 gap-4 pt-2 border-t dark:border-slate-850 text-2xs">
+                  <div>
+                    <span className="text-slate-400 font-bold block uppercase text-[8px]">PIC Pelaksana</span>
+                    <span className="text-slate-850 dark:text-slate-200 font-semibold block mt-0.5">{followUp.pic}</span>
+                  </div>
+                  <div>
+                    <span className="text-slate-400 font-bold block uppercase text-[8px]">Target Selesai</span>
+                    <span className="text-slate-855 dark:text-slate-205 font-semibold block mt-0.5">
+                      {followUp.targetDate ? new Date(followUp.targetDate).toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' }) : '-'}
+                    </span>
                   </div>
                 </div>
               </div>
