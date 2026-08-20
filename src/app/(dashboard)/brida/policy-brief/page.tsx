@@ -20,7 +20,7 @@ export default function BridaPolicyBriefPage() {
         const list = await proposalService.getProposals();
         // Show studies that are completed, or in policy brief draft/review states
         const allowedStates = [
-          'COMPLETED',
+          'OPD_REPORTED',
           'POLICY_BRIEF_DRAFT',
           'POLICY_BRIEF_REVIEW',
           'RECOMMENDATION_PENDING',
@@ -92,7 +92,7 @@ export default function BridaPolicyBriefPage() {
                     {item.title}
                   </CardTitle>
                   <CardDescription className="text-3xs mt-1">
-                    Mitra Pelaksana: {item.researcherName || 'Tidak diketahui'}
+                    OPD Pengusul: {item.opdName}
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4 pt-2">

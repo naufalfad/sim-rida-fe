@@ -52,7 +52,7 @@ export default function BridaPolicyBriefDetailPage() {
             // Auto-populate from researcher's final report findings if available
             setPolicyIssue(data.problem.masalahUtama || '');
             setEvidence(data.problem.latarBelakang || '');
-            setFindings(data.finalReport?.findings || '');
+            setFindings(data.opdReport?.findings || '');
             setImplConsideration(data.kak?.maksudTujuan || '');
           }
         }
@@ -254,8 +254,8 @@ export default function BridaPolicyBriefDetailPage() {
               Tim Riset Penulis
             </h3>
             <div className="space-y-1">
-              <p className="font-bold text-slate-800 dark:text-slate-200">{proposal.researcherName || 'Mitra Riset'}</p>
-              <p className="text-3xs text-slate-455">Pakar Mitra Utama BRIDA</p>
+              <p className="font-bold text-slate-800 dark:text-slate-200">{proposal.opdName}</p>
+              <p className="text-3xs text-slate-455">Pelaksana OPD</p>
             </div>
           </Card>
         </div>

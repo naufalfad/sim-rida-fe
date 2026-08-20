@@ -158,9 +158,9 @@ export default function OpdPenelitianDetailPage() {
               </div>
               <div>
                 <p className="font-bold text-slate-800 dark:text-slate-200">
-                  {proposal.researcherName || 'Belum Ditunjuk'}
+                  {proposal.eKatalogDesc || 'E-Katalog Belum Dipilih'}
                 </p>
-                <p className="text-3xs text-slate-500 mt-0.5">Peneliti Utama Daerah</p>
+                <p className="text-3xs text-slate-500 mt-0.5">Vendor / Solusi E-Katalog</p>
               </div>
             </div>
 
@@ -203,7 +203,7 @@ export default function OpdPenelitianDetailPage() {
                 <p className="text-slate-500 text-center py-4">Belum ada berkas luaran.</p>
               )}
 
-              {proposal.status === 'REPORT_SUBMITTED' || proposal.status === 'RECOMMENDATION_APPROVED' || proposal.status === 'COMPLETED' ? (
+              {['OPD_REPORTED', 'POLICY_BRIEF_DRAFT', 'POLICY_BRIEF_REVIEW', 'RECOMMENDATION_PENDING', 'RECOMMENDATION_APPROVED', 'FOLLOW_UP_PENDING', 'FOLLOW_UP_IN_PROGRESS', 'FOLLOW_UP_COMPLETED'].includes(proposal.status) ? (
                 <div className="flex items-center justify-between p-2.5 border rounded-lg bg-slate-50/50 dark:bg-slate-950/20 dark:border-slate-800">
                   <div className="flex items-center gap-2">
                     <FileCheck className="h-4 w-4 text-emerald-500" />

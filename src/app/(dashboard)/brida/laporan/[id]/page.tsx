@@ -2,25 +2,15 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
-import {
-  ArrowLeft,
-  Calendar,
-  CheckCircle,
-  FileCheck,
-  User,
-  Clock,
-  AlertTriangle,
-  Download,
-  AlertCircle,
-  FileText
-} from 'lucide-react';
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
+import { ArrowLeft, AlertTriangle, FileText, CheckCircle, XCircle } from 'lucide-react';
+import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/components/ui/toast';
 import { LoadingState } from '@/components/ui/loading-state';
-import { proposalService } from '@/lib/api/proposals';
+import { proposalService, proposalApi } from '@/lib/api/proposals';
 import { Proposal } from '@/types/proposals';
+import { STATUS_LABELS, STATUS_COLORS } from '@/constants/status';
 
 export default function BridaLaporanDetailPage() {
   const router = useRouter();
@@ -34,24 +24,13 @@ export default function BridaLaporanDetailPage() {
   const [isActionSaving, setIsActionSaving] = useState(false);
 
   useEffect(() => {
-    const loadDetails = async () => {
-      try {
-        const data = await proposalService.getProposalById(proposalId);
-        setProposal(data);
-        if (data && data.reportReview) {
-          setReviewNotes(data.reportReview.reviewerNotes);
-        }
-      } catch (err) {
-        console.error('Failed to load report details:', err);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    loadDetails();
+    const data = proposalApi.getProposalById(proposalId);
+    setProposal(data || null);
+    setIsLoading(false);
   }, [proposalId]);
 
   if (isLoading) {
-    return <LoadingState message="Memuat dokumen laporan akhir..." />;
+    return <LoadingState message="Memuat laporan OPD..." />;
   }
 
   if (!proposal) {
@@ -66,12 +45,11 @@ export default function BridaLaporanDetailPage() {
     );
   }
 
-  const handleAction = async (isApproved: boolean) => {
-    if (!reviewNotes) {
-      toast('Mohon berikan catatan tinjauan/rekomendasi evaluasi laporan.', 'error');
+  const handleApproveReport = async (isApproved: boolean) => {
+    if (!reviewNotes.trim()) {
+      toast('Mohon berikan catatan review terlebih dahulu.', 'error');
       return;
     }
-
     setIsActionSaving(true);
     try {
       const updated = await proposalService.submitLaporanReview(
@@ -79,25 +57,29 @@ export default function BridaLaporanDetailPage() {
         reviewNotes,
         isApproved ? 'APPROVED' : 'REVISION_REQUIRED'
       );
-
       if (updated) {
-        if (isApproved) {
-          toast(`Laporan akhir ${proposal.id} berhasil disahkan! Rekomendasi kajian telah diterbitkan ke OPD.`, 'success');
-        } else {
-          toast(`Permintaan revisi laporan akhir ${proposal.id} telah dikirim ke mitra peneliti.`, 'success');
-        }
+        toast(
+          isApproved
+            ? `Laporan OPD ${proposal.id} disahkan! Siap disusun Policy Brief.`
+            : `Permintaan perbaikan laporan dikirimkan ke ${proposal.opdName}.`,
+          isApproved ? 'success' : 'error'
+        );
         router.push('/brida/laporan');
       }
     } catch {
-      toast('Gagal memproses review laporan.', 'error');
+      toast('Gagal memproses keputusan laporan.', 'error');
     } finally {
       setIsActionSaving(false);
     }
   };
 
+  const sc = STATUS_COLORS[proposal.status];
+  const opdReport = proposal.opdReport;
+  const monitoringLogs = proposal.opdMonitoringLogs ?? [];
+
   return (
-    <div className="space-y-6 animate-fade-in">
-      {/* Top Header */}
+    <div className="space-y-6 animate-fade-in p-6 max-w-5xl mx-auto">
+      {/* Header */}
       <div className="flex items-center gap-3">
         <Button
           variant="outline"
@@ -108,167 +90,185 @@ export default function BridaLaporanDetailPage() {
           <ArrowLeft className="h-4 w-4" />
         </Button>
         <div>
-          <span className="font-mono text-2xs font-bold text-blue-650 dark:text-blue-400">
-            Review Laporan / {proposal.id}
+          <span className="font-mono text-2xs font-bold text-sky-600 dark:text-sky-400">
+            Review Laporan OPD / {proposal.id}
           </span>
-          <h1 className="text-xl font-bold tracking-tight text-slate-800 dark:text-slate-200 mt-0.5 truncate max-w-sm sm:max-w-md">
+          <h1 className="text-xl font-bold tracking-tight text-slate-800 dark:text-slate-200 mt-0.5 truncate max-w-sm sm:max-w-2xl">
             {proposal.title}
           </h1>
+          <div className="flex items-center gap-2 mt-1">
+            <span className="text-sm text-slate-500">{proposal.opdName}</span>
+            <span className={`text-xs font-medium px-2 py-0.5 rounded-full border ${sc.bg} ${sc.text} ${sc.border}`}>
+              {STATUS_LABELS[proposal.status]}
+            </span>
+          </div>
         </div>
       </div>
 
-      {/* Grid workspace */}
       <div className="grid gap-6 md:grid-cols-3">
-        {/* Left column: reports files & text summaries */}
-        <div className="md:col-span-2 space-y-6">
-          {/* File Card */}
-          <Card className="bg-white dark:bg-slate-900 border-slate-200/80 shadow-sm p-6 space-y-4">
-            <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider border-b pb-2 dark:border-slate-850">
-              Dokumen Unggahan Peneliti
-            </h3>
-            
-            <div className="p-3 border rounded-lg bg-slate-50/50 border-slate-200 dark:bg-slate-950/20 dark:border-slate-800 text-xs flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <FileCheck className="h-5 w-5 text-emerald-500" />
-                <div>
-                  <p className="font-bold text-slate-800 dark:text-slate-200">
-                    {proposal.finalReport ? proposal.finalReport.attachments?.[0]?.name || 'final_report_custom.pdf' : `final_report_${proposal.id.toLowerCase()}.pdf`}
-                  </p>
-                  <p className="text-[10px] text-slate-500">
-                    Naskah Kajian Akhir Komprehensif ({proposal.finalReport ? proposal.finalReport.attachments?.[0]?.size || '3.5 MB' : '3.4 MB'})
-                  </p>
-                </div>
-              </div>
-              <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-slate-450 hover:text-emerald-600 rounded-full">
-                <Download className="h-4.5 w-4.5" />
-              </Button>
-            </div>
-
-            <div className="p-3 border rounded-lg bg-slate-50/50 border-slate-200 dark:bg-slate-950/20 dark:border-slate-800 text-xs flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <FileText className="h-5 w-5 text-blue-500" />
-                <div>
-                  <p className="font-bold text-slate-800 dark:text-slate-200">policy_brief_{proposal.id.toLowerCase()}.pdf</p>
-                  <p className="text-[10px] text-slate-500">Draf Policy Brief Ringkasan Eksekutif (1.2 MB)</p>
-                </div>
-              </div>
-              <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-slate-450 hover:text-blue-600 rounded-full">
-                <Download className="h-4.5 w-4.5" />
-              </Button>
-            </div>
-          </Card>
-
-          {/* Dynamic Final Report text summaries from researcher upload */}
-          {proposal.finalReport && (
-            <Card className="bg-white dark:bg-slate-900 border-slate-200/80 shadow-sm p-6 space-y-4">
-              <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider border-b pb-2 dark:border-slate-850">
-                Isi Naskah Utama Laporan Akhir Peneliti
+        {/* Left: OPD Report content */}
+        <div className="md:col-span-2 space-y-5">
+          {/* E-Katalog info */}
+          {proposal.eKatalogUrl && (
+            <Card className="bg-white dark:bg-slate-900 border-sky-200 dark:border-sky-900/50 p-5">
+              <h3 className="text-xs font-bold text-sky-600 dark:text-sky-400 uppercase tracking-wide border-b border-sky-200 dark:border-sky-900/50 pb-2 mb-3">
+                Informasi E-Katalog
               </h3>
-              <div className="space-y-4 text-xs">
-                <div>
-                  <span className="font-bold text-slate-500 uppercase text-[9px] block">Ringkasan Eksekutif (Executive Summary)</span>
-                  <p className="text-slate-800 dark:text-slate-200 mt-1 leading-relaxed whitespace-pre-line">{proposal.finalReport.executiveSummary}</p>
-                </div>
-                <div className="grid gap-4 sm:grid-cols-2">
-                  <div className="p-3 border rounded-lg bg-slate-50/20 dark:bg-slate-955">
-                    <span className="font-bold text-slate-500 uppercase text-[9px] block">Metodologi Kajian</span>
-                    <p className="text-slate-800 dark:text-slate-200 mt-1 leading-relaxed whitespace-pre-line">{proposal.finalReport.methodology}</p>
+              <p className="text-xs text-slate-500 mb-1">URL E-Katalog</p>
+              <a
+                href={proposal.eKatalogUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-sm text-sky-500 underline break-all"
+              >
+                {proposal.eKatalogUrl}
+              </a>
+              {proposal.eKatalogDesc && (
+                <p className="text-sm text-slate-600 dark:text-slate-400 mt-2">{proposal.eKatalogDesc}</p>
+              )}
+            </Card>
+          )}
+
+          {/* Monitoring logs summary */}
+          {monitoringLogs.length > 0 && (
+            <Card className="bg-white dark:bg-slate-900 border-slate-200/80 p-5 space-y-3">
+              <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider border-b pb-2 dark:border-slate-800">
+                Riwayat Log Monitoring OPD ({monitoringLogs.length} entri)
+              </h3>
+              <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
+                {[...monitoringLogs].reverse().map((log) => (
+                  <div
+                    key={log.id}
+                    className="flex items-start gap-3 p-2.5 bg-slate-50 dark:bg-slate-800 rounded-lg text-xs"
+                  >
+                    <div className="w-12 text-center shrink-0">
+                      <span className="font-bold text-cyan-600 dark:text-cyan-400 text-sm">{log.progress}%</span>
+                    </div>
+                    <div className="flex-1">
+                      <p className="text-slate-700 dark:text-slate-300">{log.description}</p>
+                      <p className="text-slate-400 mt-0.5">{log.date}</p>
+                    </div>
                   </div>
-                  <div className="p-3 border rounded-lg bg-slate-50/20 dark:bg-slate-955">
-                    <span className="font-bold text-slate-500 uppercase text-[9px] block">Temuan Utama Riset</span>
-                    <p className="text-slate-800 dark:text-slate-200 mt-1 leading-relaxed whitespace-pre-line">{proposal.finalReport.findings}</p>
-                  </div>
-                </div>
-                <div className="p-3 border rounded-lg bg-emerald-50/10 dark:bg-emerald-950/10 border-emerald-100 dark:border-emerald-950">
-                  <span className="font-bold text-emerald-600 dark:text-emerald-450 uppercase text-[9px] block">Rekomendasi Kebijakan yang Diajukan</span>
-                  <p className="text-slate-850 dark:text-slate-200 mt-1 leading-relaxed font-semibold italic">&ldquo;{proposal.finalReport.recommendation}&rdquo;</p>
-                  <p className="text-slate-655 dark:text-slate-400 text-3xs mt-2">Kesimpulan: {proposal.finalReport.conclusion}</p>
-                </div>
+                ))}
               </div>
             </Card>
           )}
 
-          {/* Research Objectives vs Deliverables */}
-          <Card className="bg-white dark:bg-slate-900 border-slate-200/80 shadow-sm p-6 space-y-4">
-            <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider border-b pb-2 dark:border-slate-850">
-              Evaluasi Target Keluaran KAK
-            </h3>
-            
-            <div className="grid gap-4 sm:grid-cols-2 text-xs">
-              <div className="p-3 border rounded-lg bg-slate-50/50 dark:bg-slate-950/20 dark:border-slate-800">
-                <p className="font-bold text-slate-500 uppercase text-[9px]">Target Output KAK</p>
-                <p className="text-slate-800 dark:text-slate-200 mt-1 leading-relaxed">{proposal.kak?.output}</p>
+          {/* OPD Final Report */}
+          {opdReport ? (
+            <Card className="bg-white dark:bg-slate-900 border-slate-200/80 p-5 space-y-5">
+              <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider border-b pb-2 dark:border-slate-800">
+                Laporan Akhir dari OPD
+              </h3>
+
+              <div>
+                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wide mb-1">Judul Laporan</p>
+                <p className="font-semibold text-slate-800 dark:text-slate-200">{opdReport.title}</p>
               </div>
 
-              <div className="p-3 border rounded-lg bg-slate-50/50 dark:bg-slate-950/20 dark:border-slate-800">
-                <p className="font-bold text-slate-500 uppercase text-[9px]">Target Outcome KAK</p>
-                <p className="text-slate-800 dark:text-slate-200 mt-1 leading-relaxed">{proposal.kak?.outcome}</p>
+              <div>
+                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wide mb-1">Temuan Utama</p>
+                <p className="text-sm text-slate-700 dark:text-slate-300 leading-relaxed whitespace-pre-line">{opdReport.findings}</p>
               </div>
-            </div>
-          </Card>
+
+              <div>
+                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wide mb-1">Hambatan</p>
+                <p className="text-sm text-slate-700 dark:text-slate-300 leading-relaxed whitespace-pre-line">{opdReport.obstacles}</p>
+              </div>
+
+              <div>
+                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wide mb-1">Rekomendasi dari OPD</p>
+                <p className="text-sm text-slate-700 dark:text-slate-300 leading-relaxed whitespace-pre-line">{opdReport.opdRecommendation}</p>
+              </div>
+
+              {opdReport.attachments && opdReport.attachments.length > 0 && (
+                <div>
+                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wide mb-2">Lampiran</p>
+                  <div className="space-y-1.5">
+                    {opdReport.attachments.map((att) => (
+                      <div
+                        key={att.name}
+                        className="flex items-center gap-2 p-2.5 bg-slate-50 dark:bg-slate-800 rounded-lg text-xs"
+                      >
+                        <FileText className="h-4 w-4 text-sky-500 shrink-0" />
+                        <span className="font-medium text-slate-700 dark:text-slate-300 flex-1">{att.name}</span>
+                        <span className="text-slate-400">{att.size}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              <p className="text-xs text-slate-400">
+                Diserahkan:{' '}
+                {new Date(opdReport.submittedAt).toLocaleDateString('id-ID', {
+                  day: '2-digit',
+                  month: 'long',
+                  year: 'numeric',
+                  hour: '2-digit',
+                  minute: '2-digit',
+                })}
+              </p>
+            </Card>
+          ) : (
+            <Card className="bg-white dark:bg-slate-900 border-slate-200/80 p-8 text-center">
+              <div className="text-3xl mb-2">📭</div>
+              <p className="text-slate-500 dark:text-slate-400">OPD belum menyerahkan laporan akhir.</p>
+            </Card>
+          )}
         </div>
 
-        {/* Right column: evaluator notes & action buttons */}
-        <div className="space-y-6">
-          <Card className="bg-white dark:bg-slate-900 border-slate-200/80 shadow-sm p-6 space-y-4">
-            <h3 className="text-sm font-bold text-slate-800 dark:text-slate-200 border-b pb-2 dark:border-slate-850">
-              Tinjauan Hasil Laporan
-            </h3>
+        {/* Right: Review action */}
+        <div className="space-y-5">
+          {opdReport && (
+            <Card className="bg-white dark:bg-slate-900 border-slate-200/80 p-5 space-y-4">
+              <h3 className="text-sm font-bold text-slate-800 dark:text-slate-200 border-b pb-2 dark:border-slate-800">
+                Review Laporan OPD
+              </h3>
 
-            {proposal.status !== 'REPORT_SUBMITTED' && (
-              <div className="flex items-center gap-2 p-3 bg-emerald-50 text-emerald-900 rounded-lg text-xs dark:bg-emerald-950/20 dark:text-emerald-450">
-                <CheckCircle className="h-4 w-4" />
-                <span>Laporan Akhir Telah Disahkan</span>
-              </div>
-            )}
-
-            <Textarea
-              label="Tinjauan Evaluasi Laporan"
-              placeholder="Berikan rekomendasi perbaikan substansi kajian atau kesimpulan pengesahan..."
-              value={reviewNotes}
-              onChange={(e) => setReviewNotes(e.target.value)}
-              rows={4}
-              disabled={proposal.status !== 'REPORT_SUBMITTED'}
-            />
-
-            {proposal.status === 'REPORT_SUBMITTED' && (
-              <div className="space-y-2 border-t pt-4 dark:border-slate-850">
-                <Button
-                  onClick={() => handleAction(true)}
-                  isLoading={isActionSaving}
-                  className="w-full bg-emerald-600 hover:bg-emerald-700 text-white flex items-center justify-center gap-1.5 shadow"
-                >
-                  <FileCheck className="h-4 w-4" />
-                  <span>Sahkan Laporan Akhir</span>
-                </Button>
-
-                <Button
-                  onClick={() => handleAction(false)}
-                  isLoading={isActionSaving}
-                  variant="outline"
-                  className="w-full h-9 text-2xs text-amber-700 border-amber-200 hover:bg-amber-50"
-                >
-                  Minta Revisi Laporan
-                </Button>
-              </div>
-            )}
-          </Card>
-
-          {/* Partner profile card */}
-          <Card className="bg-white dark:bg-slate-900 border-slate-200/80 shadow-sm p-6 text-xs space-y-4">
-            <h3 className="text-sm font-bold text-slate-800 dark:text-slate-200 border-b pb-2 dark:border-slate-850">
-              Pihak Peneliti
-            </h3>
-            <div className="flex items-center gap-3">
-              <div className="h-10 w-10 rounded-full bg-blue-50 text-blue-600 flex items-center justify-between dark:bg-blue-950/20 dark:text-blue-400">
-                <User className="h-5 w-5 mx-auto" />
-              </div>
               <div>
-                <p className="font-bold text-slate-850 dark:text-slate-200">{proposal.researcherName}</p>
-                <p className="text-3xs text-slate-500">Pakar Peneliti Utama</p>
+                <label className="text-xs font-medium text-slate-600 dark:text-slate-400">
+                  Catatan Review BRIDA *
+                </label>
+                <Textarea
+                  id="review-notes"
+                  rows={5}
+                  value={reviewNotes}
+                  onChange={(e) => setReviewNotes(e.target.value)}
+                  placeholder="Tuliskan catatan evaluasi laporan dari OPD. Apakah temuan sesuai? Apakah hambatan perlu ditindaklanjuti?"
+                  className="mt-1 text-xs"
+                />
               </div>
-            </div>
-          </Card>
+
+              <div className="space-y-2 border-t pt-3 dark:border-slate-800">
+                <Button
+                  id="btn-approve-report"
+                  onClick={() => handleApproveReport(true)}
+                  isLoading={isActionSaving}
+                  disabled={!reviewNotes.trim()}
+                  className="w-full bg-emerald-600 hover:bg-emerald-700 text-white flex items-center justify-center gap-1.5"
+                >
+                  <CheckCircle className="h-4 w-4" />
+                  <span>Sahkan Laporan OPD</span>
+                </Button>
+                <Button
+                  id="btn-request-revision"
+                  onClick={() => handleApproveReport(false)}
+                  isLoading={isActionSaving}
+                  disabled={!reviewNotes.trim()}
+                  variant="outline"
+                  className="w-full text-amber-600 border-amber-300 hover:bg-amber-50 dark:hover:bg-amber-950/30 flex items-center justify-center gap-1.5"
+                >
+                  <XCircle className="h-4 w-4" />
+                  <span>Minta Perbaikan</span>
+                </Button>
+              </div>
+
+              <p className="text-xs text-slate-400 leading-relaxed">
+                Setelah disahkan, laporan ini dapat digunakan sebagai referensi penyusunan Policy Brief.
+              </p>
+            </Card>
+          )}
         </div>
       </div>
     </div>

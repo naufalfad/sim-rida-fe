@@ -36,7 +36,7 @@ export const StatusBadge: React.FC<StatusBadgeProps> = ({
           className={cn(
             'h-1.5 w-1.5 rounded-full bg-current',
             // optional pulse effect for active stages
-            (status === 'IN_PROGRESS' || status === 'SUBSTANTIVE_REVIEW' || status === 'MONITORING') && 'animate-pulse'
+            (status === 'OPD_IMPLEMENTING' || status === 'SUBSTANTIVE_REVIEW' || status === 'ADMINISTRATIVE_REVIEW') && 'animate-pulse'
           )}
         />
       )}

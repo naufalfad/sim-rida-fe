@@ -17,16 +17,12 @@ import {
   Settings,
   ClipboardList,
   CheckSquare,
-  Users,
   Eye,
-  TrendingUp,
   FileBadge,
   ShieldCheck,
   FolderLock,
   Award,
   FileCheck,
-  AlertTriangle,
-  FileText,
   RotateCcw,
   UserCheck
 } from 'lucide-react';
@@ -92,7 +88,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         return [
           { name: 'Dashboard', path: '/opd/dashboard', icon: <LayoutDashboard className="h-5 w-5" /> },
           { name: 'Usulan Riset', path: '/opd/usulan', icon: <FilePlus2 className="h-5 w-5" /> },
-          { name: 'Pelaksanaan Riset', path: '/opd/penelitian', icon: <ClipboardList className="h-5 w-5" /> },
+          { name: 'Implementasi E-Katalog', path: '/opd/implementasi', icon: <ClipboardList className="h-5 w-5" /> },
           { name: 'Tindak Lanjut', path: '/opd/tindak-lanjut', icon: <CheckSquare className="h-5 w-5" /> },
         ];
       case 'BRIDA':
@@ -102,10 +98,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           { name: 'Verifikasi Administrasi', path: '/brida/verifikasi', icon: <ShieldCheck className="h-5 w-5" /> },
           { name: 'Review Substansi', path: '/brida/review', icon: <Eye className="h-5 w-5" /> },
           { name: 'Seleksi Prioritas', path: '/brida/seleksi', icon: <FolderLock className="h-5 w-5" /> },
-          { name: 'Kelola Peneliti', path: '/brida/peneliti', icon: <Users className="h-5 w-5" /> },
-          { name: 'Pelaksanaan Penelitian', path: '/brida/penelitian', icon: <ClipboardList className="h-5 w-5" /> },
-          { name: 'Monitoring Riset', path: '/brida/monitoring', icon: <ClipboardList className="h-5 w-5" /> },
-          { name: 'Review Laporan Akhir', path: '/brida/laporan', icon: <FileCheck className="h-5 w-5" /> },
+          { name: 'Monitoring Implementasi', path: '/brida/monitoring', icon: <ClipboardList className="h-5 w-5" /> },
+          { name: 'Review Laporan OPD', path: '/brida/laporan', icon: <FileCheck className="h-5 w-5" /> },
           { name: 'Policy Brief', path: '/brida/policy-brief', icon: <FileBadge className="h-5 w-5" /> },
           { name: 'Rekomendasi Bupati', path: '/brida/rekomendasi', icon: <Award className="h-5 w-5" /> },
           { name: 'Tindak Lanjut OPD', path: '/brida/tindak-lanjut', icon: <CheckSquare className="h-5 w-5" /> },
@@ -113,19 +107,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       case 'KEPALA_BRIDA':
         return [
           { name: 'Dashboard Strategis', path: '/kepala-brida/dashboard', icon: <LayoutDashboard className="h-5 w-5" /> },
-          { name: 'Usulan Prioritas', path: '/kepala-brida/proposals', icon: <FileSpreadsheet className="h-5 w-5" /> },
-          { name: 'Persetujuan Seleksi', path: '/kepala-brida/approvals', icon: <ShieldCheck className="h-5 w-5" /> },
-          { name: 'Tindak Lanjut OPD', path: '/kepala-brida/monitoring-opd', icon: <CheckSquare className="h-5 w-5" /> },
-          { name: 'Evaluasi Dampak', path: '/kepala-brida/dampak', icon: <TrendingUp className="h-5 w-5" /> },
-        ];
-      case 'RESEARCHER':
-        return [
-          { name: 'Dashboard Peneliti', path: '/researcher/dashboard', icon: <LayoutDashboard className="h-5 w-5" /> },
-          { name: 'Proyek Riset', path: '/researcher/research', icon: <ClipboardList className="h-5 w-5" /> },
-          { name: 'Milestone Kerja', path: '/researcher/milestones', icon: <FileSpreadsheet className="h-5 w-5" /> },
-          { name: 'Monitoring Kendala', path: '/researcher/monitoring', icon: <AlertTriangle className="h-5 w-5" /> },
-          { name: 'File & Dokumen', path: '/researcher/documents', icon: <FileText className="h-5 w-5" /> },
-          { name: 'Unggah Laporan', path: '/researcher/reports', icon: <FilePlus2 className="h-5 w-5" /> },
+          { name: 'Persetujuan Seleksi', path: '/kepala-brida/persetujuan-seleksi', icon: <ShieldCheck className="h-5 w-5" /> },
+          { name: 'Persetujuan Rekomendasi', path: '/kepala-brida/persetujuan-rekomendasi', icon: <Award className="h-5 w-5" /> },
+          { name: 'Persetujuan Laporan', path: '/kepala-brida/persetujuan-laporan', icon: <FileCheck className="h-5 w-5" /> },
         ];
       default:
         return [];
@@ -179,13 +163,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       label: 'Beralih ke Demo K. BRIDA',
       icon: <UserCheck className="h-4 w-4 text-blue-500" />,
       onClick: () => handleRoleSwitch('KEPALA_BRIDA', '/kepala-brida/dashboard'),
-      className: 'text-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 py-1.5 text-[11px] font-semibold',
-    },
-    {
-      id: 'switch-researcher',
-      label: 'Beralih ke Demo Peneliti',
-      icon: <UserCheck className="h-4 w-4 text-blue-500" />,
-      onClick: () => handleRoleSwitch('RESEARCHER', '/researcher/dashboard'),
       className: 'text-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 py-1.5 text-[11px] font-semibold',
     },
     {

@@ -314,8 +314,8 @@ export default function BridaMonitoringDetailPage() {
 
             <div className="divide-y divide-slate-100 dark:divide-slate-850 text-slate-650 dark:text-slate-400">
               <div className="py-2.5 flex justify-between">
-                <span>Pakar Peneliti:</span>
-                <span className="font-bold text-slate-850 dark:text-slate-200">{proposal.researcherName || 'Belum Ditunjuk'}</span>
+                <span>Vendor E-Katalog:</span>
+                <span className="font-bold text-slate-850 dark:text-slate-200">{proposal.eKatalogDesc || 'E-Katalog Belum Dipilih'}</span>
               </div>
               <div className="py-2.5 flex justify-between">
                 <span>OPD Dinas:</span>

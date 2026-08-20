@@ -59,7 +59,7 @@ export const INITIAL_PROPOSALS: Proposal[] = [
     id: 'PRP-2026-002',
     title: 'Evaluasi Sistem Transportasi Publik Berbasis Listrik untuk Pengurangan Emisi',
     opdName: 'Dinas Perhubungan',
-    status: 'IN_PROGRESS',
+    status: 'OPD_IMPLEMENTING',
     progress: 65,
     createdAt: '2026-08-01T09:00:00.000Z',
     updatedAt: '2026-08-05T11:00:00.000Z',
@@ -104,28 +104,17 @@ export const INITIAL_PROPOSALS: Proposal[] = [
       { status: 'ADMINISTRATIVE_REVIEW', label: 'Verifikasi Administrasi BRIDA', date: '03 Agt 2026', actor: 'Admin BRIDA', isCompleted: true },
       { status: 'SUBSTANTIVE_REVIEW', label: 'Review Substansi & Scoring', date: '04 Agt 2026', actor: 'Reviewer Ahli', isCompleted: true },
       { status: 'APPROVED', label: 'Disetujui Kepala BRIDA', date: '05 Agt 2026', actor: 'Kepala BRIDA', isCompleted: true },
-      { status: 'RESEARCHER_SELECTION', label: 'Penetapan Mitra Peneliti', date: '06 Agt 2026', actor: 'BRIDA', isCompleted: true },
-      { status: 'IN_PROGRESS', label: 'Pelaksanaan Penelitian (Tim ITB)', date: '07 Agt 2026', actor: 'Prof. Anton (ITB)', isCompleted: true },
+      { status: 'EKATALOG_SENT', label: 'E-Katalog Dikirimkan ke Dinas Perhubungan', date: '06 Agt 2026', actor: 'Admin BRIDA', isCompleted: true },
+      { status: 'OPD_IMPLEMENTING', label: 'Dinas Perhubungan Sedang Implementasi', date: '07 Agt 2026', actor: 'Dinas Perhubungan', isCompleted: false },
     ],
-    researcherId: 'usr-004',
-    researcherName: 'Prof. Dr. Anton Wibowo',
-    issues: [
-      { id: 'iss-001', description: 'Keterlambatan izin survei kelistrikan gardu induk PLN.', severity: 'MEDIUM', status: 'OPEN', dateReported: '2026-08-12' }
+    eKatalogUrl: 'https://e-katalog.lkpp.go.id/sistem-transportasi-ev/dishub-2026',
+    eKatalogDesc: 'Sistem informasi manajemen armada kendaraan listrik dan optimasi rute BRT berbasis GIS. Vendor: PT. Solusi Hijau Nusantara.',
+    eKatalogDeadline: '2026-11-30',
+    eKatalogSentAt: '2026-08-06T09:00:00.000Z',
+    opdMonitoringLogs: [
+      { id: 'log-e1', date: '2026-08-15', progress: 20, description: 'Tim Dishub berhasil akses demo platform e-Katalog. Koordinasi teknis PLN sedang berjalan.' },
+      { id: 'log-e2', date: '2026-08-18', progress: 40, description: 'Survei titik charging depot selesai. 3 lokasi gardu induk telah dipetakan untuk SPKLU.' },
     ],
-    risks: [
-      { id: 'rsk-001', description: 'Fluktuasi harga baterai bus impor.', mitigation: 'Menggunakan opsi kontrak jangka panjang harga terkunci.', riskLevel: 'HIGH' }
-    ],
-    milestones: [
-      { id: 'm-1', label: 'Preparation & Permitting', progress: 100, notes: 'Izin survei dan koordinasi Dishub selesai.', updatedAt: '2026-08-08' },
-      { id: 'm-2', label: 'Data Collection (Survei Lapangan)', progress: 80, notes: 'Pencacahan lalu lintas koridor utama selesai.', updatedAt: '2026-08-14' },
-      { id: 'm-3', label: 'Analysis & Kelayakan Finansial', progress: 50, notes: 'Simulasi NPV & BCR sedang dirumuskan.', updatedAt: '2026-08-18' },
-      { id: 'm-4', label: 'Draft Report', progress: 0 },
-      { id: 'm-5', label: 'Final Report', progress: 0 }
-    ],
-    documents: [
-      { id: 'doc-1', name: 'Proposal Riset Kelayakan Bus Listrik', type: 'PROPOSAL', fileName: 'Proposal_Riset_Bus_Listrik.pdf', fileSize: '2.8 MB', uploadedAt: '2026-08-08' },
-      { id: 'doc-2', name: 'Naskah Metodologi Analisis Transportasi', type: 'METHODOLOGY', fileName: 'Metodologi_Studi_Kelayakan.pdf', fileSize: '1.2 MB', uploadedAt: '2026-08-12' }
-    ]
   },
 
   // 3. PRP-2026-003 (REPORT_SUBMITTED - Active Project 2 - Report Submitted)
@@ -133,7 +122,7 @@ export const INITIAL_PROPOSALS: Proposal[] = [
     id: 'PRP-2026-003',
     title: 'Strategi Pengembangan Destinasi Wisata Sejarah dan Budaya Unggulan Daerah',
     opdName: 'Dinas Pariwisata',
-    status: 'REPORT_SUBMITTED',
+    status: 'OPD_REPORTED',
     progress: 95,
     createdAt: '2026-07-20T10:00:00.000Z',
     updatedAt: '2026-08-15T09:00:00.000Z',
@@ -178,13 +167,27 @@ export const INITIAL_PROPOSALS: Proposal[] = [
       { status: 'ADMINISTRATIVE_REVIEW', label: 'Verifikasi Administrasi BRIDA', date: '22 Jul 2026', actor: 'Admin BRIDA', isCompleted: true },
       { status: 'SUBSTANTIVE_REVIEW', label: 'Review Substansi & Scoring', date: '24 Jul 2026', actor: 'Tim Riset', isCompleted: true },
       { status: 'APPROVED', label: 'Disetujui Kepala BRIDA', date: '25 Jul 2026', actor: 'Kepala BRIDA', isCompleted: true },
-      { status: 'IN_PROGRESS', label: 'Pelaksanaan Penelitian', date: '26 Jul 2026', actor: 'Dr. Rian Nugroho (Tim UI)', isCompleted: true },
-      { status: 'REPORT_SUBMITTED', label: 'Laporan Akhir Kajian Diajukan', date: '15 Agt 2026', actor: 'Dr. Rian Nugroho (Tim UI)', isCompleted: true },
+      { status: 'EKATALOG_SENT', label: 'E-Katalog Dikirimkan ke Dinas Pariwisata', date: '26 Jul 2026', actor: 'Admin BRIDA', isCompleted: true },
+      { status: 'OPD_IMPLEMENTING', label: 'Dinas Pariwisata Sedang Implementasi', date: '28 Jul 2026', actor: 'Dinas Pariwisata', isCompleted: true },
+      { status: 'OPD_REPORTED', label: 'Laporan OPD Diserahkan ke BRIDA', date: '15 Agt 2026', actor: 'Dinas Pariwisata', isCompleted: true },
     ],
-    researcherId: 'usr-005',
-    researcherName: 'Dr. Rian Nugroho',
-    issues: [],
-    risks: [],
+    eKatalogUrl: 'https://e-katalog.lkpp.go.id/ecomuseum-platform/dispariwisata-2026',
+    eKatalogDesc: 'Platform digital interpretasi sejarah berbasis AR/VR dan sistem manajemen pemandu wisata tersertifikasi. Vendor: PT. Heritage Digital Indonesia.',
+    eKatalogDeadline: '2026-10-15',
+    eKatalogSentAt: '2026-07-26T08:00:00.000Z',
+    opdMonitoringLogs: [
+      { id: 'log-p1', date: '2026-08-01', progress: 25, description: 'Platform dipasang di Benteng Kuno. Demo konten AR sejarah berhasil dijalankan.' },
+      { id: 'log-p2', date: '2026-08-08', progress: 60, description: 'Pelatihan 12 pemandu wisata lokal untuk menggunakan sistem AR selesai.' },
+      { id: 'log-p3', date: '2026-08-14', progress: 90, description: 'Soft launch platform kepada 50 wisatawan percobaan. Feedback sangat positif.' },
+    ],
+    opdReport: {
+      title: 'Laporan Implementasi Platform Digital Ecomuseum Benteng Kuno',
+      findings: 'Platform AR berhasil meningkatkan rata-rata durasi kunjungan wisatawan dari 45 menit menjadi 2 jam. Sebanyak 12 pemandu wisata lokal telah tersertifikasi menggunakan sistem. Partisipasi generasi muda meningkat 60% dibanding periode sebelumnya.',
+      obstacles: 'Koneksi internet di sebagian area benteng tidak stabil. Sebagian lansia kesulitan menggunakan perangkat AR. Biaya pemeliharaan perangkat lebih tinggi dari estimasi awal.',
+      opdRecommendation: 'Diperlukan pemasangan jaringan Wi-Fi dedicated di kawasan benteng. Tersedianya versi non-AR untuk wisatawan non-digital. Anggaran pemeliharaan tahunan perlu dimasukkan ke APBD.',
+      attachments: [{ name: 'Laporan_Implementasi_Ecomuseum.pdf', size: '4.2 MB' }, { name: 'Dokumentasi_Foto_Kegiatan.zip', size: '12.5 MB' }],
+      submittedAt: '2026-08-15T09:00:00.000Z',
+    },
   },
 
   // 4. PRP-2026-004 (SUBSTANTIVE_REVIEW - In Review 2)
@@ -292,7 +295,7 @@ export const INITIAL_PROPOSALS: Proposal[] = [
     id: 'PRP-2026-007',
     title: 'Kajian Sistem Drainase dan Pencegahan Genangan Air Perkotaan',
     opdName: 'Dinas Pekerjaan Umum dan Penataan Ruang',
-    status: 'COMPLETED',
+    status: 'RECOMMENDATION_APPROVED',
     progress: 100,
     createdAt: '2026-05-10T08:00:00.000Z',
     updatedAt: '2026-07-28T14:00:00.000Z',
@@ -335,12 +338,9 @@ export const INITIAL_PROPOSALS: Proposal[] = [
       { status: 'DRAFT', label: 'Usulan Draf Masalah', date: '10 Mei 2026', actor: 'Dinas PUPR', isCompleted: true },
       { status: 'SUBMITTED', label: 'KAK Selesai & Diajukan', date: '12 Mei 2026', actor: 'Dinas PUPR', isCompleted: true },
       { status: 'APPROVED', label: 'Disetujui Kepala BRIDA', date: '20 Mei 2026', actor: 'Kepala BRIDA', isCompleted: true },
-      { status: 'IN_PROGRESS', label: 'Pelaksanaan Kajian (Tim UGM)', date: '25 Mei 2026', actor: 'UGM', isCompleted: true },
-      { status: 'COMPLETED', label: 'Riset Selesai & Laporan Akhir Disahkan', date: '28 Jul 2026', actor: 'Kepala BRIDA', isCompleted: true },
+      { status: 'OPD_IMPLEMENTING', label: 'Implementasi Solusi (Tim UGM)', date: '25 Mei 2026', actor: 'UGM', isCompleted: true },
+      { status: 'RECOMMENDATION_APPROVED', label: 'Riset Selesai & Laporan Akhir Disahkan', date: '28 Jul 2026', actor: 'Kepala BRIDA', isCompleted: true },
     ],
-    researcherId: 'usr-006',
-    researcherName: 'Dr. Ir. Joko Prasetyo, M.T.',
-    reportReview: { reviewerNotes: 'Kajian drainase sangat lengkap dan roadmap normalisasi gorong-gorong layak dijalankan.', status: 'APPROVED', reviewedAt: '2026-07-28T14:00:00.000Z' }
   },
 
   // 8. PRP-2026-008 (RECOMMENDATION_APPROVED - Completed 2 - Report Approved)
@@ -391,13 +391,10 @@ export const INITIAL_PROPOSALS: Proposal[] = [
       { status: 'DRAFT', label: 'Usulan Draf Masalah', date: '10 Apr 2026', actor: 'Dinas LH', isCompleted: true },
       { status: 'SUBMITTED', label: 'KAK Selesai & Diajukan', date: '12 Apr 2026', actor: 'Dinas LH', isCompleted: true },
       { status: 'APPROVED', label: 'Disetujui Kepala BRIDA', date: '20 Apr 2026', actor: 'Kepala BRIDA', isCompleted: true },
-      { status: 'IN_PROGRESS', label: 'Kajian Berjalan', date: '25 Apr 2026', actor: 'IPB', isCompleted: true },
-      { status: 'COMPLETED', label: 'Riset Selesai & Disahkan', date: '20 Jun 2026', actor: 'Kepala BRIDA', isCompleted: true },
+      { status: 'OPD_IMPLEMENTING', label: 'Kajian Berjalan', date: '25 Apr 2026', actor: 'IPB', isCompleted: true },
+      { status: 'RECOMMENDATION_APPROVED', label: 'Riset Selesai & Disahkan', date: '20 Jun 2026', actor: 'Kepala BRIDA', isCompleted: true },
       { status: 'RECOMMENDATION_APPROVED', label: 'Rekomendasi Kebijakan Disahkan', date: '25 Jun 2026', actor: 'Kepala BRIDA', isCompleted: true },
     ],
-    researcherId: 'usr-007',
-    researcherName: 'Dr. Sarah Amalia',
-    reportReview: { reviewerNotes: 'Metodologi fermentasi kompos terarah dan rencana aksi pengadaan mesin LPSE valid.', status: 'APPROVED', reviewedAt: '2026-06-20T11:00:00.000Z' }
   },
 
   // 9. PRP-2026-009 (SUBMITTED - In Review 3)
@@ -648,7 +645,7 @@ export const INITIAL_PROPOSALS: Proposal[] = [
     id: 'PRP-2026-014',
     title: 'Kajian Kelayakan Pembangkit Listrik Tenaga Biomassa Sampah Pertanian',
     opdName: 'Dinas Pekerjaan Umum dan Penataan Ruang', // or ESDM
-    status: 'MONITORING',
+    status: 'OPD_IMPLEMENTING',
     progress: 80,
     createdAt: '2026-06-01T08:00:00.000Z',
     updatedAt: '2026-06-25T11:00:00.000Z',
@@ -691,27 +688,8 @@ export const INITIAL_PROPOSALS: Proposal[] = [
       { status: 'DRAFT', label: 'Usulan Draf Masalah', date: '01 Jun 2026', actor: 'Dinas PU', isCompleted: true },
       { status: 'SUBMITTED', label: 'Usulan KAK Diserahkan', date: '03 Jun 2026', actor: 'Dinas PU', isCompleted: true },
       { status: 'APPROVED', label: 'Disetujui Kepala BRIDA', date: '10 Jun 2026', actor: 'Kepala BRIDA', isCompleted: true },
-      { status: 'IN_PROGRESS', label: 'Kajian Berjalan', date: '15 Jun 2026', actor: 'Prof. Anton Wibowo (ITB)', isCompleted: true },
+      { status: 'OPD_IMPLEMENTING', label: 'Kajian Berjalan', date: '15 Jun 2026', actor: 'Prof. Anton Wibowo (ITB)', isCompleted: true },
     ],
-    researcherId: 'usr-004',
-    researcherName: 'Prof. Dr. Anton Wibowo',
-    issues: [
-      { id: 'iss-014-1', description: 'Sampel jerami padi basah terendam hujan sehingga menghambat uji kalori.', severity: 'LOW', status: 'RESOLVED', dateReported: '2026-07-05' }
-    ],
-    risks: [
-      { id: 'rsk-014-1', description: 'Kurangnya minat petani memilah limbah kering.', mitigation: 'Mengadakan sosialisasi pengumpulan insentif pupuk.', riskLevel: 'MEDIUM' }
-    ],
-    milestones: [
-      { id: 'm-1', label: 'Preparation & Permitting', progress: 100, notes: 'Studi literatur awal dan koordinasi dinas kelar.', updatedAt: '2026-06-20' },
-      { id: 'm-2', label: 'Data Collection (Survei Lapangan)', progress: 100, notes: 'Uji laboratorium kadar kalori limbah sekam selesai.', updatedAt: '2026-07-15' },
-      { id: 'm-3', label: 'Analysis & Kelayakan Finansial', progress: 80, notes: 'Draf kelayakan ekonomi PLTMh sekam dirampungkan.', updatedAt: '2026-08-10' },
-      { id: 'm-4', label: 'Draft Report', progress: 40, notes: 'Bab 1-3 draf naskah laporan tersusun.', updatedAt: '2026-08-18' },
-      { id: 'm-5', label: 'Final Report', progress: 0 }
-    ],
-    documents: [
-      { id: 'doc-1', name: 'Proposal Pemanfaatan Biomassa Sekam Padi', type: 'PROPOSAL', fileName: 'Proposal_Biomassa_Sekam.pdf', fileSize: '1.9 MB', uploadedAt: '2026-06-18' },
-      { id: 'doc-2', name: 'Laporan Progress Bulanan Kesatu', type: 'PROGRESS_REPORT', fileName: 'Laporan_Progress_M1_Biomassa.pdf', fileSize: '850 KB', uploadedAt: '2026-07-20' }
-    ]
   },
 
   // 15. PRP-2026-015 (MONITORING - Active Project 4 - Under Monitoring)
@@ -719,7 +697,7 @@ export const INITIAL_PROPOSALS: Proposal[] = [
     id: 'PRP-2026-015',
     title: 'Model Digitalisasi Pelayanan Rekam Medis Terintegrasi Puskesmas Daerah',
     opdName: 'Dinas Kesehatan',
-    status: 'MONITORING',
+    status: 'OPD_IMPLEMENTING',
     progress: 70,
     createdAt: '2026-05-15T08:00:00.000Z',
     updatedAt: '2026-05-28T10:00:00.000Z',
@@ -762,16 +740,8 @@ export const INITIAL_PROPOSALS: Proposal[] = [
       { status: 'DRAFT', label: 'Usulan Draf Masalah', date: '10 Mei 2026', actor: 'Dinas Kesehatan', isCompleted: true },
       { status: 'SUBMITTED', label: 'Usulan KAK Diserahkan', date: '15 Mei 2026', actor: 'Dinas Kesehatan', isCompleted: true },
       { status: 'APPROVED', label: 'Disetujui Kepala BRIDA', date: '22 Mei 2026', actor: 'Kepala BRIDA', isCompleted: true },
-      { status: 'IN_PROGRESS', label: 'Kajian Berjalan', date: '28 Mei 2026', actor: 'Dr. Budi Utomo (Unair)', isCompleted: true },
+      { status: 'OPD_IMPLEMENTING', label: 'Kajian Berjalan', date: '28 Mei 2026', actor: 'Dr. Budi Utomo (Unair)', isCompleted: true },
     ],
-    researcherId: 'usr-009',
-    researcherName: 'Dr. Budi Utomo, M.PH.',
-    issues: [
-      { id: 'iss-15-1', description: 'Beberapa komputer puskesmas terpencil terinfeksi malware sistem.', severity: 'HIGH', status: 'OPEN', dateReported: '2026-07-20' }
-    ],
-    risks: [
-      { id: 'rsk-15-1', description: 'Kebocoran data pasien jika server daerah diretas.', mitigation: 'Menggunakan enkripsi AES-256 dan firewall BRIDA.', riskLevel: 'HIGH' }
-    ]
   },
 
   // 16. PRP-2026-016 (IN_PROGRESS - Active Project 5 - Under Execution)
@@ -779,7 +749,7 @@ export const INITIAL_PROPOSALS: Proposal[] = [
     id: 'PRP-2026-016',
     title: 'Kajian Pemberdayaan Ekonomi Masyarakat Miskin Ekstrem Pedesaan',
     opdName: 'Dinas Sosial',
-    status: 'IN_PROGRESS',
+    status: 'OPD_IMPLEMENTING',
     progress: 35,
     createdAt: '2026-06-10T10:00:00.000Z',
     updatedAt: '2026-06-28T15:00:00.000Z',
@@ -822,16 +792,8 @@ export const INITIAL_PROPOSALS: Proposal[] = [
       { status: 'DRAFT', label: 'Usulan Draf Masalah', date: '05 Jun 2026', actor: 'Dinas Sosial', isCompleted: true },
       { status: 'SUBMITTED', label: 'Usulan KAK Diserahkan', date: '10 Jun 2026', actor: 'Dinas Sosial', isCompleted: true },
       { status: 'APPROVED', label: 'Disetujui Kepala BRIDA', date: '20 Jun 2026', actor: 'Kepala BRIDA', isCompleted: true },
-      { status: 'IN_PROGRESS', label: 'Kajian Berjalan', date: '28 Jun 2026', actor: 'Dr. Rian Nugroho (UI)', isCompleted: true },
+      { status: 'OPD_IMPLEMENTING', label: 'Kajian Berjalan', date: '28 Jun 2026', actor: 'Dr. Rian Nugroho (UI)', isCompleted: true },
     ],
-    researcherId: 'usr-005',
-    researcherName: 'Dr. Rian Nugroho',
-    issues: [
-      { id: 'iss-16-1', description: 'Beberapa warga lansia buta huruf kesulitan mengikuti modul materi koperasi.', severity: 'LOW', status: 'OPEN', dateReported: '2026-07-15' }
-    ],
-    risks: [
-      { id: 'rsk-16-1', description: 'Pemasaran produk kerajinan kalah saing dengan barang plastik.', mitigation: 'Desain inovatif bambu dikombinasi kulit sintetis.', riskLevel: 'MEDIUM' }
-    ]
   },
 
   // 17. PRP-2026-017 (SUBMITTED - In Review 8)

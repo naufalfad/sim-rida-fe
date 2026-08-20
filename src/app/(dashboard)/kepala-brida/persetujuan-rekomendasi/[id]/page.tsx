@@ -127,7 +127,7 @@ export default function PersetujuanRekomendasiDetailPage() {
               </div>
               
               <p className="mt-4">
-                Menimbang hasil kajian riset daerah yang dilaksanakan oleh <strong>{proposal.researcherName || 'Mitra Akademik Terpilih'}</strong> dengan judul <em>&ldquo;{proposal.title}&rdquo;</em>, maka diputuskan bahwa:
+                Menimbang hasil kajian riset daerah oleh OPD <strong>{proposal.opdName}</strong> dengan judul <em>&ldquo;{proposal.title}&rdquo;</em>, maka diputuskan bahwa:
               </p>
 
               <div className="pl-4 border-l-2 border-teal-500 font-sans text-xs italic my-3 text-slate-655">

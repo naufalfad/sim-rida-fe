@@ -133,7 +133,7 @@ export default function PersetujuanLaporanDetailPage() {
                   <span>Catatan Evaluasi Tim Penilai BRIDA</span>
                 </p>
                 <p className="text-slate-700 dark:text-slate-300 leading-relaxed mt-2 italic bg-emerald-50/10 p-3 rounded-lg border border-emerald-100/50">
-                  &ldquo;{proposal.reportReview?.reviewerNotes || 'Laporan dinilai lengkap, relevan dengan kebutuhan prioritas OPD, dan naskah akademik terstruktur dengan baik.'}&rdquo;
+                  &ldquo;{proposal.opdReport?.findings || 'Laporan dinilai lengkap, relevan dengan kebutuhan prioritas OPD, dan naskah akademik terstruktur dengan baik.'}&rdquo;
                 </p>
               </div>
 

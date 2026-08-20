@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { StatusBadge } from '@/components/ui/status-badge';
 import { LoadingState } from '@/components/ui/loading-state';
 import { EmptyState } from '@/components/ui/empty-state';
-import { proposalService } from '@/lib/api/proposals';
+import { proposalApi } from '@/lib/api/proposals';
 import { Proposal } from '@/types/proposals';
 
 export default function BridaLaporanListPage() {
@@ -16,19 +16,11 @@ export default function BridaLaporanListPage() {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const loadReportQueue = async () => {
-      try {
-        const list = await proposalService.getProposals();
-        // Show proposals with submitted reports or completed status
-        const reportStates = ['REPORT_SUBMITTED', 'RECOMMENDATION_APPROVED', 'COMPLETED'];
-        setProposals(list.filter((p) => reportStates.includes(p.status)));
-      } catch (err) {
-        console.error('Failed to load report queue:', err);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    loadReportQueue();
+    const list = proposalApi.getProposals();
+    // Show proposals where OPD has submitted final reports
+    const reportStates = ['OPD_REPORTED', 'POLICY_BRIEF_DRAFT', 'RECOMMENDATION_PENDING', 'RECOMMENDATION_APPROVED'];
+    setProposals(list.filter((p) => reportStates.includes(p.status)));
+    setIsLoading(false);
   }, []);
 
   if (isLoading) {
@@ -69,7 +61,7 @@ export default function BridaLaporanListPage() {
                 </CardTitle>
                 <CardDescription className="text-3xs flex items-center gap-1 mt-1 text-slate-400 font-semibold">
                   <User className="h-3.5 w-3.5" />
-                  <span>Pakar: {item.researcherName}</span>
+                  <span>OPD: {item.opdName}</span>
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4 pt-2">

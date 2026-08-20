@@ -14,7 +14,7 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/com
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/components/ui/toast';
 import { LoadingState } from '@/components/ui/loading-state';
-import { proposalService } from '@/lib/api/proposals';
+import { proposalService, proposalApi } from '@/lib/api/proposals';
 import { Proposal } from '@/types/proposals';
 
 export default function BridaSeleksiDetailPage() {
@@ -26,6 +26,13 @@ export default function BridaSeleksiDetailPage() {
   const [proposal, setProposal] = useState<Proposal | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isActionSaving, setIsActionSaving] = useState(false);
+  const [eKatalogForm, setEKatalogForm] = useState({
+    url: '',
+    desc: '',
+    deadline: '',
+  });
+  const [isSendingEKatalog, setIsSendingEKatalog] = useState(false);
+  const [eKatalogSent, setEKatalogSent] = useState(false);
 
   useEffect(() => {
     const loadDetails = async () => {
@@ -75,6 +82,28 @@ export default function BridaSeleksiDetailPage() {
       toast('Gagal memproses keputusan seleksi.', 'error');
     } finally {
       setIsActionSaving(false);
+    }
+  };
+
+  const handleSendEKatalog = async () => {
+    if (!eKatalogForm.url.trim() || !eKatalogForm.deadline) return;
+    setIsSendingEKatalog(true);
+    try {
+      const updated = await proposalApi.sendEKatalogLink(
+        proposal!.id,
+        eKatalogForm.url,
+        eKatalogForm.desc,
+        eKatalogForm.deadline
+      );
+      if (updated) {
+        setProposal(updated);
+        setEKatalogSent(true);
+        toast(`Link E-Katalog berhasil dikirimkan ke ${updated.opdName}!`, 'success');
+      }
+    } catch {
+      toast('Gagal mengirimkan link E-Katalog.', 'error');
+    } finally {
+      setIsSendingEKatalog(false);
     }
   };
 
@@ -180,6 +209,79 @@ export default function BridaSeleksiDetailPage() {
               </Button>
             </div>
           </Card>
+
+          {/* E-Katalog section: shown after APPROVED */}
+          {(proposal.status === 'APPROVED' || proposal.status === 'EKATALOG_SENT') && (
+            <Card className="bg-white dark:bg-slate-900 border-sky-200 dark:border-sky-900/50 shadow-sm p-6 space-y-4">
+              <h3 className="text-sm font-bold text-sky-700 dark:text-sky-400 border-b border-sky-200 dark:border-sky-900/50 pb-2">
+                🔗 Kirim Link E-Katalog ke OPD
+              </h3>
+
+              {proposal.status === 'EKATALOG_SENT' || eKatalogSent ? (
+                <div className="text-center py-2">
+                  <div className="text-3xl mb-2">✅</div>
+                  <p className="text-sm font-semibold text-emerald-600 dark:text-emerald-400">E-Katalog Sudah Dikirimkan</p>
+                  {proposal.eKatalogUrl && (
+                    <a
+                      href={proposal.eKatalogUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-xs text-sky-500 underline break-all mt-1 block"
+                    >
+                      {proposal.eKatalogUrl}
+                    </a>
+                  )}
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  <p className="text-xs text-slate-500">
+                    Setelah seleksi disetujui Kepala BRIDA, kirimkan link E-Katalog LKPP kepada OPD untuk pembelian solusi.
+                  </p>
+                  <div>
+                    <label className="text-xs font-medium text-slate-600 dark:text-slate-400">URL E-Katalog LKPP *</label>
+                    <input
+                      id="ekatalog-url"
+                      type="url"
+                      value={eKatalogForm.url}
+                      onChange={(e) => setEKatalogForm((f) => ({ ...f, url: e.target.value }))}
+                      placeholder="https://e-katalog.lkpp.go.id/..."
+                      className="mt-1 w-full px-2.5 py-1.5 text-xs border border-slate-200 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 focus:ring-2 focus:ring-sky-500 focus:border-transparent"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-xs font-medium text-slate-600 dark:text-slate-400">Deskripsi Solusi</label>
+                    <textarea
+                      id="ekatalog-desc"
+                      rows={2}
+                      value={eKatalogForm.desc}
+                      onChange={(e) => setEKatalogForm((f) => ({ ...f, desc: e.target.value }))}
+                      placeholder="Nama vendor dan deskripsi solusi singkat..."
+                      className="mt-1 w-full px-2.5 py-1.5 text-xs border border-slate-200 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 focus:ring-2 focus:ring-sky-500 focus:border-transparent resize-none"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-xs font-medium text-slate-600 dark:text-slate-400">Deadline Implementasi *</label>
+                    <input
+                      id="ekatalog-deadline"
+                      type="date"
+                      value={eKatalogForm.deadline}
+                      onChange={(e) => setEKatalogForm((f) => ({ ...f, deadline: e.target.value }))}
+                      className="mt-1 w-full px-2.5 py-1.5 text-xs border border-slate-200 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 focus:ring-2 focus:ring-sky-500 focus:border-transparent"
+                    />
+                  </div>
+                  <Button
+                    id="btn-send-ekatalog"
+                    onClick={handleSendEKatalog}
+                    isLoading={isSendingEKatalog}
+                    disabled={!eKatalogForm.url.trim() || !eKatalogForm.deadline}
+                    className="w-full bg-sky-600 hover:bg-sky-700 text-white text-xs flex items-center justify-center gap-1.5"
+                  >
+                    📤 Kirim E-Katalog ke OPD
+                  </Button>
+                </div>
+              )}
+            </Card>
+          )}
         </div>
       </div>
     </div>

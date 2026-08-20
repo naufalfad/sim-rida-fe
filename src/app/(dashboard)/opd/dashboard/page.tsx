@@ -58,9 +58,9 @@ export default function OpdDashboard() {
       p.status === 'SELECTION_RECOMMENDED'
   ).length;
   const approvedCount = proposals.filter(
-    (p) => p.status === 'APPROVED' || p.status === 'RESEARCHER_SELECTION' || p.status === 'RESEARCHER_APPROVAL'
+    (p) => p.status === 'APPROVED' || p.status === 'EKATALOG_SENT'
   ).length;
-  const inProgressCount = proposals.filter((p) => p.status === 'IN_PROGRESS' || p.status === 'MONITORING').length;
+  const inProgressCount = proposals.filter((p) => p.status === 'OPD_IMPLEMENTING').length;
   const recommendationCount = proposals.filter((p) => p.status === 'RECOMMENDATION_APPROVED').length;
   const followUpCount = followUps.filter((f) => f.status === 'IN_PROGRESS' || f.status === 'PENDING').length;
 
@@ -278,11 +278,11 @@ export default function OpdDashboard() {
               <CardDescription className="text-xs">Penelitian yang sedang berjalan oleh mitra.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              {proposals.filter((p) => p.status === 'IN_PROGRESS' || p.status === 'MONITORING' || p.status === 'REPORT_SUBMITTED').length === 0 ? (
+              {proposals.filter((p) => p.status === 'OPD_IMPLEMENTING' || p.status === 'OPD_REPORTED').length === 0 ? (
                 <p className="text-xs text-slate-500 text-center py-4">Belum ada riset berjalan.</p>
               ) : (
                 proposals
-                  .filter((p) => p.status === 'IN_PROGRESS' || p.status === 'MONITORING' || p.status === 'REPORT_SUBMITTED')
+                  .filter((p) => p.status === 'OPD_IMPLEMENTING' || p.status === 'OPD_REPORTED')
                   .map((p) => (
                     <div key={p.id} className="space-y-1">
                       <div className="flex justify-between text-xs font-semibold">

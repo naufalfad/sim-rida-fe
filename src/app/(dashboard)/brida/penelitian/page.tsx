@@ -40,7 +40,7 @@ export default function BridaPenelitianListPage() {
   const filtered = proposals.filter((p) =>
     p.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
     p.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    (p.researcherName || '').toLowerCase().includes(searchTerm.toLowerCase())
+    p.opdName.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   return (
@@ -95,7 +95,7 @@ export default function BridaPenelitianListPage() {
                 </CardTitle>
                 <CardDescription className="text-3xs flex items-center gap-1 mt-1 text-slate-400 font-semibold">
                   <User className="h-3 w-3" />
-                  <span>Mitra: {item.researcherName || 'Belum Ditunjuk'}</span>
+                  <span>OPD: {item.opdName}</span>
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4 pt-2">

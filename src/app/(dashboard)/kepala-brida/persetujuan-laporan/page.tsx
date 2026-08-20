@@ -18,7 +18,7 @@ export default function PersetujuanLaporanListPage() {
     const loadQueue = async () => {
       try {
         const list = await proposalService.getProposals();
-        setProposals(list.filter((p) => p.status === 'REPORT_SUBMITTED'));
+        setProposals(list.filter((p) => p.status === 'OPD_REPORTED'));
       } catch (err) {
         console.error('Failed to load report approval queue:', err);
       } finally {
@@ -63,7 +63,7 @@ export default function PersetujuanLaporanListPage() {
                   {item.title}
                 </CardTitle>
                 <CardDescription className="text-3xs mt-1">
-                  Peneliti: <strong>{item.researcherName || 'Belum Diisi'}</strong>
+                  OPD: <strong>{item.opdName}</strong>
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4 pt-2">

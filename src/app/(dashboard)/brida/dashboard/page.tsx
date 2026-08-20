@@ -52,9 +52,9 @@ export default function BridaDashboard() {
   const verifCount = proposals.filter((p) => p.status === 'SUBMITTED').length;
   const reviewCount = proposals.filter((p) => p.status === 'ADMINISTRATIVE_REVIEW' || p.status === 'SUBSTANTIVE_REVIEW').length;
   const seleksiCount = proposals.filter((p) => p.status === 'SCORING' || p.status === 'SELECTION_RECOMMENDED').length;
-  const activeCount = proposals.filter((p) => p.status === 'IN_PROGRESS' || p.status === 'MONITORING').length;
-  const reportCount = proposals.filter((p) => p.status === 'REPORT_SUBMITTED').length;
-  const briefCount = proposals.filter((p) => p.status === 'RECOMMENDATION_APPROVED' || p.status === 'COMPLETED').length;
+  const activeCount = proposals.filter((p) => p.status === 'OPD_IMPLEMENTING' || p.status === 'EKATALOG_SENT').length;
+  const reportCount = proposals.filter((p) => p.status === 'OPD_REPORTED').length;
+  const briefCount = proposals.filter((p) => p.status === 'RECOMMENDATION_APPROVED').length;
   const recoCount = proposals.filter((p) => p.status === 'RECOMMENDATION_APPROVED').length;
 
   // Let's assume some mock overdue items (e.g. active projects over 80% with open issues, or pending verification > 7 days old)
@@ -62,7 +62,7 @@ export default function BridaDashboard() {
     if (p.status === 'SUBMITTED' && new Date(p.createdAt).getTime() < new Date('2026-08-12').getTime()) {
       return true;
     }
-    if (p.status === 'IN_PROGRESS' && p.issues && p.issues.some((i) => i.severity === 'HIGH' && i.status === 'OPEN')) {
+    if (p.status === 'OPD_IMPLEMENTING' && p.eKatalogDeadline && new Date(p.eKatalogDeadline).getTime() < new Date().getTime()) {
       return true;
     }
     return false;
@@ -337,11 +337,11 @@ export default function BridaDashboard() {
               </Link>
             </div>
             <div className="space-y-4">
-              {proposals.filter((p) => p.status === 'IN_PROGRESS' || p.status === 'MONITORING').length === 0 ? (
+              {proposals.filter((p) => p.status === 'OPD_IMPLEMENTING').length === 0 ? (
                 <p className="text-xs text-slate-500 text-center py-4">Belum ada riset berjalan.</p>
               ) : (
                 proposals
-                  .filter((p) => p.status === 'IN_PROGRESS' || p.status === 'MONITORING')
+                  .filter((p) => p.status === 'OPD_IMPLEMENTING')
                   .slice(0, 3)
                   .map((p) => (
                     <div key={p.id} className="space-y-1">
@@ -352,7 +352,7 @@ export default function BridaDashboard() {
                         <span>{p.progress}%</span>
                       </div>
                       <ProgressIndicator value={p.progress} size="sm" />
-                      <p className="text-[10px] text-slate-400">Pakar: {p.researcherName}</p>
+                      <p className="text-[10px] text-slate-400">OPD: {p.opdName}</p>
                     </div>
                   ))
               )}
@@ -368,15 +368,15 @@ export default function BridaDashboard() {
               </Link>
             </div>
             <div className="space-y-3">
-              {proposals.filter((p) => p.status === 'REPORT_SUBMITTED').length === 0 ? (
+              {proposals.filter((p) => p.status === 'OPD_REPORTED').length === 0 ? (
                 <p className="text-xs text-slate-500 text-center py-4">Tidak ada laporan akhir diajukan.</p>
               ) : (
                 proposals
-                  .filter((p) => p.status === 'REPORT_SUBMITTED')
+                  .filter((p) => p.status === 'OPD_REPORTED')
                   .map((p) => (
                     <div
                       key={p.id}
-                      className="p-3 border rounded-lg bg-slate-50/50 border-slate-200 dark:bg-slate-950/20 dark:border-slate-800 text-xs space-y-2"
+                      className="p-3 border rounded-lg bg-slate-50/50 border-slate-200 dark:bg-slate-955/20 dark:border-slate-800 text-xs space-y-2"
                     >
                       <div className="flex justify-between items-center font-bold">
                         <span className="text-blue-650 dark:text-blue-400">{p.id}</span>
@@ -387,7 +387,7 @@ export default function BridaDashboard() {
                       <p className="font-bold text-slate-850 dark:text-slate-200 line-clamp-1">
                         {p.title}
                       </p>
-                      <p className="text-[10px] text-slate-450">Pakar: {p.researcherName}</p>
+                      <p className="text-[10px] text-slate-450">OPD: {p.opdName}</p>
                       <Link href={`/brida/laporan/${p.id}`}>
                         <Button size="sm" variant="outline" className="w-full h-7 text-3xs mt-1">
                           Evaluasi Hasil Laporan

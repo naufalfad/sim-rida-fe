@@ -22,7 +22,7 @@ export default function OpdPenelitianPage() {
       try {
         const list = await proposalService.getProposals();
         // Filter out drafts or early reviews, show only execution/final states
-        const activeStates = ['IN_PROGRESS', 'MONITORING', 'REPORT_SUBMITTED', 'RECOMMENDATION_APPROVED', 'COMPLETED'];
+        const activeStates = ['EKATALOG_SENT', 'OPD_IMPLEMENTING', 'OPD_REPORTED', 'RECOMMENDATION_APPROVED'];
         setProposals(list.filter((p) => activeStates.includes(p.status)));
       } catch (err) {
         console.error('Failed to load active research projects:', err);
@@ -40,7 +40,7 @@ export default function OpdPenelitianPage() {
   const filtered = proposals.filter((p) =>
     p.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
     p.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    (p.researcherName || '').toLowerCase().includes(searchTerm.toLowerCase())
+    p.opdName.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   return (
@@ -93,7 +93,7 @@ export default function OpdPenelitianPage() {
                 </CardTitle>
                 <CardDescription className="text-[10px] text-slate-400 flex items-center gap-1">
                   <User className="h-3 w-3" />
-                  <span>Mitra: {item.researcherName || 'Belum Ditentukan'}</span>
+                  <span>OPD: {item.opdName}</span>
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4 pt-0">

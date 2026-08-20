@@ -347,28 +347,22 @@ export const proposalService = {
       const todayStr = new Date().toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' });
 
       const updatedTimeline = [...proposal.timeline];
-      const assignStep = updatedTimeline.find((t) => t.status === 'RESEARCHER_SELECTION' || t.status === 'APPROVED');
+      const assignStep = updatedTimeline.find((t) => t.status === 'APPROVED');
       if (assignStep) assignStep.isCompleted = true;
 
       updatedTimeline.push({
-        status: 'RESEARCHER_APPROVAL',
-        label: `Pengusulan Mitra Peneliti: ${researcher.name}`,
+        status: 'EKATALOG_SENT',
+        label: `E-Katalog Siap Dikirim ke ${proposal.opdName}`,
         date: todayStr,
         actor: 'Admin BRIDA',
-        isCompleted: false, // Waiting for Kepala BRIDA approval
+        isCompleted: false,
       });
 
       const updatedProposal: Proposal = {
         ...proposal,
-        status: 'RESEARCHER_APPROVAL',
-        progress: 60,
-        researcherId,
-        researcherName: researcher.name,
+        status: 'APPROVED',
+        progress: 55,
         timeline: updatedTimeline,
-        issues: proposal.issues || [],
-        risks: proposal.risks || [
-          { id: 'rsk-default-1', description: 'Keterlambatan penyelesaian log laporan.', mitigation: 'Pelaporan log progress 10% setiap dua minggu.', riskLevel: 'MEDIUM' }
-        ],
         updatedAt: new Date().toISOString(),
       };
 
@@ -415,8 +409,8 @@ export const proposalService = {
 
       if (nextStatus === 'APPROVED') {
         updatedTimeline.push({
-          status: 'RESEARCHER_SELECTION',
-          label: 'Menunggu Penetapan Mitra Peneliti',
+          status: 'EKATALOG_SENT',
+          label: 'Menunggu Pengiriman E-Katalog ke OPD',
           date: todayStr,
           actor: 'Admin BRIDA',
           isCompleted: false,
@@ -446,78 +440,9 @@ export const proposalService = {
     return null;
   },
 
-  // KEPALA BRIDA: Researcher Penunjukan Approval
-  approveResearcher: async (id: string, comment: string, action: 'APPROVE' | 'RETURN'): Promise<Proposal | null> => {
-    await new Promise((resolve) => setTimeout(resolve, 350));
-    const proposals = getStorageItem<Proposal[]>(PROPOSALS_KEY, INITIAL_PROPOSALS);
-    const researchers = getStorageItem<Researcher[]>(RESEARCHERS_KEY, INITIAL_RESEARCHERS);
-
-    const propIdx = proposals.findIndex((p) => p.id === id);
-    if (propIdx !== -1) {
-      const proposal = proposals[propIdx];
-      const todayStr = new Date().toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' });
-      const updatedTimeline = [...proposal.timeline];
-
-      const researcherApprovalStep = updatedTimeline.find((t) => t.status === 'RESEARCHER_APPROVAL');
-      if (researcherApprovalStep) researcherApprovalStep.isCompleted = true;
-
-      let nextStatus: WorkflowStatus = 'IN_PROGRESS';
-      let nextLabel = 'Persetujuan Mitra Disahkan (Kontrak Berjalan)';
-
-      if (action === 'RETURN') {
-        nextStatus = 'RESEARCHER_SELECTION';
-        nextLabel = 'Penetapan Mitra Dikembalikan ke BRIDA';
-      }
-
-      updatedTimeline.push({
-        status: nextStatus,
-        label: nextLabel,
-        date: todayStr,
-        actor: 'Kepala BRIDA',
-        notes: comment,
-        isCompleted: nextStatus === 'IN_PROGRESS' ? false : true,
-      });
-
-      if (nextStatus === 'IN_PROGRESS') {
-        updatedTimeline.push({
-          status: 'IN_PROGRESS',
-          label: 'Pelaksanaan Penelitian Lapangan',
-          date: todayStr,
-          actor: proposal.researcherName || 'Mitra Peneliti',
-          isCompleted: false,
-        });
-
-        // Save active project record to researcher
-        if (proposal.researcherId) {
-          const resIdx = researchers.findIndex((r) => r.id === proposal.researcherId);
-          if (resIdx !== -1) {
-            researchers[resIdx].assignedResearchId = id;
-            researchers[resIdx].assignedResearchTitle = proposal.title;
-            setStorageItem(RESEARCHERS_KEY, researchers);
-          }
-        }
-      }
-
-      const historyEntry = {
-        actor: 'Kepala BRIDA',
-        date: todayStr,
-        action: action === 'APPROVE' ? ('APPROVE' as const) : ('RETURN' as const),
-        comment,
-      };
-
-      const updatedProposal: Proposal = {
-        ...proposal,
-        status: nextStatus,
-        progress: nextStatus === 'IN_PROGRESS' ? 65 : 60,
-        timeline: updatedTimeline,
-        approvalHistory: [...(proposal.approvalHistory || []), historyEntry],
-        updatedAt: new Date().toISOString(),
-      };
-
-      proposals[propIdx] = updatedProposal;
-      setStorageItem(PROPOSALS_KEY, proposals);
-      return updatedProposal;
-    }
+  // KEPALA BRIDA: Researcher Penunjukan Approval — DEPRECATED (kept as stub)
+  // Role Peneliti dihapus, fungsi ini tidak digunakan lagi
+  approveResearcher: async (_id: string, _comment: string, _action: 'APPROVE' | 'RETURN'): Promise<Proposal | null> => {
     return null;
   },
 
@@ -532,14 +457,14 @@ export const proposalService = {
       const todayStr = new Date().toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' });
       const updatedTimeline = [...existing.timeline];
 
-      const reportStep = updatedTimeline.find((t) => t.status === 'REPORT_SUBMITTED');
+      const reportStep = updatedTimeline.find((t) => t.status === 'OPD_REPORTED');
       if (reportStep) reportStep.isCompleted = true;
 
       let nextStatus: WorkflowStatus = 'RECOMMENDATION_PENDING';
       let nextLabel = 'Laporan Akhir Disetujui (Menunggu Rekomendasi)';
 
       if (action === 'RETURN') {
-        nextStatus = 'IN_PROGRESS';
+        nextStatus = 'OPD_IMPLEMENTING';
         nextLabel = 'Revisi Laporan Akhir Diminta';
       }
 
@@ -752,15 +677,15 @@ export const proposalService = {
       const todayStr = new Date().toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' });
       const updatedTimeline = [...existing.timeline];
 
-      const reportStep = updatedTimeline.find((t) => t.status === 'REPORT_SUBMITTED');
+      const reportStep = updatedTimeline.find((t) => t.status === 'OPD_REPORTED');
       if (reportStep) reportStep.isCompleted = true;
 
       let nextStatus: WorkflowStatus = 'RECOMMENDATION_PENDING';
-      let nextLabel = 'Evaluasi Laporan BRIDA Selesai (Menunggu TTD Bupati)';
+      let nextLabel = 'Evaluasi Laporan BRIDA Selesai (Menunggu Rekomendasi Bupati)';
 
       if (status === 'REVISION_REQUIRED') {
-        nextStatus = 'IN_PROGRESS';
-        nextLabel = 'Revisi Laporan Akhir Diminta oleh BRIDA';
+        nextStatus = 'OPD_IMPLEMENTING';
+        nextLabel = 'Revisi Laporan Diminta oleh BRIDA';
       }
 
       updatedTimeline.push({
@@ -769,14 +694,13 @@ export const proposalService = {
         label: nextLabel,
         date: todayStr,
         actor: 'Admin BRIDA',
-        isCompleted: false, // Waiting for Bupati/Kepala BRIDA approval
+        isCompleted: false,
       });
 
       const updated: Proposal = {
         ...existing,
         status: nextStatus,
         progress: status === 'APPROVED' ? 90 : 80,
-        reportReview: { reviewerNotes: notes, status },
         timeline: updatedTimeline,
         updatedAt: new Date().toISOString(),
       };
@@ -855,130 +779,18 @@ export const proposalService = {
     return null;
   },
 
-  updateMilestoneProgress: async (proposalId: string, milestoneId: string, progress: number, notes?: string, evidenceFile?: string): Promise<Proposal | null> => {
-    await new Promise((resolve) => setTimeout(resolve, 300));
-    const list = getStorageItem<Proposal[]>(PROPOSALS_KEY, INITIAL_PROPOSALS);
-    const idx = list.findIndex((p) => p.id === proposalId);
-
-    if (idx !== -1) {
-      const existing = list[idx];
-      const todayStr = new Date().toLocaleDateString('en-CA');
-      
-      const updatedMilestones = (existing.milestones || []).map((m) => {
-        if (m.id === milestoneId) {
-          return {
-            ...m,
-            progress,
-            notes: notes || m.notes,
-            evidenceFile: evidenceFile || m.evidenceFile,
-            updatedAt: todayStr,
-          };
-        }
-        return m;
-      });
-
-      // Calculate total progress based on milestones average
-      const totalProgress = updatedMilestones.length > 0
-        ? Math.round(updatedMilestones.reduce((acc, m) => acc + m.progress, 0) / updatedMilestones.length)
-        : existing.progress;
-
-      const updated: Proposal = {
-        ...existing,
-        progress: Math.max(10, Math.min(90, totalProgress)), // Cap progress between 10% and 90% during active phase
-        milestones: updatedMilestones,
-        updatedAt: new Date().toISOString(),
-      };
-
-      list[idx] = updated;
-      setStorageItem(PROPOSALS_KEY, list);
-      return updated;
-    }
+  // updateMilestoneProgress — DEPRECATED (researcher role removed)
+  updateMilestoneProgress: async (_proposalId: string, _milestoneId: string, _progress: number, _notes?: string, _evidenceFile?: string): Promise<Proposal | null> => {
     return null;
   },
 
-  uploadProjectDocument: async (proposalId: string, type: import('@/types/proposals').ProjectDocument['type'], name: string, fileName: string, fileSize: string): Promise<Proposal | null> => {
-    await new Promise((resolve) => setTimeout(resolve, 300));
-    const list = getStorageItem<Proposal[]>(PROPOSALS_KEY, INITIAL_PROPOSALS);
-    const idx = list.findIndex((p) => p.id === proposalId);
-
-    if (idx !== -1) {
-      const existing = list[idx];
-      const todayStr = new Date().toLocaleDateString('en-CA');
-      
-      const newDoc: import('@/types/proposals').ProjectDocument = {
-        id: `doc-${Math.random().toString(36).substring(2, 9)}`,
-        name,
-        type,
-        fileName,
-        fileSize,
-        uploadedAt: todayStr,
-      };
-
-      const updated: Proposal = {
-        ...existing,
-        documents: [...(existing.documents || []), newDoc],
-        updatedAt: new Date().toISOString(),
-      };
-
-      list[idx] = updated;
-      setStorageItem(PROPOSALS_KEY, list);
-      return updated;
-    }
+  // uploadProjectDocument — DEPRECATED (researcher role removed)
+  uploadProjectDocument: async (_proposalId: string, _type: string, _name: string, _fileName: string, _fileSize: string): Promise<Proposal | null> => {
     return null;
   },
 
-  submitFinalReport: async (proposalId: string, reportData: Omit<import('@/types/proposals').FinalReport, 'submittedAt'>): Promise<Proposal | null> => {
-    await new Promise((resolve) => setTimeout(resolve, 500));
-    const list = getStorageItem<Proposal[]>(PROPOSALS_KEY, INITIAL_PROPOSALS);
-    const idx = list.findIndex((p) => p.id === proposalId);
-
-    if (idx !== -1) {
-      const existing = list[idx];
-      const todayStr = new Date().toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' });
-      const dateISO = new Date().toISOString();
-      const updatedTimeline = [...existing.timeline];
-
-      // Mark active steps completed
-      const activeStep = updatedTimeline.find((t) => t.status === 'IN_PROGRESS' || t.status === 'MONITORING');
-      if (activeStep) activeStep.isCompleted = true;
-
-      updatedTimeline.push({
-        status: 'REPORT_SUBMITTED',
-        label: 'Laporan Akhir Diserahkan Peneliti',
-        date: todayStr,
-        actor: existing.researcherName || 'Mitra Peneliti',
-        isCompleted: false, // BRIDA needs to verify it!
-      });
-
-      const finalReport: import('@/types/proposals').FinalReport = {
-        ...reportData,
-        submittedAt: dateISO,
-      };
-
-      // Automatically add final report to the documents list as well
-      const newDoc: import('@/types/proposals').ProjectDocument = {
-        id: `doc-final-${Math.random().toString(36).substring(2, 9)}`,
-        name: 'Laporan Akhir (Final Report)',
-        type: 'FINAL_REPORT',
-        fileName: reportData.attachments?.[0]?.name || 'Laporan_Akhir_Final.pdf',
-        fileSize: reportData.attachments?.[0]?.size || '3.5 MB',
-        uploadedAt: new Date().toLocaleDateString('en-CA'),
-      };
-
-      const updated: Proposal = {
-        ...existing,
-        status: 'REPORT_SUBMITTED',
-        progress: 90,
-        finalReport,
-        documents: [...(existing.documents || []), newDoc],
-        timeline: updatedTimeline,
-        updatedAt: dateISO,
-      };
-
-      list[idx] = updated;
-      setStorageItem(PROPOSALS_KEY, list);
-      return updated;
-    }
+  // submitFinalReport — DEPRECATED (researcher role removed; use submitOpdFinalReport instead)
+  submitFinalReport: async (_proposalId: string, _reportData: Record<string, unknown>): Promise<Proposal | null> => {
     return null;
   },
 
@@ -1165,5 +977,242 @@ export const proposalService = {
       localStorage.removeItem(FOLLOW_UPS_KEY);
       window.location.reload();
     }
+  },
+
+  /** BRIDA mengirimkan link e-Katalog ke OPD setelah seleksi disetujui */
+  sendEKatalogLink: async (
+    proposalId: string,
+    eKatalogUrl: string,
+    eKatalogDesc: string,
+    eKatalogDeadline: string
+  ): Promise<Proposal | null> => {
+    await new Promise((resolve) => setTimeout(resolve, 400));
+    const list = getStorageItem<Proposal[]>(PROPOSALS_KEY, INITIAL_PROPOSALS);
+    const idx = list.findIndex((p) => p.id === proposalId);
+
+    if (idx !== -1) {
+      const existing = list[idx];
+      const todayStr = new Date().toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' });
+      const updatedTimeline = [...existing.timeline];
+
+      updatedTimeline.push({
+        status: 'EKATALOG_SENT',
+        label: `E-Katalog Dikirimkan ke ${existing.opdName}`,
+        date: todayStr,
+        actor: 'Admin BRIDA',
+        isCompleted: true,
+      });
+
+      const updated: Proposal = {
+        ...existing,
+        status: 'EKATALOG_SENT',
+        progress: 55,
+        eKatalogUrl,
+        eKatalogDesc,
+        eKatalogDeadline,
+        eKatalogSentAt: new Date().toISOString(),
+        timeline: updatedTimeline,
+        updatedAt: new Date().toISOString(),
+      };
+
+      list[idx] = updated;
+      setStorageItem(PROPOSALS_KEY, list);
+      return updated;
+    }
+    return null;
+  },
+
+  /** OPD submit log monitoring berkala selama implementasi e-Katalog */
+  submitOpdMonitoringLog: async (
+    proposalId: string,
+    log: { description: string; progress: number; evidenceFile?: string }
+  ): Promise<Proposal | null> => {
+    await new Promise((resolve) => setTimeout(resolve, 300));
+    const list = getStorageItem<Proposal[]>(PROPOSALS_KEY, INITIAL_PROPOSALS);
+    const idx = list.findIndex((p) => p.id === proposalId);
+
+    if (idx !== -1) {
+      const existing = list[idx];
+      const todayStr = new Date().toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' });
+      const updatedTimeline = [...existing.timeline];
+      
+      // Update OPD_IMPLEMENTING timeline node if not yet added
+      const hasNode = updatedTimeline.some((t) => t.status === 'OPD_IMPLEMENTING');
+      if (!hasNode) {
+        updatedTimeline.push({
+          status: 'OPD_IMPLEMENTING',
+          label: `${existing.opdName} Mulai Implementasi`,
+          date: todayStr,
+          actor: existing.opdName,
+          isCompleted: false,
+        });
+      }
+
+      const newLog: import('@/types/proposals').OpdMonitoringLog = {
+        id: `log-${Math.random().toString(36).substring(2, 9)}`,
+        date: new Date().toLocaleDateString('en-CA'),
+        progress: log.progress,
+        description: log.description,
+        evidenceFile: log.evidenceFile,
+      };
+
+      const updated: Proposal = {
+        ...existing,
+        status: 'OPD_IMPLEMENTING',
+        progress: Math.max(existing.progress, Math.round(log.progress * 0.7)), // scale to overall progress
+        opdMonitoringLogs: [...(existing.opdMonitoringLogs || []), newLog],
+        timeline: updatedTimeline,
+        updatedAt: new Date().toISOString(),
+      };
+
+      list[idx] = updated;
+      setStorageItem(PROPOSALS_KEY, list);
+      return updated;
+    }
+    return null;
+  },
+
+  /** OPD submit laporan akhir implementasi → status menjadi OPD_REPORTED */
+  submitOpdFinalReport: async (
+    proposalId: string,
+    reportData: Omit<import('@/types/proposals').OpdReport, 'submittedAt'>
+  ): Promise<Proposal | null> => {
+    await new Promise((resolve) => setTimeout(resolve, 500));
+    const list = getStorageItem<Proposal[]>(PROPOSALS_KEY, INITIAL_PROPOSALS);
+    const idx = list.findIndex((p) => p.id === proposalId);
+
+    if (idx !== -1) {
+      const existing = list[idx];
+      const todayStr = new Date().toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' });
+      const updatedTimeline = [...existing.timeline];
+
+      // Mark OPD_IMPLEMENTING as done
+      const implNode = updatedTimeline.find((t) => t.status === 'OPD_IMPLEMENTING');
+      if (implNode) implNode.isCompleted = true;
+
+      updatedTimeline.push({
+        status: 'OPD_REPORTED',
+        label: `Laporan Akhir OPD Diserahkan ke BRIDA`,
+        date: todayStr,
+        actor: existing.opdName,
+        isCompleted: true,
+      });
+
+      const opdReport: import('@/types/proposals').OpdReport = {
+        ...reportData,
+        submittedAt: new Date().toISOString(),
+      };
+
+      const updated: Proposal = {
+        ...existing,
+        status: 'OPD_REPORTED',
+        progress: 85,
+        opdReport,
+        timeline: updatedTimeline,
+        updatedAt: new Date().toISOString(),
+      };
+
+      list[idx] = updated;
+      setStorageItem(PROPOSALS_KEY, list);
+      return updated;
+    }
+    return null;
+  },
+};
+
+/**
+ * proposalApi — synchronous API for client components that read directly
+ * from localStorage without async delays. Use for initial renders and quick reads.
+ */
+export const proposalApi = {
+  getProposals: (): Proposal[] => {
+    return getStorageItem<Proposal[]>(PROPOSALS_KEY, INITIAL_PROPOSALS);
+  },
+
+  getProposalById: (id: string): Proposal | undefined => {
+    const list = getStorageItem<Proposal[]>(PROPOSALS_KEY, INITIAL_PROPOSALS);
+    return list.find((p) => p.id === id);
+  },
+
+  sendEKatalogLink: async (
+    proposalId: string,
+    url: string,
+    desc: string,
+    deadline: string
+  ): Promise<Proposal | null> => {
+    await new Promise((resolve) => setTimeout(resolve, 350));
+    const list = getStorageItem<Proposal[]>(PROPOSALS_KEY, INITIAL_PROPOSALS);
+    const idx = list.findIndex((p) => p.id === proposalId);
+    if (idx !== -1) {
+      const existing = list[idx];
+      const todayStr = new Date().toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' });
+      const updatedTimeline = [...existing.timeline];
+
+      // Mark APPROVED step as completed
+      const approvedStep = updatedTimeline.find((t) => t.status === 'APPROVED');
+      if (approvedStep) approvedStep.isCompleted = true;
+
+      updatedTimeline.push({
+        status: 'EKATALOG_SENT',
+        label: `Link E-Katalog Dikirim ke ${existing.opdName}`,
+        date: todayStr,
+        actor: 'Admin BRIDA',
+        isCompleted: true,
+      });
+
+      const updated: Proposal = {
+        ...existing,
+        status: 'EKATALOG_SENT',
+        eKatalogUrl: url,
+        eKatalogDesc: desc,
+        eKatalogDeadline: deadline,
+        progress: 60,
+        timeline: updatedTimeline,
+        updatedAt: new Date().toISOString(),
+      };
+
+      list[idx] = updated;
+      setStorageItem(PROPOSALS_KEY, list);
+      return updated;
+    }
+    return null;
+  },
+
+  submitOpdMonitoringLog: async (
+    proposalId: string,
+    log: { description: string; progress: number; date?: string; evidenceFile?: string }
+  ): Promise<Proposal | null> => {
+    await new Promise((resolve) => setTimeout(resolve, 300));
+    const list = getStorageItem<Proposal[]>(PROPOSALS_KEY, INITIAL_PROPOSALS);
+    const idx = list.findIndex((p) => p.id === proposalId);
+    if (idx !== -1) {
+      const existing = list[idx];
+      const todayStr = log.date || new Date().toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' });
+      const newLog = {
+        id: `log-${Math.random().toString(36).substring(2, 9)}`,
+        description: log.description,
+        progress: log.progress,
+        date: todayStr,
+        evidenceFile: log.evidenceFile,
+      };
+      const updated: Proposal = {
+        ...existing,
+        status: 'OPD_IMPLEMENTING',
+        progress: Math.max(existing.progress, Math.round(log.progress * 0.7)),
+        opdMonitoringLogs: [...(existing.opdMonitoringLogs || []), newLog],
+        updatedAt: new Date().toISOString(),
+      };
+      list[idx] = updated;
+      setStorageItem(PROPOSALS_KEY, list);
+      return updated;
+    }
+    return null;
+  },
+
+  submitOpdFinalReport: async (
+    proposalId: string,
+    reportData: Omit<import('@/types/proposals').OpdReport, 'submittedAt'>
+  ): Promise<Proposal | null> => {
+    return proposalService.submitOpdFinalReport(proposalId, reportData);
   },
 };

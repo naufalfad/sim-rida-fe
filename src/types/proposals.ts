@@ -55,30 +55,21 @@ export interface ApprovalHistoryLog {
   comment: string;
 }
 
-export interface ResearchMilestone {
+/** Log monitoring berkala yang disubmit OPD selama implementasi e-Katalog */
+export interface OpdMonitoringLog {
   id: string;
-  label: string;
-  progress: number;
-  notes?: string;
-  evidenceFile?: string;
-  updatedAt?: string;
+  date: string;         // tanggal log
+  progress: number;     // 0–100 persen
+  description: string;  // deskripsi kemajuan
+  evidenceFile?: string; // nama file bukti
 }
 
-export interface ProjectDocument {
-  id: string;
-  name: string;
-  type: 'PROPOSAL' | 'METHODOLOGY' | 'DATASET_METADATA' | 'PROGRESS_REPORT' | 'FINAL_REPORT';
-  fileName: string;
-  fileSize: string;
-  uploadedAt: string;
-}
-
-export interface FinalReport {
-  executiveSummary: string;
-  methodology: string;
-  findings: string;
-  conclusion: string;
-  recommendation: string;
+/** Laporan akhir implementasi yang disubmit OPD ke BRIDA */
+export interface OpdReport {
+  title: string;
+  findings: string;           // temuan utama implementasi
+  obstacles: string;          // hambatan yang dihadapi
+  opdRecommendation: string;  // saran/rekomendasi dari OPD
   attachments?: { name: string; size: string }[];
   submittedAt: string;
 }
@@ -95,18 +86,20 @@ export interface Proposal {
   research?: ResearchProposal;
   kak?: KAK;
   timeline: TimelineLog[];
-  researcherId?: string;
-  researcherName?: string;
+  // E-Katalog fields (menggantikan researcherId/researcherName)
+  eKatalogUrl?: string;
+  eKatalogDesc?: string;
+  eKatalogDeadline?: string;
+  eKatalogSentAt?: string;
+  // OPD implementation data
+  opdMonitoringLogs?: OpdMonitoringLog[];
+  opdReport?: OpdReport;
   // BRIDA operational fields
   verificationChecklist?: import('./brida').VerificationChecklist;
   review?: import('./brida').SubstantiveReview;
   issues?: import('./brida').ProjectIssue[];
   risks?: import('./brida').ProjectRisk[];
-  reportReview?: import('./brida').ReportReview;
   approvalHistory?: ApprovalHistoryLog[];
-  milestones?: ResearchMilestone[];
-  documents?: ProjectDocument[];
-  finalReport?: FinalReport;
   policyBrief?: PolicyBrief;
   recommendation?: ResearchRecommendation;
 }

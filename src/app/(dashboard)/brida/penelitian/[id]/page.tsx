@@ -96,7 +96,7 @@ export default function BridaPenelitianDetailPage() {
               <span>Buka Log Monitoring</span>
             </Button>
           </Link>
-          {proposal.status === 'REPORT_SUBMITTED' && (
+          {proposal.status === 'OPD_REPORTED' && (
             <Link href={`/brida/laporan/${proposal.id}`}>
               <Button size="sm" className="bg-blue-650 hover:bg-blue-750 flex items-center gap-1 font-bold">
                 <FileText className="h-4 w-4" />
@@ -168,9 +168,9 @@ export default function BridaPenelitianDetailPage() {
               </div>
               <div>
                 <p className="font-bold text-slate-850 dark:text-slate-200">
-                  {proposal.researcherName || 'Belum Ditunjuk'}
+                  {proposal.opdName}
                 </p>
-                <p className="text-3xs text-slate-500 mt-0.5">Mitra Peneliti Utama</p>
+                <p className="text-3xs text-slate-500 mt-0.5">OPD Pelaksana</p>
               </div>
             </div>
 

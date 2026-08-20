@@ -49,22 +49,21 @@ export default function KepalaBridaDashboard() {
 
   // Portfolio calculations
   const totalStudies = proposals.filter((p) =>
-    ['IN_PROGRESS', 'MONITORING', 'REPORT_SUBMITTED', 'RECOMMENDATION_PENDING', 'RECOMMENDATION_APPROVED', 'COMPLETED'].includes(p.status)
+    ['EKATALOG_SENT', 'OPD_IMPLEMENTING', 'OPD_REPORTED', 'RECOMMENDATION_PENDING', 'RECOMMENDATION_APPROVED'].includes(p.status)
   ).length;
 
-  const activeStudies = proposals.filter((p) => p.status === 'IN_PROGRESS' || p.status === 'MONITORING').length;
-  const completedStudies = proposals.filter((p) => p.status === 'RECOMMENDATION_APPROVED' || p.status === 'COMPLETED').length;
+  const activeStudies = proposals.filter((p) => p.status === 'OPD_IMPLEMENTING' || p.status === 'EKATALOG_SENT').length;
+  const completedStudies = proposals.filter((p) => p.status === 'RECOMMENDATION_APPROVED').length;
   
-  // Delayed: active projects with severity HIGH open issues
+  // Delayed: OPD implementing but past deadline
   const delayedStudies = proposals.filter((p) =>
-    (p.status === 'IN_PROGRESS' || p.status === 'MONITORING') &&
-    p.issues && p.issues.some((i) => i.severity === 'HIGH' && i.status === 'OPEN')
+    p.status === 'OPD_IMPLEMENTING' &&
+    p.eKatalogDeadline && new Date(p.eKatalogDeadline).getTime() < new Date().getTime()
   ).length;
 
   // Queues counts
   const selectionQueue = proposals.filter((p) => p.status === 'SELECTION_RECOMMENDED');
-  const researcherQueue = proposals.filter((p) => p.status === 'RESEARCHER_APPROVAL');
-  const reportQueue = proposals.filter((p) => p.status === 'REPORT_SUBMITTED');
+  const reportQueue = proposals.filter((p) => p.status === 'OPD_REPORTED');
   const recommendationQueue = proposals.filter((p) => p.status === 'RECOMMENDATION_PENDING');
 
   // Follow-up performance calculations
@@ -97,7 +96,7 @@ export default function KepalaBridaDashboard() {
   // Budget calculations
   const totalBudget = proposals.reduce((acc, p) => acc + (p.kak?.anggaran || 0), 0);
   const activeBudget = proposals
-    .filter((p) => ['IN_PROGRESS', 'MONITORING', 'REPORT_SUBMITTED'].includes(p.status))
+    .filter((p) => ['EKATALOG_SENT', 'OPD_IMPLEMENTING', 'OPD_REPORTED'].includes(p.status))
     .reduce((acc, p) => acc + (p.kak?.anggaran || 0), 0);
 
   return (
@@ -186,28 +185,6 @@ export default function KepalaBridaDashboard() {
             </CardHeader>
             <CardContent className="pt-2">
               <Link href="/kepala-brida/persetujuan-seleksi">
-                <Button size="sm" className="w-full text-3xs h-8 flex items-center justify-center gap-1">
-                  <span>Buka Antrean</span>
-                  <ChevronRight className="h-3.5 w-3.5" />
-                </Button>
-              </Link>
-            </CardContent>
-          </Card>
-
-          {/* Peneliti Queue */}
-          <Card className="bg-white dark:bg-slate-900 border-slate-200/80 hover:border-slate-350 transition-all">
-            <CardHeader className="pb-2">
-              <div className="flex justify-between items-center">
-                <span className="p-1 rounded bg-purple-50 text-purple-750 text-3xs font-bold dark:bg-purple-950/20 dark:text-purple-400">MITRA PENELITI</span>
-                <span className="text-xs font-bold font-mono text-slate-655 bg-slate-100 px-2 py-0.5 rounded-full dark:bg-slate-800">
-                  {researcherQueue.length}
-                </span>
-              </div>
-              <CardTitle className="text-sm mt-3">Persetujuan Peneliti</CardTitle>
-              <CardDescription className="text-3xs">SK penunjukan pakar/universitas pelaksana.</CardDescription>
-            </CardHeader>
-            <CardContent className="pt-2">
-              <Link href="/kepala-brida/persetujuan-peneliti">
                 <Button size="sm" className="w-full text-3xs h-8 flex items-center justify-center gap-1">
                   <span>Buka Antrean</span>
                   <ChevronRight className="h-3.5 w-3.5" />

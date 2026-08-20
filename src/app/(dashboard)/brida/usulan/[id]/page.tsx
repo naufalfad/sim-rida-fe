@@ -91,20 +91,19 @@ export default function BridaUsulanDetailPage() {
           icon: <FolderLock className="h-4 w-4 mr-2" />,
         };
       case 'APPROVED':
-      case 'RESEARCHER_SELECTION':
+      case 'EKATALOG_SENT':
         return {
-          label: 'Tunjuk Mitra Peneliti',
-          path: `/brida/peneliti/${proposal.id}`, // can redirect to researcher assignment
-          icon: <User className="h-4 w-4 mr-2" />,
+          label: 'Kirim Link E-Katalog',
+          path: `/brida/seleksi/${proposal.id}`,
+          icon: <FolderLock className="h-4 w-4 mr-2" />,
         };
-      case 'REPORT_SUBMITTED':
+      case 'OPD_REPORTED':
         return {
           label: 'Review Laporan Akhir',
           path: `/brida/laporan/${proposal.id}`,
           icon: <FileCheck className="h-4 w-4 mr-2" />,
         };
-      case 'IN_PROGRESS':
-      case 'MONITORING':
+      case 'OPD_IMPLEMENTING':
         return {
           label: 'Monitoring Pelaksanaan',
           path: `/brida/monitoring/${proposal.id}`,
