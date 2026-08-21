@@ -41,8 +41,8 @@ export default function BridaReviewUsulanPage() {
         setProblem(probData);
         setReviewNotes(probData.reviewNotes || '');
 
-        if (probData.research && probData.research.length > 0) {
-          const researchId = probData.research[0].id;
+        if (probData.research) {
+          const researchId = probData.research.id;
           try {
             const kakData = await researchService.getKakByResearchId(researchId);
             setKak(kakData);
@@ -102,7 +102,7 @@ export default function BridaReviewUsulanPage() {
     );
   }
 
-  const research = problem.research && problem.research.length > 0 ? problem.research[0] : null;
+  const research = problem.research || null;
   const isReviewable = problem.status === 'PROBLEM_SUBMITTED' || problem.status === 'DRAFT';
 
   return (
@@ -348,7 +348,7 @@ export default function BridaReviewUsulanPage() {
 
                   <div className="space-y-2 pt-2 border-t border-slate-100">
                     <Button 
-                      onClick={() => handleReview('VALID')}
+                      onClick={() => handleReview('APPROVED')}
                       isLoading={isSubmitting}
                       className="w-full rounded-none bg-emerald-600 hover:bg-emerald-700 text-white font-bold"
                     >
@@ -371,12 +371,44 @@ export default function BridaReviewUsulanPage() {
                     </Button>
                   </div>
                 </>
+              ) : problem.status === 'APPROVED' ? (
+                <div className="text-center py-4 space-y-4">
+                  <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-emerald-100 mb-2">
+                    <CheckCircle2 className="w-6 h-6 text-emerald-600" />
+                  </div>
+                  <p className="text-sm text-slate-600 font-medium px-2">
+                    Usulan ini telah disetujui (Usulan Masalah, Penelitian, dan KAK). Langkah selanjutnya adalah masuk ke tahap Seleksi/E-Katalog.
+                  </p>
+                  <Button 
+                    onClick={() => handleReview('EKATALOG_SENT' as ValidationStatus)}
+                    isLoading={isSubmitting}
+                    className="w-full rounded-none bg-sky-600 hover:bg-sky-700 text-white font-bold"
+                  >
+                    Tandai Dikirim ke E-Katalog
+                  </Button>
+                </div>
+              ) : problem.status === 'EKATALOG_SENT' ? (
+                <div className="text-center py-4 space-y-4">
+                  <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-sky-100 mb-2">
+                    <Settings className="w-6 h-6 text-sky-600" />
+                  </div>
+                  <p className="text-sm text-slate-600 font-medium px-2">
+                    Usulan sedang diproses di E-Katalog. Jika mitra sudah terpilih dan siap bekerja, tandai sebagai "Sedang Dilaksanakan".
+                  </p>
+                  <Button 
+                    onClick={() => handleReview('OPD_IMPLEMENTING' as ValidationStatus)}
+                    isLoading={isSubmitting}
+                    className="w-full rounded-none bg-cyan-600 hover:bg-cyan-700 text-white font-bold"
+                  >
+                    Tandai Pelaksanaan Dimulai
+                  </Button>
+                </div>
               ) : (
                 <div className="text-center py-4">
                   <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-slate-100 mb-3">
                     <Award className="w-6 h-6 text-slate-400" />
                   </div>
-                  <p className="text-sm text-slate-500 font-medium">Usulan ini telah selesai ditinjau dan tidak dapat diubah lagi statusnya saat ini.</p>
+                  <p className="text-sm text-slate-500 font-medium">Tahap ini telah selesai. Pantau progres selanjutnya pada menu terkait.</p>
                 </div>
               )}
             </CardContent>

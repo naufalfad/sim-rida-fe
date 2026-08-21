@@ -141,8 +141,8 @@ export default function EditIntegratedProposalPage() {
         let researchData: any = null;
         let kakData: any = null;
 
-        if (probData.research && probData.research.length > 0) {
-          researchData = probData.research[0];
+        if (probData.research) {
+          researchData = probData.research;
           try {
             kakData = await researchService.getKakByResearchId(researchData.id);
           } catch (kakErr) {
@@ -475,7 +475,7 @@ export default function EditIntegratedProposalPage() {
                     <div className="w-full sm:w-48">
                       <Input type="number" placeholder="Harga Satuan (Rp)" {...register(`kak.rabItems.${index}.unitPrice`)} error={errors.kak?.rabItems?.[index]?.unitPrice?.message} />
                     </div>
-                    <Button variant="ghost" size="icon" type="button" onClick={() => removeRab(index)} className="text-red-500 hover:text-red-600 hover:bg-red-50 rounded-none mt-1 sm:mt-0">
+                    <Button variant="ghost" size="sm" type="button" onClick={() => removeRab(index)} className="px-2 text-red-500 hover:text-red-600 hover:bg-red-50 rounded-none mt-1 sm:mt-0">
                       <Trash2 className="h-5 w-5" />
                     </Button>
                   </div>

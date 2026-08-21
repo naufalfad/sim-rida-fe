@@ -15,7 +15,7 @@ export interface Attachment {
   uploadedAt: string;
 }
 
-export type ValidationStatus = 'DRAFT' | 'PROBLEM_SUBMITTED' | 'VALID' | 'REVISION_REQUIRED' | 'REJECTED';
+export type ValidationStatus = 'DRAFT' | 'PROBLEM_SUBMITTED' | 'VALID' | 'APPROVED' | 'REVISION_REQUIRED' | 'REJECTED' | 'EKATALOG_SENT' | 'OPD_IMPLEMENTING' | 'OPD_REPORTED' | 'POLICY_BRIEF_DRAFT' | 'RECOMMENDATION_APPROVED' | 'FOLLOW_UP_COMPLETED';
 
 export interface Problem {
   id: string;
@@ -27,7 +27,7 @@ export interface Problem {
   targetCompletion: string;
   sectorId: string;
   sector?: Sector;
-  research?: Research[];
+  research?: Research;
   attachments?: Attachment[];
   status: ValidationStatus;
   rejectionReason?: string;

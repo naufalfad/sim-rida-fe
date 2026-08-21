@@ -32,8 +32,8 @@ export default function DetailUsulanPage() {
         setProblem(probData);
 
         // If there's a related research, fetch the KAK
-        if (probData.research && probData.research.length > 0) {
-          const researchId = probData.research[0].id;
+        if (probData.research) {
+          const researchId = probData.research.id;
           try {
             const kakData = await researchService.getKakByResearchId(researchId);
             setKak(kakData);
@@ -69,7 +69,7 @@ export default function DetailUsulanPage() {
     );
   }
 
-  const research = problem.research && problem.research.length > 0 ? problem.research[0] : null;
+  const research = problem.research || null;
 
   return (
     <div className="space-y-6 pb-20">
