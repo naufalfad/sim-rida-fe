@@ -1,71 +1,46 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { KeyRound, ShieldAlert, Award, FileText, HelpCircle } from 'lucide-react';
+import { KeyRound, ShieldAlert, Award, HelpCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Select } from '@/components/ui/select';
-import { authService } from '@/lib/api/auth';
-import { MOCK_USERS } from '@/lib/mock/users';
-import { UserRole } from '@/constants/roles';
+import { useAuthStore } from '@/store/useAuthStore';
 
 export default function LoginPage() {
   const router = useRouter();
-  const [selectedProfileId, setSelectedProfileId] = useState(MOCK_USERS[0].id);
-  const [username, setUsername] = useState(MOCK_USERS[0].username);
-  const [role, setRole] = useState<UserRole>(MOCK_USERS[0].role);
-  const [isLoading, setIsLoading] = useState(false);
-  const [errorMsg, setErrorMsg] = useState('');
+  const [emailOrUsername, setEmailOrUsername] = useState('');
+  const [password, setPassword] = useState('');
+  
+  const { login, isLoading, error: storeError } = useAuthStore();
+  const [localError, setLocalError] = useState('');
 
-  // Update form fields when pre-set profile is selected
-  useEffect(() => {
-    const user = MOCK_USERS.find((u) => u.id === selectedProfileId);
-    if (user) {
-      setUsername(user.username);
-      setRole(user.role);
-      setErrorMsg('');
-    }
-  }, [selectedProfileId]);
+  const errorMsg = storeError || localError;
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
-    setErrorMsg('');
+    setLocalError('');
 
     try {
-      const user = await authService.login(username, role);
-      if (user) {
-        // Redirect to respective dashboard
-        let path = '/login';
-        if (user.role === 'OPD') path = '/opd/dashboard';
-        else if (user.role === 'BRIDA') path = '/brida/dashboard';
-        else if (user.role === 'KEPALA_BRIDA') path = '/kepala-brida/dashboard';
-        else if (user.role === 'RESEARCHER') path = '/researcher/dashboard';
-
-        router.push(path);
-      } else {
-        setErrorMsg('Username tidak terdaftar untuk role yang dipilih.');
-      }
-    } catch {
-      setErrorMsg('Gagal melakukan login. Silakan coba kembali.');
-    } finally {
-      setIsLoading(false);
+      await login({ 
+        email: emailOrUsername,
+        password 
+      });
+      
+      // Redirect to dashboard on success based on role
+      const { user } = useAuthStore.getState();
+      let path = '/login';
+      if (user?.role === 'OPD') path = '/opd/dashboard';
+      else if (user?.role === 'BRIDA') path = '/brida/dashboard';
+      else if (user?.role === 'KEPALA_BRIDA') path = '/kepala-brida/dashboard';
+      else if (user?.role === 'RESEARCHER') path = '/researcher/dashboard';
+      else path = '/dashboard';
+      
+      router.push(path);
+    } catch (err: any) {
+      // Error is handled in the store, but we can set local errors if needed
     }
   };
-
-  const profileOptions = MOCK_USERS.map((user) => {
-    let roleLabel = '';
-    if (user.role === 'OPD') roleLabel = 'Demo OPD';
-    else if (user.role === 'BRIDA') roleLabel = 'Demo BRIDA';
-    else if (user.role === 'KEPALA_BRIDA') roleLabel = 'Demo Kepala BRIDA';
-    else if (user.role === 'RESEARCHER') roleLabel = 'Demo Peneliti';
-
-    return {
-      value: user.id,
-      label: `${roleLabel} - ${user.name}`,
-    };
-  });
 
   return (
     <div className="relative min-h-screen flex items-center justify-center bg-slate-900 overflow-hidden font-sans">
@@ -92,7 +67,7 @@ export default function LoginPage() {
         <div className="rounded-2xl border border-slate-800 bg-slate-950/80 backdrop-blur-md p-8 shadow-2xl text-slate-100">
           <div className="flex items-center gap-2 border-b border-slate-800 pb-4 mb-6">
             <KeyRound className="h-5 w-5 text-blue-500" />
-            <h2 className="text-lg font-semibold">Demo Authentication</h2>
+            <h2 className="text-lg font-semibold">Authentication</h2>
           </div>
 
           <form onSubmit={handleLogin} className="space-y-5">
@@ -103,40 +78,29 @@ export default function LoginPage() {
               </div>
             )}
 
-            {/* Quick Credentials Selection */}
-            <div>
-              <label className="mb-1.5 block text-sm font-medium text-slate-350">
-                Pilih Akun Demo (Role)
-              </label>
-              <Select
-                options={profileOptions}
-                value={selectedProfileId}
-                onChange={(e) => setSelectedProfileId(e.target.value)}
-                className="bg-slate-900 border-slate-800 text-slate-200 focus:ring-blue-550"
-              />
-            </div>
-
-            {/* Username Input */}
+            {/* Username/Email Input */}
             <div>
               <Input
-                label="Username"
+                label="Username / Email"
                 type="text"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                placeholder="Masukkan username"
+                value={emailOrUsername}
+                onChange={(e) => setEmailOrUsername(e.target.value)}
+                placeholder="Masukkan username atau email"
                 className="bg-slate-900 border-slate-800 text-slate-200 focus:ring-blue-550 placeholder:text-slate-700"
                 required
               />
             </div>
 
-            {/* Password input - placeholder */}
+            {/* Password input */}
             <div>
               <Input
-                label="Password (Demo)"
+                label="Password"
                 type="password"
-                value="••••••••"
-                disabled
-                className="bg-slate-900 border-slate-800 text-slate-500 cursor-not-allowed"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="••••••••"
+                className="bg-slate-900 border-slate-800 text-slate-200 focus:ring-blue-550 placeholder:text-slate-700"
+                required
               />
             </div>
 
@@ -146,8 +110,9 @@ export default function LoginPage() {
               variant="primary"
               className="w-full bg-gradient-to-r from-blue-600 to-indigo-650 hover:from-blue-700 hover:to-indigo-750 text-white font-medium"
               isLoading={isLoading}
+              disabled={isLoading}
             >
-              Masuk ke Dashboard
+              {isLoading ? 'Sedang masuk...' : 'Masuk ke Dashboard'}
             </Button>
           </form>
         </div>
@@ -155,7 +120,7 @@ export default function LoginPage() {
         {/* Footer info */}
         <p className="text-center text-xs text-slate-500 mt-6 flex items-center justify-center gap-1">
           <HelpCircle className="h-3.5 w-3.5" />
-          <span>Fase 7: Full End-to-End Demo & Final Polish</span>
+          <span>SIM-RIDA Secure Login</span>
         </p>
       </div>
     </div>

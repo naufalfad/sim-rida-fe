@@ -53,7 +53,7 @@ export const Dialog: React.FC<DialogProps> = ({
       {/* Dialog container */}
       <div
         className={cn(
-          'relative z-10 w-full transform overflow-hidden rounded-xl bg-white p-6 shadow-xl transition-all dark:bg-slate-900 border dark:border-slate-800',
+          'relative z-10 w-full transform overflow-hidden rounded-none bg-white p-6 shadow-xl transition-all dark:bg-slate-900 border dark:border-slate-800',
           {
             'max-w-md': size === 'sm',
             'max-w-lg': size === 'md',
@@ -76,7 +76,7 @@ export const Dialog: React.FC<DialogProps> = ({
           </div>
           <button
             type="button"
-            className="rounded-md bg-transparent text-slate-400 hover:text-slate-500 focus:outline-none dark:hover:text-slate-350"
+            className="rounded-none bg-transparent text-slate-400 hover:text-slate-500 focus:outline-none dark:hover:text-slate-350"
             onClick={onClose}
           >
             <span className="sr-only">Tutup</span>

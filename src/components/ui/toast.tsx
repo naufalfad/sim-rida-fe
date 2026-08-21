@@ -39,12 +39,12 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     <ToastContext.Provider value={{ toast }}>
       {children}
       {/* Toast container */}
-      <div className="fixed bottom-4 right-4 z-50 flex flex-col gap-2 max-w-md w-full pointer-events-none px-4 sm:px-0">
+      <div className="fixed top-20 right-4 z-50 flex flex-col gap-2 max-w-md w-full pointer-events-none px-4 sm:px-0">
         {toasts.map((t) => (
           <div
             key={t.id}
             className={cn(
-              'pointer-events-auto flex items-start gap-3 rounded-lg border p-4 shadow-lg transition-all animate-slide-in-right bg-white dark:bg-slate-900',
+              'pointer-events-auto flex items-start gap-3 rounded-none border p-4 shadow-lg transition-all animate-slide-in-right bg-white dark:bg-slate-900',
               {
                 'border-emerald-250 bg-emerald-50/90 text-emerald-900 dark:border-emerald-900/50 dark:bg-emerald-950/90 dark:text-emerald-100':
                   t.type === 'success',
@@ -71,7 +71,7 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({ childre
             {/* Close Button */}
             <button
               type="button"
-              className="flex-shrink-0 ml-4 rounded-md inline-flex text-slate-400 hover:text-slate-500 focus:outline-none"
+              className="flex-shrink-0 ml-4 rounded-none inline-flex text-slate-400 hover:text-slate-500 focus:outline-none"
               onClick={() => removeToast(t.id)}
             >
               <X className="h-4 w-4" />

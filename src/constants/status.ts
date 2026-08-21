@@ -1,6 +1,8 @@
 export type WorkflowStatus =
   | 'DRAFT'
   | 'SUBMITTED'
+  | 'PROBLEM_SUBMITTED'
+  | 'VALID'
   | 'ADMINISTRATIVE_REVIEW'
   | 'REVISION_REQUIRED'
   | 'SUBSTANTIVE_REVIEW'
@@ -25,6 +27,8 @@ export type WorkflowStatus =
 export const WORKFLOW_STATUS: Record<WorkflowStatus, WorkflowStatus> = {
   DRAFT: 'DRAFT',
   SUBMITTED: 'SUBMITTED',
+  PROBLEM_SUBMITTED: 'PROBLEM_SUBMITTED',
+  VALID: 'VALID',
   ADMINISTRATIVE_REVIEW: 'ADMINISTRATIVE_REVIEW',
   REVISION_REQUIRED: 'REVISION_REQUIRED',
   SUBSTANTIVE_REVIEW: 'SUBSTANTIVE_REVIEW',
@@ -48,6 +52,8 @@ export const WORKFLOW_STATUS: Record<WorkflowStatus, WorkflowStatus> = {
 export const STATUS_LABELS: Record<WorkflowStatus, string> = {
   DRAFT: 'Draft',
   SUBMITTED: 'Diajukan',
+  PROBLEM_SUBMITTED: 'Diajukan',
+  VALID: 'Lolos Validasi',
   ADMINISTRATIVE_REVIEW: 'Verifikasi Administrasi',
   REVISION_REQUIRED: 'Butuh Revisi',
   SUBSTANTIVE_REVIEW: 'Review Substansi',
@@ -71,6 +77,8 @@ export const STATUS_LABELS: Record<WorkflowStatus, string> = {
 export const STATUS_COLORS: Record<WorkflowStatus, { bg: string; text: string; border: string }> = {
   DRAFT: { bg: 'bg-gray-100 dark:bg-gray-800', text: 'text-gray-800 dark:text-gray-300', border: 'border-gray-200 dark:border-gray-700' },
   SUBMITTED: { bg: 'bg-blue-50 dark:bg-blue-950/30', text: 'text-blue-700 dark:text-blue-400', border: 'border-blue-200 dark:border-blue-900/50' },
+  PROBLEM_SUBMITTED: { bg: 'bg-blue-50 dark:bg-blue-950/30', text: 'text-blue-700 dark:text-blue-400', border: 'border-blue-200 dark:border-blue-900/50' },
+  VALID: { bg: 'bg-emerald-50 dark:bg-emerald-950/30', text: 'text-emerald-700 dark:text-emerald-400', border: 'border-emerald-200 dark:border-emerald-900/50' },
   ADMINISTRATIVE_REVIEW: { bg: 'bg-amber-50 dark:bg-amber-950/30', text: 'text-amber-700 dark:text-amber-400', border: 'border-amber-200 dark:border-amber-900/50' },
   REVISION_REQUIRED: { bg: 'bg-rose-50 dark:bg-rose-950/30', text: 'text-rose-700 dark:text-rose-400', border: 'border-rose-200 dark:border-rose-900/50' },
   SUBSTANTIVE_REVIEW: { bg: 'bg-indigo-50 dark:bg-indigo-950/30', text: 'text-indigo-700 dark:text-indigo-400', border: 'border-indigo-200 dark:border-indigo-900/50' },

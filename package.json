@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.0",
+    "axios": "^1.19.0",
     "clsx": "^2.1.1",
     "date-fns": "^4.1.0",
     "is-extglob": "^2.1.1",
@@ -22,7 +23,8 @@
     "react-dom": "19.2.8",
     "react-hook-form": "^7.53.0",
     "tailwind-merge": "^2.5.2",
-    "zod": "^3.23.8"
+    "zod": "^3.23.8",
+    "zustand": "^5.0.15"
   },
   "devDependencies": {
     "@types/node": "^20",

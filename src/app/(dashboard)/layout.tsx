@@ -28,16 +28,15 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Dropdown, DropdownItem } from '@/components/ui/dropdown';
-import { authService } from '@/lib/api/auth';
 import { proposalService } from '@/lib/api/proposals';
 import { cn } from '@/lib/utils/cn';
 import { UserRole } from '@/constants/roles';
-import { User as AuthUser } from '@/types/auth';
+import { useAuthStore } from '@/store/useAuthStore';
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
-  const [currentUser, setCurrentUser] = useState<AuthUser | null>(null);
+  const { user: currentUser, isAuthenticated, logout, isLoading: authLoading } = useAuthStore();
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const [notifications, setNotifications] = useState([
@@ -47,24 +46,14 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   // Check authentication
   useEffect(() => {
-    const user = authService.getCurrentUser();
-    if (!user) {
+    if (!authLoading && !isAuthenticated) {
       router.replace('/login');
-    } else {
-      setCurrentUser(user);
     }
-  }, [router]);
+  }, [isAuthenticated, authLoading, router]);
 
-  const handleLogout = async () => {
-    await authService.logout();
+  const handleLogout = () => {
+    logout();
     router.push('/login');
-  };
-
-  const handleRoleSwitch = (role: UserRole, targetPath: string) => {
-    const switched = authService.switchRole(role);
-    if (switched) {
-      window.location.href = targetPath;
-    }
   };
 
   if (!currentUser) {
@@ -140,31 +129,11 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     },
     {
       id: 'profile-dept',
-      label: currentUser.department || '-',
+      label: currentUser.role || '-',
       disabled: true,
       className: 'text-xs text-slate-500 dark:text-slate-450 pb-2 border-b dark:border-slate-800',
     },
-    {
-      id: 'switch-opd',
-      label: 'Beralih ke Demo OPD',
-      icon: <UserCheck className="h-4 w-4 text-blue-500" />,
-      onClick: () => handleRoleSwitch('OPD', '/opd/dashboard'),
-      className: 'text-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 py-1.5 text-[11px] font-semibold',
-    },
-    {
-      id: 'switch-brida',
-      label: 'Beralih ke Demo BRIDA',
-      icon: <UserCheck className="h-4 w-4 text-blue-500" />,
-      onClick: () => handleRoleSwitch('BRIDA', '/brida/dashboard'),
-      className: 'text-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 py-1.5 text-[11px] font-semibold',
-    },
-    {
-      id: 'switch-kepala',
-      label: 'Beralih ke Demo K. BRIDA',
-      icon: <UserCheck className="h-4 w-4 text-blue-500" />,
-      onClick: () => handleRoleSwitch('KEPALA_BRIDA', '/kepala-brida/dashboard'),
-      className: 'text-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 py-1.5 text-[11px] font-semibold',
-    },
+    // Removed demo switch links since we are using real API
     {
       id: 'reset-demo',
       label: 'Reset Seluruh Data Demo',
@@ -385,7 +354,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                     {currentUser.name.charAt(0)}
                   </div>
                   <span className="hidden sm:inline text-xs font-semibold text-slate-700 dark:text-slate-300">
-                    {currentUser.username}
+                    {currentUser.email}
                   </span>
                 </button>
               }

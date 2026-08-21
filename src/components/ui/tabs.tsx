@@ -29,7 +29,7 @@ export const Tabs: React.FC<TabsProps> = ({
         'flex overflow-x-auto scrollbar-none',
         {
           'border-b border-slate-200 dark:border-slate-800 gap-6': variant === 'line',
-          'bg-slate-100 p-1 rounded-lg dark:bg-slate-850 gap-1 inline-flex': variant === 'pill',
+          'bg-slate-100 p-1 rounded-none dark:bg-slate-850 gap-1 inline-flex': variant === 'pill',
         },
         className
       )}
@@ -49,9 +49,9 @@ export const Tabs: React.FC<TabsProps> = ({
                   variant === 'line' && !isActive,
                 'text-blue-650 dark:text-blue-400': variant === 'line' && isActive,
                 // Pill Variant
-                'text-slate-650 hover:text-slate-900 rounded-md px-3 py-1.5 dark:text-slate-400 dark:hover:text-slate-200':
+                'text-slate-650 hover:text-slate-900 rounded-none px-3 py-1.5 dark:text-slate-400 dark:hover:text-slate-200':
                   variant === 'pill' && !isActive,
-                'bg-white text-blue-750 font-semibold shadow-sm rounded-md px-3 py-1.5 dark:bg-slate-900 dark:text-blue-400':
+                'bg-white text-blue-750 font-semibold shadow-sm rounded-none px-3 py-1.5 dark:bg-slate-900 dark:text-blue-400':
                   variant === 'pill' && isActive,
               }
             )}

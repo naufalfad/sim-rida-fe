@@ -1,11 +1,11 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useParams } from 'next/navigation';
 import { useForm, Controller, useFieldArray } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { ArrowLeft, Send, AlertTriangle, FileText, Settings, Award, Plus, Trash2, Wand2, ChevronRight, ChevronLeft } from 'lucide-react';
+import { ArrowLeft, Save, AlertTriangle, FileText, Settings, Award, Plus, Trash2, ChevronRight, ChevronLeft } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -14,9 +14,11 @@ import { Select } from '@/components/ui/select';
 import { FileUpload } from '@/components/ui/file-upload';
 import { Dialog } from '@/components/ui/dialog';
 import { useToast } from '@/components/ui/toast';
+import { LoadingState } from '@/components/ui/loading-state';
 
 import { useProblemStore } from '@/store/useProblemStore';
 import { useResearchStore } from '@/store/useResearchStore';
+import { problemService } from '@/services/problem.service';
 import { researchService } from '@/services/research.service';
 
 const rabItemSchema = z.object({
@@ -37,6 +39,7 @@ const integratedFormSchema = z.object({
     urgency: z.string().min(5, 'Urgensi masalah wajib diisi'),
   }),
   research: z.object({
+    id: z.string().optional(),
     researchTypeId: z.string().min(1, 'Pilih jenis penelitian'),
     objective: z.string().min(10, 'Tujuan penelitian wajib diisi secara jelas'),
     researchQuestions: z.string().min(10, 'Pertanyaan penelitian wajib diisi'),
@@ -48,6 +51,7 @@ const integratedFormSchema = z.object({
     estimatedDurationMonths: z.coerce.number().min(1, 'Durasi minimal 1 bulan'),
   }),
   kak: z.object({
+    id: z.string().optional(),
     dasarPemikiran: z.string().min(10, 'Dasar pemikiran wajib diisi secara jelas'),
     maksudTujuan: z.string().min(10, 'Maksud & tujuan wajib diisi'),
     ruangLingkup: z.string().min(10, 'Ruang lingkup kegiatan wajib diisi'),
@@ -63,8 +67,10 @@ const integratedFormSchema = z.object({
 
 type IntegratedFormValues = z.infer<typeof integratedFormSchema>;
 
-export default function NewIntegratedProposalPage() {
+export default function EditIntegratedProposalPage() {
   const router = useRouter();
+  const params = useParams();
+  const problemId = params.id as string;
   const { toast } = useToast();
   
   // Wizard state
@@ -73,15 +79,14 @@ export default function NewIntegratedProposalPage() {
 
   const [isSubmitConfirmOpen, setIsSubmitConfirmOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isPageLoading, setIsPageLoading] = useState(true);
+  const [originalProblem, setOriginalProblem] = useState<any>(null);
+  
+  // File upload state (optional, if user wants to replace)
   const [supportFile, setSupportFile] = useState<File | null>(null);
 
-  const { sectors, fetchSectors, createProblem } = useProblemStore();
+  const { sectors, fetchSectors } = useProblemStore();
   const { researchTypes, fetchResearchTypes } = useResearchStore();
-
-  useEffect(() => {
-    fetchSectors();
-    fetchResearchTypes();
-  }, [fetchSectors, fetchResearchTypes]);
 
   const {
     register,
@@ -89,6 +94,7 @@ export default function NewIntegratedProposalPage() {
     watch,
     setValue,
     trigger,
+    reset,
     formState: { errors },
   } = useForm<IntegratedFormValues>({
     resolver: zodResolver(integratedFormSchema),
@@ -107,49 +113,93 @@ export default function NewIntegratedProposalPage() {
   const problemTitle = watch('problem.title');
   const problemSectorId = watch('problem.sectorId');
   const researchObjective = watch('research.objective');
+  const researchId = watch('research.id');
 
   useEffect(() => {
     setValue('kak.maksudTujuan', researchObjective);
   }, [researchObjective, setValue]);
 
-  const handleFillDummyData = () => {
-    // Fill Problem
-    setValue('problem.title', 'Kajian Strategi Penanganan Stunting Terintegrasi Berbasis Komunitas');
-    if (sectors.length > 0) setValue('problem.sectorId', sectors[0].id);
-    setValue('problem.targetCompletion', 'Desember 2026');
-    setValue('problem.background', 'Berdasarkan data profil kesehatan tahun 2025, angka prevalensi stunting di wilayah pesisir masih berada di angka 18%...');
-    setValue('problem.mainFocus', 'Kurangnya sinergi program intervensi spesifik dan sensitif di tingkat desa pesisir...');
-    setValue('problem.impact', 'Penurunan kualitas SDM jangka panjang, meningkatnya beban biaya kesehatan daerah...');
-    setValue('problem.urgency', 'Perlu tindakan segera tahun ini untuk mengejar target RPJMD 2026.');
+  // Initial Fetching
+  useEffect(() => {
+    fetchSectors();
+    fetchResearchTypes();
 
-    // Fill Research
-    if (researchTypes.length > 0) setValue('research.researchTypeId', researchTypes[0].id);
-    setValue('research.objective', 'Menyusun model kolaborasi lintas sektor yang aplikatif untuk mempercepat penurunan stunting di tingkat desa.');
-    setValue('research.researchQuestions', '1. Apa hambatan utama partisipasi warga?\n2. Bagaimana efektivitas program intervensi yang sudah ada?');
-    setValue('research.scope', '5 Kecamatan Pesisir dengan angka stunting tertinggi.');
-    setValue('research.expectedOutput', 'Dokumen policy brief dan roadmap strategi intervensi stunting terpadu.');
-    setValue('research.expectedOutcome', 'Meningkatnya kesadaran masyarakat dan turunnya angka stunting.');
-    setValue('research.successIndicators', '100% desa lokus memiliki posyandu aktif.');
-    setValue('research.estimatedBudget', 150000000);
-    setValue('research.estimatedDurationMonths', 3);
+    const loadData = async () => {
+      try {
+        setIsPageLoading(true);
+        const probData = await problemService.getProblemById(problemId);
+        
+        // Authorization check
+        if (probData.status !== 'PROBLEM_SUBMITTED' && probData.status !== 'REVISION_REQUIRED') {
+          toast('Usulan ini sudah tidak dapat diedit karena sedang dalam proses lanjutan.', 'warning');
+          router.push(`/opd/usulan/${problemId}`);
+          return;
+        }
 
-    // Fill KAK
-    setValue('kak.dasarPemikiran', 'Perpres No 72 Tahun 2021 tentang Percepatan Penurunan Stunting.');
-    setValue('kak.ruangLingkup', 'Meliputi survei lapangan, FGD dengan kader posyandu, dan analisis data.');
-    setValue('kak.metodologi', 'Kombinasi kuantitatif dan kualitatif.');
-    setValue('kak.output', 'Buku panduan pelaksanaan stunting.');
-    setValue('kak.outcome', 'Peningkatan efektivitas alokasi dana desa untuk program stunting.');
-    setValue('kak.indikatorKinerja', 'Terlaksananya survei di 25 desa dan tersusunnya 1 dokumen Roadmap.');
-    setValue('kak.jadwalPelaksanaan', 'September - November 2026');
-    setValue('kak.penutup', 'Demikian KAK ini dibuat sebagai pedoman pelaksanaan kajian yang terukur.');
-    
-    setValue('kak.rabItems', [
-      { description: 'Honor Peneliti Utama', volume: 3, unit: 'OB', unitPrice: 5000000 },
-      { description: 'Honor Asisten Peneliti', volume: 6, unit: 'OB', unitPrice: 3000000 }
-    ]);
+        setOriginalProblem(probData);
 
-    toast('Data dummy berhasil diisi!', 'success');
-  };
+        let researchData: any = null;
+        let kakData: any = null;
+
+        if (probData.research && probData.research.length > 0) {
+          researchData = probData.research[0];
+          try {
+            kakData = await researchService.getKakByResearchId(researchData.id);
+          } catch (kakErr) {
+            console.warn('KAK not found for this research', kakErr);
+          }
+        }
+
+        // Pre-fill form
+        reset({
+          problem: {
+            title: probData.title,
+            sectorId: probData.sectorId,
+            targetCompletion: probData.targetCompletion || '',
+            background: probData.background,
+            mainFocus: probData.mainFocus,
+            impact: probData.impact,
+            urgency: probData.urgency,
+          },
+          research: researchData ? {
+            id: researchData.id,
+            researchTypeId: researchData.researchTypeId,
+            objective: researchData.objective,
+            researchQuestions: researchData.researchQuestions,
+            scope: researchData.scope,
+            expectedOutput: researchData.expectedOutput,
+            expectedOutcome: researchData.expectedOutcome,
+            successIndicators: researchData.successIndicators,
+            estimatedBudget: researchData.estimatedBudget,
+            estimatedDurationMonths: researchData.estimatedDurationMonths,
+          } : undefined,
+          kak: kakData ? {
+            id: kakData.id,
+            dasarPemikiran: kakData.dasarPemikiran,
+            maksudTujuan: kakData.maksudTujuan,
+            ruangLingkup: kakData.ruangLingkup,
+            metodologi: kakData.metodologi,
+            output: kakData.output,
+            outcome: kakData.outcome,
+            indikatorKinerja: kakData.indikatorKinerja,
+            jadwalPelaksanaan: kakData.jadwalPelaksanaan,
+            penutup: kakData.penutup,
+            rabItems: kakData.rabItems && kakData.rabItems.length > 0 ? kakData.rabItems : [{ description: '', volume: 1, unit: '', unitPrice: 0 }],
+          } : undefined
+        });
+
+      } catch (err: any) {
+        toast('Gagal memuat data usulan.', 'error');
+        router.back();
+      } finally {
+        setIsPageLoading(false);
+      }
+    };
+
+    if (problemId) {
+      loadData();
+    }
+  }, [problemId, fetchSectors, fetchResearchTypes, router, toast, reset]);
 
   const nextStep = async () => {
     let isValid = false;
@@ -184,25 +234,44 @@ export default function NewIntegratedProposalPage() {
 
     try {
       const vals = watch();
-      const newProblem = await createProblem({
+      
+      // Update Problem
+      await problemService.updateProblem(problemId, {
         ...vals.problem,
         attachments: supportFile ? [supportFile] : [],
       });
-      const newResearch = await researchService.createResearch({
-        ...vals.research,
-        title: vals.problem.title,
-        problemId: newProblem.id
-      });
-      await researchService.createKak(newResearch.id, vals.kak);
 
-      toast(`Usulan terpadu berhasil dikirim ke BRIDA!`, 'success');
-      router.push('/opd/usulan');
+      // Update Research
+      if (researchId) {
+        await researchService.updateResearch(researchId, {
+          ...vals.research,
+          title: vals.problem.title,
+        });
+
+        // Update KAK
+        await researchService.updateKak(researchId, vals.kak);
+      } else {
+        // Fallback if somehow there was no research before, create it
+        const newResearch = await researchService.createResearch({
+          ...vals.research,
+          title: vals.problem.title,
+          problemId: problemId
+        });
+        await researchService.createKak(newResearch.id, vals.kak);
+      }
+
+      toast(`Usulan terpadu berhasil diperbarui!`, 'success');
+      router.push(`/opd/usulan/${problemId}`);
     } catch (err: any) {
-      toast(err.message || 'Terjadi kesalahan saat menyimpan usulan beruntun.', 'error');
+      toast(err.message || 'Terjadi kesalahan saat memperbarui usulan.', 'error');
     } finally {
       setIsSubmitting(false);
     }
   };
+
+  if (isPageLoading) {
+    return <LoadingState message="Memuat form edit usulan..." />;
+  }
 
   // Stepper Header Component
   const StepperHeader = () => {
@@ -254,24 +323,23 @@ export default function NewIntegratedProposalPage() {
             <ArrowLeft className="h-4 w-4" />
           </Button>
           <div>
-            <h1 className="text-xl font-bold tracking-tight uppercase">Buat Usulan Terpadu</h1>
+            <h1 className="text-xl font-bold tracking-tight uppercase">Edit Usulan Terpadu</h1>
             <p className="text-xs text-slate-500">
-              Isi usulan Masalah, Perencanaan, dan KAK secara berurutan dalam satu formulir.
+              Perbaiki usulan Anda sesuai dengan catatan dari BRIDA.
             </p>
           </div>
         </div>
-
-        <Button
-          variant="outline"
-          size="sm"
-          type="button"
-          onClick={handleFillDummyData}
-          className="text-slate-600 border-slate-300 hover:bg-slate-100 rounded-none"
-        >
-          <Wand2 className="h-4 w-4 mr-2" />
-          <span>Isi Data Dummy</span>
-        </Button>
       </div>
+
+      {originalProblem?.status === 'REVISION_REQUIRED' && originalProblem?.reviewNotes && (
+        <div className="bg-amber-50 border-l-4 border-amber-500 p-4 rounded-none shadow-sm animate-fade-in">
+          <h3 className="font-bold text-amber-800 flex items-center">
+            <AlertTriangle className="h-4 w-4 mr-2" />
+            Catatan Revisi dari BRIDA
+          </h3>
+          <p className="text-sm text-amber-700 mt-1">{originalProblem.reviewNotes}</p>
+        </div>
+      )}
 
       <StepperHeader />
 
@@ -305,7 +373,10 @@ export default function NewIntegratedProposalPage() {
               <Textarea label="Urgensi / Alasan Mendesak" error={errors.problem?.urgency?.message} rows={3} {...register('problem.urgency')} />
             </div>
 
-            <FileUpload label="Dokumen Pendukung Masalah (Opsional)" value={supportFile} onChange={setSupportFile} />
+            <div className="bg-slate-50 p-4 border border-slate-200 dark:bg-slate-900 dark:border-slate-800">
+              <p className="text-sm text-slate-600 mb-2 font-semibold">Lampiran Dokumen Baru (Abaikan jika tidak ingin mengganti file lama)</p>
+              <FileUpload label="" value={supportFile} onChange={setSupportFile} />
+            </div>
           </div>
         )}
 
@@ -430,8 +501,8 @@ export default function NewIntegratedProposalPage() {
               Lanjut Tahap {currentStep + 1} <ChevronRight className="h-5 w-5 ml-2" />
             </Button>
           ) : (
-            <Button variant="primary" size="lg" type="button" onClick={onSubmitTrigger} isLoading={isSubmitting} className="rounded-none bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-8">
-              <Send className="h-5 w-5 mr-2" /> Ajukan Usulan
+            <Button variant="primary" size="lg" type="button" onClick={onSubmitTrigger} isLoading={isSubmitting} className="rounded-none bg-amber-500 hover:bg-amber-600 text-white font-bold px-8">
+              <Save className="h-5 w-5 mr-2" /> Simpan Perubahan Usulan
             </Button>
           )}
         </div>
@@ -441,12 +512,12 @@ export default function NewIntegratedProposalPage() {
       <Dialog
         isOpen={isSubmitConfirmOpen}
         onClose={() => setIsSubmitConfirmOpen(false)}
-        title="Kirim Usulan Terpadu ke BRIDA?"
-        description="Pastikan seluruh data Masalah, Penelitian, dan KAK sudah diverifikasi. Sistem akan otomatis menyimpannya secara terpadu."
+        title="Simpan Perubahan Usulan?"
+        description="Pastikan revisi Anda sudah sesuai dengan catatan BRIDA. Status usulan akan dikembalikan ke 'Diajukan' untuk diulas ulang."
         footer={
           <>
             <Button onClick={handleFinalSubmit} variant="primary" size="sm" isLoading={isSubmitting} className="rounded-none bg-blue-600 text-white">
-              {isSubmitting ? 'Memproses 3 Tahap...' : 'Ya, Ajukan Sekarang'}
+              {isSubmitting ? 'Menyimpan Perubahan...' : 'Ya, Simpan & Ajukan Ulang'}
             </Button>
             <Button onClick={() => setIsSubmitConfirmOpen(false)} variant="outline" size="sm" disabled={isSubmitting} className="rounded-none">
               Batal
