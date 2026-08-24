@@ -102,6 +102,7 @@ export interface Proposal {
   approvalHistory?: ApprovalHistoryLog[];
   policyBrief?: PolicyBrief;
   recommendation?: ResearchRecommendation;
+  followUp?: any;
 }
 
 export interface PolicyBrief {

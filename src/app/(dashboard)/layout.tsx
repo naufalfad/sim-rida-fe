@@ -105,7 +105,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     }
   };
 
-  const navLinks = getNavLinks(currentUser.role);
+  const navLinks = getNavLinks(currentUser.role as UserRole);
 
   // Generate breadcrumb path labels
   const getBreadcrumbs = () => {

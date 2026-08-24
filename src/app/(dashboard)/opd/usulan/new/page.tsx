@@ -190,10 +190,23 @@ export default function NewIntegratedProposalPage() {
       });
       const newResearch = await researchService.createResearch({
         ...vals.research,
+        estimatedBudget: Number(vals.research.estimatedBudget),
+        estimatedDurationMonths: Number(vals.research.estimatedDurationMonths),
         title: vals.problem.title,
         problemId: newProblem.id
       });
-      await researchService.createKak(newResearch.id, vals.kak);
+      
+      // Coerce rabItems unitPrice and volume to numbers
+      const kakData = {
+        ...vals.kak,
+        rabItems: vals.kak.rabItems.map((item) => ({
+          ...item,
+          volume: Number(item.volume),
+          unitPrice: Number(item.unitPrice),
+        })),
+      };
+      
+      await researchService.createKak(newResearch.id, kakData);
 
       toast(`Usulan terpadu berhasil dikirim ke BRIDA!`, 'success');
       router.push('/opd/usulan');
@@ -404,7 +417,7 @@ export default function NewIntegratedProposalPage() {
                     <div className="w-full sm:w-48">
                       <Input type="number" placeholder="Harga Satuan (Rp)" {...register(`kak.rabItems.${index}.unitPrice`)} error={errors.kak?.rabItems?.[index]?.unitPrice?.message} />
                     </div>
-                    <Button variant="ghost" size="icon" type="button" onClick={() => removeRab(index)} className="text-red-500 hover:text-red-600 hover:bg-red-50 rounded-none mt-1 sm:mt-0">
+                    <Button variant="ghost" size="sm" type="button" onClick={() => removeRab(index)} className="text-red-500 hover:text-red-600 hover:bg-red-50 rounded-none mt-1 sm:mt-0">
                       <Trash2 className="h-5 w-5" />
                     </Button>
                   </div>
