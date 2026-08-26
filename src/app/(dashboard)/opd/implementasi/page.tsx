@@ -2,26 +2,37 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { proposalApi } from '@/lib/api/proposals';
+import { proposalService } from '@/lib/api/proposals';
 import { Proposal } from '@/types/proposals';
 import { STATUS_LABELS, STATUS_COLORS } from '@/constants/status';
+import { LoadingState } from '@/components/ui/loading-state';
 
 export default function OpdImplementasiPage() {
   const [proposals, setProposals] = useState<Proposal[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const all = proposalApi.getProposals();
-    const filtered = all.filter(
-      (p) =>
-        p.status === 'EKATALOG_SENT' ||
-        p.status === 'OPD_IMPLEMENTING' ||
-        p.status === 'OPD_REPORTED' ||
-        p.status === 'POLICY_BRIEF_DRAFT' ||
-        p.status === 'POLICY_BRIEF_REVIEW' ||
-        p.status === 'RECOMMENDATION_PENDING' ||
-        p.status === 'RECOMMENDATION_APPROVED'
-    );
-    setProposals(filtered);
+    const loadProposals = async () => {
+      try {
+        const all = await proposalService.getProposals();
+        const filtered = all.filter(
+          (p) =>
+            p.status === 'EKATALOG_SENT' ||
+            p.status === 'OPD_IMPLEMENTING' ||
+            p.status === 'OPD_REPORTED' ||
+            p.status === 'POLICY_BRIEF_DRAFT' ||
+            p.status === 'POLICY_BRIEF_REVIEW' ||
+            p.status === 'RECOMMENDATION_PENDING' ||
+            p.status === 'RECOMMENDATION_APPROVED'
+        );
+        setProposals(filtered);
+      } catch (err) {
+        console.error('Failed to load implementasi proposals:', err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    loadProposals();
   }, []);
 
   const getProgressColor = (progress: number) => {
@@ -35,6 +46,10 @@ export default function OpdImplementasiPage() {
     const diff = Math.ceil((new Date(deadline).getTime() - Date.now()) / (1000 * 60 * 60 * 24));
     return diff;
   };
+
+  if (isLoading) {
+    return <LoadingState message="Memuat daftar implementasi e-katalog..." />;
+  }
 
   return (
     <div className="p-6 space-y-6">

@@ -22,6 +22,7 @@ const mapProblemToProposal = (p: any): Proposal => {
       urgensi: p.urgency || '',
       targetPenyelesaian: p.targetCompletion || '',
       dokumenPendukung: p.attachments?.[0] || undefined,
+      dokumenPendukungList: p.attachments || [],
     },
     research: p.research ? {
       judul: p.research.title,
@@ -47,6 +48,7 @@ const mapProblemToProposal = (p: any): Proposal => {
       jadwal: p.research.kak.jadwalPelaksanaan,
       anggaran: p.research.estimatedBudget || p.research.kak.rabItems?.reduce((acc: number, item: any) => acc + item.total, 0) || 0,
       penutup: p.research.kak.penutup,
+      rabItems: p.research.kak.rabItems || [],
     } : undefined,
     timeline: p.timeline || [],
     eKatalogUrl: p.eKatalogUrl || undefined,
@@ -61,6 +63,8 @@ const mapProblemToProposal = (p: any): Proposal => {
     recommendation: p.recommendation || undefined,
     followUp: p.followUp || undefined,
     approvalHistory: p.substantiveReview?.approvalHistory || [],
+    issues: p.issues || [],
+    risks: p.risks || [],
   };
 };
 

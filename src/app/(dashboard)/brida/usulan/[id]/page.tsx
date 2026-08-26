@@ -15,6 +15,7 @@ import { problemService } from '@/services/problem.service';
 import { researchService } from '@/services/research.service';
 import { Kak } from '@/types/research.types';
 import { ValidationStatus } from '@/types/problem.types';
+import { AttachmentPreview } from '@/components/ui/attachment-preview';
 
 export default function BridaReviewUsulanPage() {
   const router = useRouter();
@@ -177,11 +178,13 @@ export default function BridaReviewUsulanPage() {
                     <h4 className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Urgensi</h4>
                     <p className="text-sm text-slate-700 whitespace-pre-wrap leading-relaxed">{problem.urgency}</p>
                   </div>
-                </div>
+                  <div className="border-t border-slate-100 dark:border-slate-800 pt-4">
+                    <h4 className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3">Dokumen Pendukung</h4>
+                    <AttachmentPreview files={((problem as any).attachments || []).map((att: any) => typeof att === 'string' ? att : att.fileUrl)} />
+                  </div>                </div>
               </div>
             </CardContent>
           </Card>
-
           {/* USULAN PENELITIAN */}
           {research ? (
             <Card className="rounded-none shadow-sm border-slate-200">

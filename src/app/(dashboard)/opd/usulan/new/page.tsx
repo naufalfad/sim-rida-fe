@@ -11,7 +11,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Select } from '@/components/ui/select';
-import { FileUpload } from '@/components/ui/file-upload';
+import { MultiFileUpload } from '@/components/ui/multi-file-upload';
 import { Dialog } from '@/components/ui/dialog';
 import { useToast } from '@/components/ui/toast';
 
@@ -73,7 +73,7 @@ export default function NewIntegratedProposalPage() {
 
   const [isSubmitConfirmOpen, setIsSubmitConfirmOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [supportFile, setSupportFile] = useState<File | null>(null);
+  const [supportFiles, setSupportFiles] = useState<File[]>([]);
 
   const { sectors, fetchSectors, createProblem } = useProblemStore();
   const { researchTypes, fetchResearchTypes } = useResearchStore();
@@ -186,7 +186,7 @@ export default function NewIntegratedProposalPage() {
       const vals = watch();
       const newProblem = await createProblem({
         ...vals.problem,
-        attachments: supportFile ? [supportFile] : [],
+        attachments: supportFiles,
       });
       const newResearch = await researchService.createResearch({
         ...vals.research,
@@ -318,7 +318,7 @@ export default function NewIntegratedProposalPage() {
               <Textarea label="Urgensi / Alasan Mendesak" error={errors.problem?.urgency?.message} rows={3} {...register('problem.urgency')} />
             </div>
 
-            <FileUpload label="Dokumen Pendukung Masalah (Opsional)" value={supportFile} onChange={setSupportFile} />
+            <MultiFileUpload label="Dokumen Pendukung Masalah (Opsional)" value={supportFiles} onChange={setSupportFiles} />
           </div>
         )}
 

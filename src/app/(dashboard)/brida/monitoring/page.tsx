@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Search } from 'lucide-react';
-import { proposalApi } from '@/lib/api/proposals';
+import { proposalService } from '@/lib/api/proposals';
 import { Proposal } from '@/types/proposals';
 import { STATUS_LABELS, STATUS_COLORS } from '@/constants/status';
 
@@ -13,11 +13,19 @@ export default function BridaMonitoringListPage() {
   const [searchTerm, setSearchTerm] = useState('');
 
   useEffect(() => {
-    const list = proposalApi.getProposals();
-    // Show proposals in e-Katalog / OPD implementation / OPD Reported phases
-    const activeStates = ['EKATALOG_SENT', 'OPD_IMPLEMENTING', 'OPD_REPORTED'];
-    setProposals(list.filter((p) => activeStates.includes(p.status)));
-    setIsLoading(false);
+    const loadProposals = async () => {
+      try {
+        const list = await proposalService.getProposals();
+        // Show proposals in e-Katalog / OPD implementation / OPD Reported phases
+        const activeStates = ['EKATALOG_SENT', 'OPD_IMPLEMENTING', 'OPD_REPORTED'];
+        setProposals(list.filter((p) => activeStates.includes(p.status)));
+      } catch (err) {
+        console.error('Failed to load monitoring list:', err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    loadProposals();
   }, []);
 
   const filtered = proposals.filter(

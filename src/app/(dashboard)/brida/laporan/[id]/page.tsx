@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/components/ui/toast';
 import { LoadingState } from '@/components/ui/loading-state';
-import { proposalService, proposalApi } from '@/lib/api/proposals';
+import { proposalService } from '@/lib/api/proposals';
 import { Proposal } from '@/types/proposals';
 import { STATUS_LABELS, STATUS_COLORS } from '@/constants/status';
 
@@ -24,9 +24,17 @@ export default function BridaLaporanDetailPage() {
   const [isActionSaving, setIsActionSaving] = useState(false);
 
   useEffect(() => {
-    const data = proposalApi.getProposalById(proposalId);
-    setProposal(data || null);
-    setIsLoading(false);
+    const loadDetails = async () => {
+      try {
+        const data = await proposalService.getProposalById(proposalId);
+        setProposal(data || null);
+      } catch (err) {
+        console.error('Failed to load laporan details:', err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    loadDetails();
   }, [proposalId]);
 
   if (isLoading) {

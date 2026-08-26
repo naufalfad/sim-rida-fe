@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { StatusBadge } from '@/components/ui/status-badge';
 import { LoadingState } from '@/components/ui/loading-state';
 import { EmptyState } from '@/components/ui/empty-state';
-import { proposalApi } from '@/lib/api/proposals';
+import { proposalService } from '@/lib/api/proposals';
 import { Proposal } from '@/types/proposals';
 
 export default function BridaLaporanListPage() {
@@ -16,11 +16,19 @@ export default function BridaLaporanListPage() {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const list = proposalApi.getProposals();
-    // Show proposals where OPD has submitted final reports
-    const reportStates = ['OPD_REPORTED', 'POLICY_BRIEF_DRAFT', 'RECOMMENDATION_PENDING', 'RECOMMENDATION_APPROVED'];
-    setProposals(list.filter((p) => reportStates.includes(p.status)));
-    setIsLoading(false);
+    const loadProposals = async () => {
+      try {
+        const list = await proposalService.getProposals();
+        // Show proposals where OPD has submitted final reports
+        const reportStates = ['OPD_REPORTED', 'POLICY_BRIEF_DRAFT', 'RECOMMENDATION_PENDING', 'RECOMMENDATION_APPROVED'];
+        setProposals(list.filter((p) => reportStates.includes(p.status)));
+      } catch (err) {
+        console.error('Failed to load laporan proposals:', err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    loadProposals();
   }, []);
 
   if (isLoading) {

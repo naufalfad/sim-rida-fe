@@ -10,6 +10,7 @@ export interface ProblemProposal {
   urgensi: string;
   targetPenyelesaian: string;
   dokumenPendukung?: string; // filename
+  dokumenPendukungList?: string[]; // list of filenames
 }
 
 export interface ResearchProposal {
@@ -37,8 +38,8 @@ export interface KAK {
   jadwal: string;
   anggaran: number;
   penutup: string;
+  rabItems?: any[];
 }
-
 export interface TimelineLog {
   status: WorkflowStatus;
   label: string;

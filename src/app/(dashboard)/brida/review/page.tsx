@@ -55,33 +55,33 @@ export default function BridaReviewListPage() {
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {proposals.map((item) => (
-            <Card key={item.id} className="bg-white dark:bg-slate-900 border-slate-200/80 shadow-sm flex flex-col justify-between hover:border-slate-350 transition-all">
-              <CardHeader className="pb-2">
-                <span className="font-mono text-2xs font-bold text-blue-650 dark:text-blue-400">
-                  {item.id}
-                </span>
-                <CardTitle className="text-sm font-bold text-slate-800 dark:text-slate-200 mt-2 line-clamp-2">
-                  {item.title}
-                </CardTitle>
-                <CardDescription className="text-[10px]">
-                  Bidang: {item.problem.bidang} | OPD: {item.opdName}
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="border-t pt-3 flex items-center justify-between text-2xs text-slate-450 dark:border-slate-850">
-                  <div className="flex items-center gap-1">
-                    <Calendar className="h-3.5 w-3.5" />
-                    <span>Lolos Administrasi: {new Date(item.updatedAt).toLocaleDateString('id-ID', { day: '2-digit', month: 'short' })}</span>
-                  </div>
-                  <Link href={`/brida/review/${item.id}`}>
-                    <Button size="sm" className="h-7 text-3xs bg-blue-650 hover:bg-blue-750 flex items-center gap-1 font-bold">
+            <Link key={item.id} href={`/brida/review/${item.id}`} className="block group">
+              <Card className="bg-white dark:bg-slate-900 border-slate-200/80 shadow-sm flex flex-col h-full justify-between hover:border-blue-500 hover:shadow-md transition-all cursor-pointer">
+                <CardHeader className="pb-2">
+                  <span className="font-mono text-2xs font-bold text-blue-650 dark:text-blue-450 group-hover:text-blue-600 transition-colors">
+                    {item.id}
+                  </span>
+                  <CardTitle className="text-sm font-bold text-slate-800 dark:text-slate-200 mt-2 line-clamp-2 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                    {item.title}
+                  </CardTitle>
+                  <CardDescription className="text-[10px]">
+                    Bidang: {item.problem.bidang} | OPD: {item.opdName}
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="border-t pt-3 flex items-center justify-between text-2xs text-slate-450 dark:border-slate-850">
+                    <div className="flex items-center gap-1">
+                      <Calendar className="h-3.5 w-3.5" />
+                      <span>Lolos Administrasi: {new Date(item.updatedAt).toLocaleDateString('id-ID', { day: '2-digit', month: 'short' })}</span>
+                    </div>
+                    <span className="text-3xs text-blue-650 dark:text-blue-400 flex items-center gap-1 font-bold group-hover:underline">
                       <span>Beri Nilai</span>
                       <ArrowRight className="h-3.5 w-3.5" />
-                    </Button>
-                  </Link>
-                </div>
-              </CardContent>
-            </Card>
+                    </span>
+                  </div>
+                </CardContent>
+              </Card>
+            </Link>
           ))}
         </div>
       )}

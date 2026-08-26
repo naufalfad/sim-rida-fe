@@ -1,21 +1,44 @@
+
+
+
 'use client';
 
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { proposalApi } from '@/lib/api/proposals';
+import { PlusCircle } from 'lucide-react';
+import { proposalService } from '@/lib/api/proposals';
 import { Proposal, OpdMonitoringLog, OpdReport } from '@/types/proposals';
 import { STATUS_LABELS, STATUS_COLORS } from '@/constants/status';
+import { Dialog } from '@/components/ui/dialog';
+import { Select } from '@/components/ui/select';
+import { Textarea } from '@/components/ui/textarea';
+import { useToast } from '@/components/ui/toast';
 
 type Tab = 'overview' | 'monitoring' | 'laporan';
 
 export default function OpdImplementasiDetailPage() {
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
+  const { toast } = useToast();
   const [proposal, setProposal] = useState<Proposal | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<Tab>('overview');
   const [submitting, setSubmitting] = useState(false);
   const [successMsg, setSuccessMsg] = useState('');
+
+  // Issues Form States
+  const [isIssueDialogOpen, setIsIssueDialogOpen] = useState(false);
+  const [issueDesc, setIssueDesc] = useState('');
+  const [issueSeverity, setIssueSeverity] = useState<'LOW' | 'MEDIUM' | 'HIGH'>('MEDIUM');
+  const [isIssueSaving, setIsIssueSaving] = useState(false);
+
+  // Risks Form States
+  const [isRiskDialogOpen, setIsRiskDialogOpen] = useState(false);
+  const [riskDesc, setRiskDesc] = useState('');
+  const [riskMitigation, setRiskMitigation] = useState('');
+  const [riskLevel, setRiskLevel] = useState<'LOW' | 'MEDIUM' | 'HIGH'>('MEDIUM');
+  const [isRiskSaving, setIsRiskSaving] = useState(false);
 
   // Monitoring log form
   const [logForm, setLogForm] = useState({ description: '', progress: 0, evidenceFile: '' });
@@ -30,17 +53,86 @@ export default function OpdImplementasiDetailPage() {
   });
   const [reportConfirm, setReportConfirm] = useState(false);
 
-  useEffect(() => {
-    if (id) {
-      const p = proposalApi.getProposalById(id as string);
-      setProposal(p || null);
+  // Resolve issue handler
+  const handleResolveIssue = async (issueId: string) => {
+    try {
+      const updated = await proposalService.resolveProjectIssue(id as string, issueId);
+      if (updated) {
+        setProposal(updated);
+        toast('Kendala berhasil ditandai selesai (RESOLVED).', 'success');
+      }
+    } catch {
+      toast('Gagal menyelesaikan kendala.', 'error');
     }
+  };
+
+  // Add issue handler
+  const handleAddIssue = async () => {
+    if (!issueDesc) {
+      toast('Mohon tulis deskripsi kendala.', 'error');
+      return;
+    }
+
+    setIsIssueSaving(true);
+    try {
+      const updated = await proposalService.addProjectIssue(id as string, issueDesc, issueSeverity);
+      if (updated) {
+        setProposal(updated);
+        setIssueDesc('');
+        setIsIssueDialogOpen(false);
+        toast('Kendala riset baru berhasil dicatat.', 'success');
+      }
+    } catch {
+      toast('Gagal mencatat kendala.', 'error');
+    } finally {
+      setIsIssueSaving(false);
+    }
+  };
+
+  // Add risk handler
+  const handleAddRisk = async () => {
+    if (!riskDesc || !riskMitigation) {
+      toast('Mohon lengkapi deskripsi risiko dan rencana mitigasi.', 'error');
+      return;
+    }
+
+    setIsRiskSaving(true);
+    try {
+      const updated = await proposalService.addProjectRisk(id as string, riskDesc, riskMitigation, riskLevel);
+      if (updated) {
+        setProposal(updated);
+        setRiskDesc('');
+        setRiskMitigation('');
+        setIsRiskDialogOpen(false);
+        toast('Analisis risiko baru berhasil ditambahkan.', 'success');
+      }
+    } catch {
+      toast('Gagal menambahkan risiko.', 'error');
+    } finally {
+      setIsRiskSaving(false);
+    }
+  };
+
+  useEffect(() => {
+    const loadDetails = async () => {
+      if (id) {
+        try {
+          const p = await proposalService.getProposalById(id as string);
+          setProposal(p || null);
+        } catch (err) {
+          console.error('Failed to load proposal details:', err);
+        } finally {
+          setIsLoading(false);
+        }
+      }
+    };
+    loadDetails();
   }, [id]);
 
   const handleSubmitLog = async () => {
     if (!logForm.description.trim() || logForm.progress < 0) return;
     setSubmitting(true);
-    const updated = await proposalApi.submitOpdMonitoringLog(id as string, {
+    const updated = await proposalService.submitOpdMonitoringLog(id as string, {
       description: logForm.description,
       progress: logForm.progress,
       evidenceFile: logForm.evidenceFile || undefined,
@@ -57,7 +149,7 @@ export default function OpdImplementasiDetailPage() {
   const handleSubmitReport = async () => {
     if (!reportForm.title.trim() || !reportForm.findings.trim()) return;
     setSubmitting(true);
-    const updated = await proposalApi.submitOpdFinalReport(id as string, reportForm);
+    const updated = await proposalService.submitOpdFinalReport(id as string, reportForm);
     if (updated) {
       setProposal(updated);
       setSuccessMsg('Laporan akhir berhasil diserahkan ke BRIDA!');
@@ -66,6 +158,16 @@ export default function OpdImplementasiDetailPage() {
     }
     setSubmitting(false);
   };
+
+  if (isLoading) {
+    return (
+      <div className="p-6 flex items-center justify-center h-64">
+        <div className="text-center text-gray-400">
+          <p>Memuat detail implementasi...</p>
+        </div>
+      </div>
+    );
+  }
 
   if (!proposal) {
     return (
@@ -400,6 +502,137 @@ export default function OpdImplementasiDetailPage() {
                   : 'Log monitoring hanya dapat ditambahkan saat status E-Katalog Diterima atau Sedang Implementasi.'}
               </p>
             )}
+
+            {/* Issues and Risks Sections for OPD */}
+            <div className="grid gap-6 md:grid-cols-2 border-t border-gray-200 dark:border-gray-700 pt-6 mt-6">
+              {/* Issues Register */}
+              <div className="space-y-4">
+                <div className="flex justify-between items-center border-b border-gray-150 dark:border-gray-700 pb-2">
+                  <h3 className="text-sm font-bold text-gray-800 dark:text-gray-250">
+                    Kendala Teknis Pelaksanaan (Issues Register)
+                  </h3>
+                  {canSubmitLog && (
+                    <button
+                      type="button"
+                      onClick={() => setIsIssueDialogOpen(true)}
+                      className="px-2 py-1 text-2xs font-semibold text-sky-600 hover:bg-sky-50 dark:hover:bg-sky-950/20 rounded border border-sky-200 flex items-center gap-1"
+                    >
+                      <PlusCircle className="h-3 w-3" />
+                      <span>Catat Kendala</span>
+                    </button>
+                  )}
+                </div>
+
+                {(!proposal.issues || proposal.issues.length === 0) ? (
+                  <p className="text-xs text-gray-400 italic py-4">
+                    Tidak ada kendala teknis yang dilaporkan.
+                  </p>
+                ) : (
+                  <div className="space-y-3 max-h-[250px] overflow-y-auto pr-1">
+                    {proposal.issues.map((issue) => (
+                      <div
+                        key={issue.id}
+                        className={`p-3 border rounded-lg flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 text-xs ${
+                          issue.status === 'RESOLVED'
+                            ? 'bg-gray-50/50 border-gray-100 opacity-60 dark:bg-gray-900/20 dark:border-gray-800'
+                            : issue.severity === 'HIGH'
+                            ? 'bg-red-50/10 border-red-200 dark:border-red-950/20'
+                            : 'bg-amber-50/10 border-amber-200 dark:border-amber-950/20'
+                        }`}
+                      >
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <span className={`px-1.5 py-0.5 rounded text-[9px] font-bold ${
+                              issue.status === 'RESOLVED'
+                                ? 'bg-gray-100 text-gray-600'
+                                : issue.severity === 'HIGH'
+                                ? 'bg-red-150 text-red-750 dark:bg-red-950/40 dark:text-red-400'
+                                : 'bg-amber-150 text-amber-750 dark:bg-amber-950/40 dark:text-amber-400'
+                            }`}>
+                              {issue.severity}
+                            </span>
+                            <span className="text-[10px] text-gray-400">{issue.dateReported}</span>
+                          </div>
+                          <p className="font-semibold text-gray-800 dark:text-gray-200 mt-1.5">
+                            {issue.description}
+                          </p>
+                        </div>
+
+                        {issue.status === 'OPEN' && canSubmitLog && (
+                          <button
+                            type="button"
+                            onClick={() => handleResolveIssue(issue.id)}
+                            className="px-2.5 py-1 text-3xs font-bold text-emerald-700 hover:bg-emerald-50 border border-emerald-200 rounded self-end sm:self-center bg-white dark:bg-gray-900"
+                          >
+                            Selesaikan
+                          </button>
+                        )}
+                        {issue.status === 'RESOLVED' && (
+                          <span className="text-3xs font-bold text-emerald-600 flex items-center gap-0.5">
+                            ✓ Teratasi
+                          </span>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Risks Analysis Register */}
+              <div className="space-y-4">
+                <div className="flex justify-between items-center border-b border-gray-150 dark:border-gray-700 pb-2">
+                  <h3 className="text-sm font-bold text-gray-800 dark:text-gray-250">
+                    Manajemen Risiko & Mitigasi (Risk Register)
+                  </h3>
+                  {canSubmitLog && (
+                    <button
+                      type="button"
+                      onClick={() => setIsRiskDialogOpen(true)}
+                      className="px-2 py-1 text-2xs font-semibold text-sky-600 hover:bg-sky-50 dark:hover:bg-sky-950/20 rounded border border-sky-200 flex items-center gap-1"
+                    >
+                      <PlusCircle className="h-3 w-3" />
+                      <span>Tambah Risiko</span>
+                    </button>
+                  )}
+                </div>
+
+                {(!proposal.risks || proposal.risks.length === 0) ? (
+                  <p className="text-xs text-gray-400 italic py-4">
+                    Belum ada analisis risiko yang ditambahkan.
+                  </p>
+                ) : (
+                  <div className="space-y-3 max-h-[250px] overflow-y-auto pr-1">
+                    {proposal.risks.map((risk) => (
+                      <div
+                        key={risk.id}
+                        className="p-3 border border-gray-200 dark:border-gray-700 rounded-lg bg-gray-50/50 dark:bg-gray-900/20 text-xs space-y-2"
+                      >
+                        <div className="flex justify-between items-center font-bold">
+                          <span className="text-gray-400 text-[10px] font-mono">{risk.id}</span>
+                          <span className={`px-1.5 py-0.5 rounded text-[9px] ${
+                            risk.riskLevel === 'HIGH'
+                              ? 'bg-red-100 text-red-750 dark:bg-red-950/40 dark:text-red-400'
+                              : risk.riskLevel === 'MEDIUM'
+                              ? 'bg-amber-100 text-amber-755 dark:bg-amber-950/40 dark:text-amber-400'
+                              : 'bg-gray-150 text-gray-600 dark:bg-gray-800'
+                          }`}>
+                            Risiko: {risk.riskLevel}
+                          </span>
+                        </div>
+                        <div>
+                          <span className="font-bold text-gray-800 dark:text-gray-250">Pernyataan Risiko:</span>
+                          <p className="text-gray-600 dark:text-gray-350 mt-0.5 leading-relaxed">{risk.description}</p>
+                        </div>
+                        <div className="pt-2 border-t dark:border-gray-800">
+                          <span className="font-bold text-sky-600 dark:text-sky-400">Rencana Mitigasi:</span>
+                          <p className="text-gray-600 dark:text-gray-350 mt-0.5 leading-relaxed">{risk.mitigation}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
         )}
 
@@ -516,6 +749,112 @@ export default function OpdImplementasiDetailPage() {
           </div>
         )}
       </div>
+
+      {/* Add Issue Dialog */}
+      <Dialog
+        isOpen={isIssueDialogOpen}
+        onClose={() => setIsIssueDialogOpen(false)}
+        title="Catat Kendala Riset Baru"
+        description="Catat kendala teknis atau birokrasi lapangan yang menghambat pengumpulan data riset."
+        footer={
+          <>
+            <button 
+              type="button"
+              onClick={handleAddIssue} 
+              className="px-4 py-2 bg-sky-600 hover:bg-sky-700 disabled:opacity-50 text-white font-semibold rounded-lg transition-colors text-xs" 
+              disabled={isIssueSaving}
+            >
+              {isIssueSaving ? 'Menyimpan...' : 'Simpan Kendala'}
+            </button>
+            <button 
+              type="button"
+              onClick={() => setIsIssueDialogOpen(false)} 
+              className="px-4 py-2 border border-gray-350 hover:bg-gray-50 text-gray-700 font-semibold rounded-lg transition-colors text-xs dark:border-gray-650 dark:text-gray-250 dark:hover:bg-gray-800"
+            >
+              Batal
+            </button>
+          </>
+        }
+      >
+        <div className="space-y-4">
+          <Textarea
+            label="Deskripsi Kendala / Masalah Lapangan"
+            placeholder="Jelaskan secara ringkas kejadian kendala teknis..."
+            value={issueDesc}
+            onChange={(e) => setIssueDesc(e.target.value)}
+            rows={3}
+          />
+
+          <Select
+            label="Tingkat Keparahan (Severity)"
+            options={[
+              { value: 'LOW', label: 'Low (Rendah / Penundaan Minor)' },
+              { value: 'MEDIUM', label: 'Medium (Sedang / Menghambat Kerja)' },
+              { value: 'HIGH', label: 'High (Kritis / Membutuhkan Rapat Koordinasi)' },
+            ]}
+            value={issueSeverity}
+            onChange={(e) => setIssueSeverity(e.target.value as any)}
+            className="bg-white dark:bg-slate-950 dark:border-slate-800 border-slate-300"
+          />
+        </div>
+      </Dialog>
+
+      {/* Add Risk Dialog */}
+      <Dialog
+        isOpen={isRiskDialogOpen}
+        onClose={() => setIsRiskDialogOpen(false)}
+        title="Identifikasi Analisis Risiko"
+        description="Prediksikan risiko eksternal (sosial, cuaca, kebijakan) beserta rencana mitigasi taktisnya."
+        footer={
+          <>
+            <button 
+              type="button"
+              onClick={handleAddRisk} 
+              className="px-4 py-2 bg-sky-600 hover:bg-sky-700 disabled:opacity-50 text-white font-semibold rounded-lg transition-colors text-xs" 
+              disabled={isRiskSaving}
+            >
+              {isRiskSaving ? 'Menyimpan...' : 'Simpan Risiko'}
+            </button>
+            <button 
+              type="button"
+              onClick={() => setIsRiskDialogOpen(false)} 
+              className="px-4 py-2 border border-gray-350 hover:bg-gray-50 text-gray-700 font-semibold rounded-lg transition-colors text-xs dark:border-gray-650 dark:text-gray-250 dark:hover:bg-gray-800"
+            >
+              Batal
+            </button>
+          </>
+        }
+      >
+        <div className="space-y-4">
+          <Textarea
+            label="Deskripsi Risiko (Risk Statement)"
+            placeholder="Contoh: Terjadi fluktuasi penolakan responden nelayan setempat..."
+            value={riskDesc}
+            onChange={(e) => setRiskDesc(e.target.value)}
+            rows={2}
+          />
+
+          <Textarea
+            label="Rencana Mitigasi (Mitigation Plan)"
+            placeholder="Contoh: Menggandeng tokoh adat setempat untuk sosialisasi..."
+            value={riskMitigation}
+            onChange={(e) => setRiskMitigation(e.target.value)}
+            rows={2}
+          />
+
+          <Select
+            label="Level Risiko"
+            options={[
+              { value: 'LOW', label: 'Low' },
+              { value: 'MEDIUM', label: 'Medium' },
+              { value: 'HIGH', label: 'High' },
+            ]}
+            value={riskLevel}
+            onChange={(e) => setRiskLevel(e.target.value as any)}
+            className="bg-white dark:bg-slate-950 dark:border-slate-800 border-slate-300"
+          />
+        </div>
+      </Dialog>
     </div>
   );
 }
