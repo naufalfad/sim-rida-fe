@@ -1,7 +1,7 @@
 import axios from 'axios';
 
-// Default to localhost:5000/api/v1 if not provided in env
-const baseURL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api/v1';
+// Default to localhost:5000/api if not provided in env
+const baseURL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
 
 const axiosInstance = axios.create({
   baseURL,

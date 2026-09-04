@@ -3,7 +3,8 @@ export interface User {
   name: string;
   email: string;
   role: string;
-  // Add other properties from your user schema here
+  opdId?: string | null;
+  opd?: any;
 }
 
 export interface LoginPayload {
