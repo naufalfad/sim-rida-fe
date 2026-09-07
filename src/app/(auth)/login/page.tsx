@@ -1,160 +1,167 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/store/useAuthStore';
-import { Eye, EyeOff, Lock, Mail, AlertTriangle, ShieldCheck } from 'lucide-react';
+import {
+  ShieldCheck,
+  Building,
+  UserCheck,
+  Award,
+  Settings,
+  ArrowRight,
+  Lock,
+  Mail,
+  Sparkles
+} from 'lucide-react';
 
 export default function LoginPage() {
   const router = useRouter();
-  const { login, isLoading, error: storeError, isAuthenticated } = useAuthStore();
+  const { loginAsMock, login, isLoading } = useAuthStore();
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [showPassword, setShowPassword] = useState(false);
-  const [validationError, setValidationError] = useState('');
 
-  // If already authenticated, redirect immediately to dashboard
-  useEffect(() => {
-    if (isAuthenticated) {
-      router.replace('/dashboard');
-    }
-  }, [isAuthenticated, router]);
+  const handleQuickLogin = (role: 'OPD' | 'ADMIN_BRIDA' | 'KEPALA_BRIDA') => {
+    loginAsMock(role);
+    router.push('/dashboard');
+  };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleManualSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setValidationError('');
-
-    // Field validation
-    if (!email.trim()) {
-      setValidationError('Email harus diisi.');
-      return;
-    }
-    if (!password) {
-      setValidationError('Password harus diisi.');
-      return;
-    }
-
-    try {
-      await login({ email, password });
-      router.push('/dashboard');
-    } catch (err) {
-      // Error handles in auth store
-    }
+    await login({ email: email || 'opd.bappeda@slemankab.go.id', password: password || 'password' });
+    router.push('/dashboard');
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 px-4 font-sans">
-      <div className="w-full max-w-md space-y-8 bg-white dark:bg-gray-800 p-8 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm">
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 px-4 font-sans py-12">
+      <div className="w-full max-w-lg space-y-6 bg-white dark:bg-gray-800 p-8 rounded-xl border border-gray-200 dark:border-gray-700 shadow-md">
+        
         {/* Brand Header */}
         <div className="text-center space-y-2">
-          <div className="inline-flex items-center justify-center p-3 bg-blue-50 dark:bg-blue-950 text-blue-600 dark:text-blue-400 rounded-lg mb-2">
+          <div className="inline-flex items-center justify-center p-3 bg-emerald-50 dark:bg-emerald-950 text-emerald-600 dark:text-emerald-400 rounded-xl mb-1 shadow-sm">
             <ShieldCheck className="h-10 w-10" />
           </div>
-          <h2 className="text-2xl font-bold tracking-tight text-gray-905 dark:text-white">
+          <h2 className="text-2xl font-black tracking-tight text-gray-900 dark:text-white">
             SIM-RIDA
           </h2>
-          <p className="text-xs text-gray-500 dark:text-gray-450 uppercase tracking-wider font-semibold">
+          <p className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wider font-bold">
             Sistem Informasi Manajemen Riset Daerah
           </p>
-          <div className="w-12 h-1 bg-blue-600 mx-auto rounded-full mt-2" />
+          <div className="w-12 h-1 bg-emerald-600 mx-auto rounded-full mt-2" />
         </div>
 
-        {/* Credentials Info Box */}
-        <div className="bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-750 rounded p-3 text-xs space-y-1.5 text-gray-600 dark:text-gray-400">
-          <p className="font-bold text-gray-800 dark:text-gray-300">Akses Demo:</p>
-          <ul className="list-disc pl-4 space-y-1">
-            <li><strong>Admin</strong>: admin@simrida.local</li>
-            <li><strong>BRIDA</strong>: brida@simrida.local</li>
-            <li><strong>Kepala BRIDA</strong>: kepala@simrida.local</li>
-            <li><strong>Password</strong>: password</li>
-          </ul>
+        {/* 1-Click Mock Role Selector */}
+        <div className="space-y-3 pt-2">
+          <div className="flex items-center gap-1.5 text-xs font-bold text-gray-700 dark:text-gray-300">
+            <Sparkles className="h-4 w-4 text-emerald-600" />
+            <span>Pilih Akses Role (1-Click Masuk):</span>
+          </div>
+
+          <div className="grid gap-2.5">
+            {/* OPD Button */}
+            <button
+              onClick={() => handleQuickLogin('OPD')}
+              className="w-full p-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold transition-all shadow-sm flex items-center justify-between group"
+            >
+              <div className="flex items-center gap-2.5 text-left">
+                <div className="p-1.5 bg-white/20 rounded-md">
+                  <Building className="h-4 w-4 text-white" />
+                </div>
+                <div>
+                  <span className="block font-black text-sm">Masuk Sebagai OPD (User)</span>
+                  <span className="block text-[11px] text-emerald-100 font-normal">Pengusul Masalah Pembangunan & Penerima Rekomendasi</span>
+                </div>
+              </div>
+              <ArrowRight className="h-4 w-4 transform group-hover:translate-x-1 transition-transform" />
+            </button>
+
+            {/* Admin BRIDA Button */}
+            <button
+              onClick={() => handleQuickLogin('ADMIN_BRIDA')}
+              className="w-full p-3 bg-gray-50 dark:bg-gray-900 hover:bg-gray-100 dark:hover:bg-gray-750 text-gray-800 dark:text-gray-200 border border-gray-200 dark:border-gray-700 rounded-lg text-xs font-bold transition-all flex items-center justify-between group"
+            >
+              <div className="flex items-center gap-2.5 text-left">
+                <div className="p-1.5 bg-blue-50 dark:bg-blue-950 text-blue-600 rounded-md">
+                  <Settings className="h-4 w-4" />
+                </div>
+                <div>
+                  <span className="block font-bold">Masuk Sebagai Admin BRIDA</span>
+                  <span className="block text-[10px] text-gray-500 font-normal">Gatekeeper Verifikasi, Scoring, Manajemen Riset, Policy Brief & Master Data</span>
+                </div>
+              </div>
+              <ArrowRight className="h-4 w-4 text-gray-400 group-hover:text-gray-700 group-hover:translate-x-1 transition-all" />
+            </button>
+
+            {/* Kepala BRIDA Button */}
+            <button
+              onClick={() => handleQuickLogin('KEPALA_BRIDA')}
+              className="w-full p-3 bg-gray-50 dark:bg-gray-900 hover:bg-gray-100 dark:hover:bg-gray-750 text-gray-800 dark:text-gray-200 border border-gray-200 dark:border-gray-700 rounded-lg text-xs font-bold transition-all flex items-center justify-between group"
+            >
+              <div className="flex items-center gap-2.5 text-left">
+                <div className="p-1.5 bg-purple-50 dark:bg-purple-950 text-purple-600 rounded-md">
+                  <Award className="h-4 w-4" />
+                </div>
+                <div>
+                  <span className="block font-bold">Masuk Sebagai Kepala BRIDA</span>
+                  <span className="block text-[10px] text-gray-500 font-normal">Persetujuan Riset & Tanda Tangan Elektronik (TTE) Naskah Kebijakan</span>
+                </div>
+              </div>
+              <ArrowRight className="h-4 w-4 text-gray-400 group-hover:text-gray-700 group-hover:translate-x-1 transition-all" />
+            </button>
+          </div>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Error Message */}
-          {(storeError || validationError) && (
-            <div className="flex items-start gap-2 bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900/50 text-red-750 dark:text-red-400 text-xs rounded p-3">
-              <AlertTriangle className="h-4 w-4 shrink-0 mt-0.5" />
-              <span>{validationError || storeError}</span>
-            </div>
-          )}
+        {/* Divider */}
+        <div className="relative py-2">
+          <div className="absolute inset-0 flex items-center">
+            <div className="w-full border-t border-gray-200 dark:border-gray-700" />
+          </div>
+          <div className="relative flex justify-center text-3xs uppercase">
+            <span className="bg-white dark:bg-gray-800 px-2 text-gray-400 font-semibold">
+              Atau Masuk dengan Email & Password
+            </span>
+          </div>
+        </div>
 
-          <div className="space-y-4">
-            {/* Email field */}
-            <div>
-              <label htmlFor="email" className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">
-                Alamat Email
-              </label>
-              <div className="relative">
-                <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-400">
-                  <Mail className="h-4 w-4" />
-                </span>
-                <input
-                  id="email"
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="admin@simrida.local"
-                  className="block w-full pl-9 pr-3 py-2 text-sm border border-gray-300 dark:border-gray-700 rounded bg-white dark:bg-gray-850 text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-blue-650 focus:border-blue-650"
-                  required
-                />
-              </div>
+        {/* Optional Manual Form */}
+        <form onSubmit={handleManualSubmit} className="space-y-3 text-xs">
+          <div>
+            <label className="block text-2xs font-semibold text-gray-600 dark:text-gray-400 mb-1">Email</label>
+            <div className="relative">
+              <Mail className="h-3.5 w-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="admin@simrida.local"
+                className="w-full pl-8 pr-3 py-2 text-xs border border-gray-300 dark:border-gray-700 rounded-md bg-white dark:bg-gray-950"
+              />
             </div>
+          </div>
 
-            {/* Password field */}
-            <div>
-              <label htmlFor="password" className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">
-                Kata Sandi
-              </label>
-              <div className="relative">
-                <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-400">
-                  <Lock className="h-4 w-4" />
-                </span>
-                <input
-                  id="password"
-                  type={showPassword ? 'text' : 'password'}
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="••••••••"
-                  className="block w-full pl-9 pr-10 py-2 text-sm border border-gray-300 dark:border-gray-700 rounded bg-white dark:bg-gray-850 text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-blue-650 focus:border-blue-650"
-                  required
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-650"
-                >
-                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                </button>
-              </div>
+          <div>
+            <label className="block text-2xs font-semibold text-gray-600 dark:text-gray-400 mb-1">Password</label>
+            <div className="relative">
+              <Lock className="h-3.5 w-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+              <input
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="••••••••"
+                className="w-full pl-8 pr-3 py-2 text-xs border border-gray-300 dark:border-gray-700 rounded-md bg-white dark:bg-gray-950"
+              />
             </div>
           </div>
 
           <button
             type="submit"
-            disabled={isLoading}
-            className="w-full py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded text-sm transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-60 flex justify-center items-center gap-2"
+            className="w-full py-2 bg-gray-800 hover:bg-gray-900 text-white rounded-md text-xs font-bold transition-all"
           >
-            {isLoading ? (
-              <>
-                <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-                </svg>
-                <span>Masuk...</span>
-              </>
-            ) : (
-              'Masuk ke SIM-RIDA'
-            )}
+            Masuk
           </button>
         </form>
 
-        <div className="pt-4 border-t border-gray-150 dark:border-gray-750 text-center">
-          <p className="text-[10px] text-gray-400 uppercase tracking-widest">
-            SIM-RIDA Demo Environment
-          </p>
-        </div>
       </div>
     </div>
   );

@@ -14,26 +14,26 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         ref={ref}
         disabled={disabled || isLoading}
         className={cn(
-          'inline-flex items-center justify-center rounded-none font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50',
+          'inline-flex items-center justify-center font-medium tracking-wide transition-all focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-offset-1 disabled:pointer-events-none disabled:opacity-50',
           // Variants
           {
-            'bg-blue-600 text-white hover:bg-blue-700 focus-visible:ring-blue-500':
+            'bg-[#0f2c59] text-white hover:bg-[#0a1e3f] border border-[#0f2c59] focus-visible:ring-[#0f2c59] shadow-none':
               variant === 'primary',
-            'bg-slate-100 text-slate-900 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-100 dark:hover:bg-slate-700 focus-visible:ring-slate-500':
+            'bg-slate-100 text-slate-900 hover:bg-slate-200 border border-slate-200 dark:bg-slate-800 dark:text-slate-100 dark:hover:bg-slate-700 dark:border-slate-700 focus-visible:ring-slate-500':
               variant === 'secondary',
-            'border border-slate-300 bg-transparent text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800 focus-visible:ring-slate-500':
+            'border border-slate-300 bg-white text-slate-800 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800 focus-visible:ring-slate-400':
               variant === 'outline',
-            'bg-transparent text-slate-700 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800 focus-visible:ring-slate-500':
+            'bg-transparent text-slate-700 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800 focus-visible:ring-slate-400':
               variant === 'ghost',
-            'bg-red-600 text-white hover:bg-red-700 focus-visible:ring-red-500':
+            'bg-rose-700 text-white hover:bg-rose-800 border border-rose-700 focus-visible:ring-rose-500':
               variant === 'danger',
-            'bg-emerald-600 text-white hover:bg-emerald-700 focus-visible:ring-emerald-500':
+            'bg-emerald-700 text-white hover:bg-emerald-800 border border-emerald-700 focus-visible:ring-emerald-500':
               variant === 'success',
           },
           // Sizes
           {
-            'h-9 px-3 text-sm': size === 'sm',
-            'h-10 px-4 text-sm': size === 'md',
+            'h-8 px-3 text-xs': size === 'sm',
+            'h-9 px-4 text-sm': size === 'md',
             'h-11 px-6 text-base': size === 'lg',
           },
           className

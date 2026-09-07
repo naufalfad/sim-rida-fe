@@ -5,13 +5,22 @@
 :root {
   --background: #f8fafc;
   --foreground: #0f172a;
+  --primary-navy: #0f2c59;
+  --primary-navy-dark: #0a1e3f;
+  --accent-blue: #1d4ed8;
+  --border-color: #e2e8f0;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0b0f19;
+    --background: #090d16;
     --foreground: #f8fafc;
+    --border-color: #1e293b;
   }
+}
+
+* {
+  border-radius: 0px !important;
 }
 
 body {
@@ -20,15 +29,33 @@ body {
   min-height: 100vh;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
 }
 
 /* Custom styling for datepicker indicator */
 input[type="date"]::-webkit-calendar-picker-indicator {
   cursor: pointer;
-  filter: invert(0.5);
+  filter: invert(0.4);
 }
 
 /* Custom Scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f5f9;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
 .scrollbar-none::-webkit-scrollbar {
   display: none;
 }

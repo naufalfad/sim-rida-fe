@@ -1,527 +1,673 @@
 'use client';
 
-import React, { useMemo, useEffect, useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
+import { useOpdStore } from '@/store/useOpdStore';
 import { useAuthStore } from '@/store/useAuthStore';
-import { useRecommendationStore } from '@/store/useRecommendationStore';
-import { useResearchStore } from '@/store/useResearchStore';
-import { useKnowledgeBaseStore } from '@/store/useKnowledgeBaseStore';
-import { useMasterStore } from '@/store/useMasterStore';
-import { dashboardService, DashboardSummary } from '@/services/dashboard.service';
-import { masterService } from '@/services/master.service';
-import { PageHeader } from '@/components/ui/page-header';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import {
-  Users,
-  Building2,
-  FileText,
-  Calendar,
-  Search,
+  Send,
   Clock,
   CheckCircle2,
-  Lightbulb,
-  FileStack,
-  TrendingUp,
-  AlertCircle,
-  Award,
+  FilePlus2,
   ArrowRight,
+  Activity,
+  Award,
+  FileText,
+  ShieldCheck,
+  TrendingUp,
+  ClipboardCheck,
   ClipboardList,
-  CheckSquare
+  Layers,
+  PieChart,
+  MapPin,
+  FileCheck,
 } from 'lucide-react';
 
-const renderIcon = (name: string) => {
-  const iconProps = { className: 'h-5 w-5 text-blue-600 dark:text-blue-400' };
-  switch (name) {
-    case 'Users': return <Users {...iconProps} />;
-    case 'Building2': return <Building2 {...iconProps} />;
-    case 'FileText': return <FileText {...iconProps} />;
-    case 'Calendar': return <Calendar {...iconProps} />;
-    case 'SearchCode': return <Search {...iconProps} />;
-    case 'Clock': return <Clock {...iconProps} />;
-    case 'CheckCircle2': return <CheckCircle2 {...iconProps} />;
-    case 'Lightbulb': return <Lightbulb {...iconProps} />;
-    case 'FileStack': return <FileStack {...iconProps} />;
-    case 'TrendingUp': return <TrendingUp {...iconProps} />;
-    case 'AlertCircle': return <AlertCircle {...iconProps} />;
-    case 'Award': return <Award {...iconProps} />;
-    default: return <FileText {...iconProps} />;
-  }
-};
-
-export default function DashboardPage() {
-  const { user } = useAuthStore();
+export default function UnifiedDashboardPage() {
   const router = useRouter();
-  const { getAllRecommendations, fetchRecommendations } = useRecommendationStore();
-  const { proposals, researchRecords, fetchProposals } = useResearchStore();
-  const { documents, fetchDocuments } = useKnowledgeBaseStore();
-  const { opds, fetchMasterData } = useMasterStore();
+  const { user } = useAuthStore();
+  const { proposals, activeOpdName, selectProposal } = useOpdStore();
 
-  const [summary, setSummary] = useState<DashboardSummary | null>(null);
-  const [usersCount, setUsersCount] = useState(7);
+  const isAdmin = user?.role === 'ADMIN_BRIDA';
+  const isKepalaBrida = user?.role === 'KEPALA_BRIDA';
 
-  useEffect(() => {
-    fetchRecommendations(user?.role === 'OPD');
-    fetchProposals();
-    fetchDocuments();
-    fetchMasterData();
-    dashboardService.getSummary().then(setSummary).catch(() => null);
-    masterService.getUsers().then((u) => setUsersCount(u.length)).catch(() => null);
-  }, [user, fetchRecommendations, fetchProposals, fetchDocuments, fetchMasterData]);
+  // GIS Sleman Interactive Points
+  const [selectedGisPoint, setSelectedGisPoint] = useState<{
+    kapanewon: string;
+    title: string;
+    opd: string;
+    scheme: string;
+    progress: number;
+    allocatedBudget: number;
+    category: string;
+    coords: { x: string; y: string };
+  } | null>({
+    kapanewon: 'Kapanewon Depok',
+    title: 'Strategi Penurunan Stunting Berbasis Ketahanan Pangan Lokal',
+    opd: 'Dinas Kesehatan Kab. Sleman',
+    scheme: 'Swakelola BRIDA',
+    progress: 100,
+    allocatedBudget: 85000000,
+    category: 'Sosial Budaya',
+    coords: { x: '68%', y: '65%' },
+  });
 
-  const allRecs = getAllRecommendations();
+  const gisLocations = [
+    { kapanewon: 'Kapanewon Depok', title: 'Strategi Penurunan Stunting Berbasis Ketahanan Pangan Lokal', opd: 'Dinas Kesehatan', scheme: 'Swakelola BRIDA', progress: 100, allocatedBudget: 85000000, coords: { x: '68%', y: '65%' }, category: 'Sosial Budaya' },
+    { kapanewon: 'Kapanewon Cangkringan', title: 'Mitigasi Risiko Bencana Erupsi Merapi Berbasis Sensor AI', opd: 'BPBD Sleman', scheme: 'Kerjasama UGM', progress: 45, allocatedBudget: 110000000, coords: { x: '75%', y: '20%' }, category: 'Inovasi Teknologi' },
+    { kapanewon: 'Kapanewon Mlati', title: 'Integrasi Single Sign-On Pelayanan Publik Satu Data Sleman', opd: 'Dinas Kominfo', scheme: 'Swakelola BRIDA', progress: 60, allocatedBudget: 75000000, coords: { x: '45%', y: '50%' }, category: 'Tata Kelola' },
+    { kapanewon: 'Kapanewon Tempel', title: 'Ketahanan Pangan Melalui Smart Farming Salak Pondoh', opd: 'Dinas Pertanian', scheme: 'Kerjasama Instiper', progress: 75, allocatedBudget: 95000000, coords: { x: '25%', y: '25%' }, category: 'Ekonomi Pembangunan' },
+    { kapanewon: 'Kapanewon Godean', title: 'Pengembangan Sentra Industri Kerajinan Ramah Lingkungan', opd: 'Dinas Perindag', scheme: 'Swakelola BRIDA', progress: 30, allocatedBudget: 60000000, coords: { x: '28%', y: '70%' }, category: 'Ekonomi Pembangunan' },
+    { kapanewon: 'Kapanewon Prambanan', title: 'Digitalisasi Heritage & Ekowisata Candi Berkelanjutan', opd: 'Dinas Pariwisata', scheme: 'Kerjasama UNY', progress: 85, allocatedBudget: 105000000, coords: { x: '88%', y: '78%' }, category: 'Sosial Budaya' },
+  ];
 
-  const bridaRecStats = useMemo(() => {
-    const draft = allRecs.filter(r => r.status === 'DRAFT').length;
-    const review = allRecs.filter(r => r.status === 'UNDER_REVIEW').length;
-    const approved = allRecs.filter(r => r.status === 'APPROVED').length;
-    const published = allRecs.filter(r => r.status === 'PUBLISHED').length;
-    return { draft, review, approved, published };
-  }, [allRecs]);
+  // Statistics
+  const totalSubmitted = proposals.filter((p) => p.status !== 'DRAFT').length;
+  const pendingVerification = proposals.filter((p) => p.status === 'PENDING').length;
+  const inReviewOrScoring = proposals.filter((p) => p.status === 'IN_REVIEW').length;
+  const inProgressStudies = proposals.filter((p) => ['APPROVED', 'IN_PROGRESS'].includes(p.status)).length;
+  const completedCount = proposals.filter((p) => p.status === 'COMPLETED').length;
+  const draftCount = proposals.filter((p) => p.status === 'DRAFT').length;
 
-  const pendingReviews = useMemo(() => {
-    return allRecs.filter(r => r.status === 'UNDER_REVIEW');
-  }, [allRecs]);
+  // Category breakdown for "Peta Isu Daerah"
+  const categoryStats = useMemo(() => {
+    const counts: Record<string, number> = {
+      'Ekonomi Pembangunan': 0,
+      'Tata Kelola Pemerintahan': 0,
+      'Sosial & Budaya': 0,
+      'Inovasi & Teknologi': 0,
+    };
+    proposals.forEach((p) => {
+      if (counts[p.category] !== undefined) {
+        counts[p.category] += 1;
+      } else {
+        counts['Sosial & Budaya'] += 1;
+      }
+    });
+    const total = proposals.length || 1;
+    return Object.entries(counts).map(([cat, count]) => ({
+      category: cat,
+      count,
+      percent: Math.round((count / total) * 100),
+    }));
+  }, [proposals]);
 
-  const receivedRecs = useMemo(() => {
-    if (user?.role === 'OPD') {
-      return allRecs.filter(r => r.status === 'PUBLISHED');
+  // OPD Follow-up monitoring stats
+  const completedProposals = useMemo(() => proposals.filter((p) => p.status === 'COMPLETED'), [proposals]);
+  const reportedFollowUpCount = useMemo(() => completedProposals.filter((p) => p.followUpReport).length, [completedProposals]);
+  const pendingFollowUpCount = completedProposals.length - reportedFollowUpCount;
+
+  const getStatusBadge = (status: string) => {
+    switch (status) {
+      case 'PENDING':
+        return (
+          <span className="inline-flex items-center gap-1.5 px-2 py-0.5 text-2xs font-semibold uppercase tracking-wider bg-amber-50 text-amber-900 border border-amber-300">
+            <Clock className="h-3 w-3" />
+            Menunggu Verifikasi
+          </span>
+        );
+      case 'IN_REVIEW':
+        return (
+          <span className="inline-flex items-center gap-1.5 px-2 py-0.5 text-2xs font-semibold uppercase tracking-wider bg-[#f0f4f9] text-[#0f2c59] border-[#bfd2e6]">
+            <Activity className="h-3 w-3" />
+            Sedang Ditelaah / Scoring
+          </span>
+        );
+      case 'SCORED':
+        return (
+          <span className="inline-flex items-center gap-1.5 px-2 py-0.5 text-2xs font-semibold uppercase tracking-wider bg-blue-50 text-blue-900 border-blue-300">
+            <Award className="h-3 w-3" />
+            Siap Approval
+          </span>
+        );
+      case 'APPROVED':
+      case 'IN_PROGRESS':
+        return (
+          <span className="inline-flex items-center gap-1.5 px-2 py-0.5 text-2xs font-semibold uppercase tracking-wider bg-indigo-50 text-indigo-900 border-indigo-300">
+            <Activity className="h-3 w-3" />
+            Kajian Berjalan
+          </span>
+        );
+      case 'COMPLETED':
+        return (
+          <span className="inline-flex items-center gap-1.5 px-2 py-0.5 text-2xs font-semibold uppercase tracking-wider bg-emerald-50 text-emerald-900 border-emerald-300">
+            <CheckCircle2 className="h-3 w-3" />
+            Rekomendasi Terbit
+          </span>
+        );
+      default:
+        return (
+          <span className="inline-flex items-center gap-1.5 px-2 py-0.5 text-2xs font-semibold uppercase tracking-wider bg-slate-100 text-slate-700 border-slate-300">
+            Draf
+          </span>
+        );
     }
-    return allRecs.filter(r => r.status === 'PUBLISHED');
-  }, [allRecs, user]);
-
-  const opdStats = useMemo(() => {
-    const total = receivedRecs.length;
-    const high = receivedRecs.filter(r => r.priority === 'HIGH').length;
-    const strategic = receivedRecs.filter(r => r.priority === 'STRATEGIC').length;
-    return { total, high, strategic };
-  }, [receivedRecs]);
-
-  if (!user) return null;
-
-  // 1. ADMIN DASHBOARD VIEW
-  const renderAdminDashboard = () => {
-    const adminStats = [
-      { title: 'Total Pengguna Aktif', value: usersCount.toString(), change: 'Terautentikasi PostgreSQL', iconName: 'Users' },
-      { title: 'OPD Terdaftar', value: (opds.length || 4).toString(), change: 'Perangkat daerah aktif', iconName: 'Building2' },
-      { title: 'Dokumen Sumber Eksternal', value: (documents.length || 5).toString(), change: 'Basis pengetahuan litbang', iconName: 'FileText' },
-      { title: 'Usulan Riset Masuk', value: (proposals.length || 6).toString(), change: 'Tahun Anggaran 2026', iconName: 'TrendingUp' },
-    ];
-
-    return (
-      <div className="space-y-6">
-        {/* Stats Grid */}
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {adminStats.map((stat) => (
-            <Card key={stat.title}>
-              <CardHeader className="flex flex-row items-center justify-between pb-2">
-                <CardTitle className="text-xs font-bold uppercase tracking-wider text-gray-500">
-                  {stat.title}
-                </CardTitle>
-                {renderIcon(stat.iconName)}
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold text-gray-900 dark:text-white">{stat.value}</div>
-                <p className="text-[10px] text-gray-400 font-semibold mt-1">{stat.change}</p>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-
-        {/* Admin Panel Details */}
-        <div className="grid gap-6 md:grid-cols-3">
-          <Card className="md:col-span-2">
-            <CardHeader>
-              <CardTitle className="text-sm font-bold text-gray-800 dark:text-gray-200">
-                Ringkasan Database & Status Sinkronisasi
-              </CardTitle>
-              <CardDescription className="text-[10px]">
-                Koneksi API Backend SIM-RIDA (PostgreSQL Prisma ORM)
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
-                <div className="p-3 bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800 rounded flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-                    <span className="text-xs font-bold text-emerald-900 dark:text-emerald-300">Backend API Services</span>
-                  </div>
-                  <span className="text-[10px] font-bold text-emerald-700 dark:text-emerald-400">CONNECTED (RESTful)</span>
-                </div>
-                <div className="p-3 bg-gray-50 dark:bg-gray-900/40 border border-gray-150 dark:border-gray-850 rounded flex items-center justify-between">
-                  <span className="text-xs font-semibold text-gray-700 dark:text-gray-300">Total Problem Identifications</span>
-                  <span className="text-xs font-bold text-blue-600">8 Terdata</span>
-                </div>
-                <div className="p-3 bg-gray-50 dark:bg-gray-900/40 border border-gray-150 dark:border-gray-850 rounded flex items-center justify-between">
-                  <span className="text-xs font-semibold text-gray-700 dark:text-gray-300">Total Research Proposals</span>
-                  <span className="text-xs font-bold text-blue-600">{proposals.length} Terdata</span>
-                </div>
-                <div className="p-3 bg-gray-50 dark:bg-gray-900/40 border border-gray-150 dark:border-gray-850 rounded flex items-center justify-between">
-                  <span className="text-xs font-semibold text-gray-700 dark:text-gray-300">Policy Recommendations</span>
-                  <span className="text-xs font-bold text-blue-600">{allRecs.length} Terdata</span>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-sm font-bold text-gray-800 dark:text-gray-200">
-                Aksi Cepat
-              </CardTitle>
-              <CardDescription className="text-[10px]">Pintasan Manajemen</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-2">
-              <button
-                onClick={() => router.push('/knowledge-base')}
-                className="w-full text-left p-2.5 rounded border border-gray-200 hover:bg-blue-50 hover:border-blue-300 text-xs font-bold text-gray-800 flex items-center justify-between transition"
-              >
-                <span>Kelola Knowledge Base</span>
-                <ArrowRight className="w-3.5 h-3.5 text-gray-400" />
-              </button>
-              <button
-                onClick={() => router.push('/research-proposals')}
-                className="w-full text-left p-2.5 rounded border border-gray-200 hover:bg-blue-50 hover:border-blue-300 text-xs font-bold text-gray-800 flex items-center justify-between transition"
-              >
-                <span>Daftar Proposal Riset</span>
-                <ArrowRight className="w-3.5 h-3.5 text-gray-400" />
-              </button>
-              <button
-                onClick={() => router.push('/recommendations')}
-                className="w-full text-left p-2.5 rounded border border-gray-200 hover:bg-blue-50 hover:border-blue-300 text-xs font-bold text-gray-800 flex items-center justify-between transition"
-              >
-                <span>Pusat Rekomendasi OPD</span>
-                <ArrowRight className="w-3.5 h-3.5 text-gray-400" />
-              </button>
-            </CardContent>
-          </Card>
-        </div>
-      </div>
-    );
   };
 
-  // 2. BRIDA DASHBOARD VIEW
-  const renderBridaDashboard = () => {
-    const bridaStats = [
-      { title: 'Basis Pengetahuan Dokumen', value: (documents.length || 5).toString(), change: 'Perencanaan & Regulasi', iconName: 'FileText' },
-      { title: 'Proposal Penelitian', value: (proposals.length || 6).toString(), change: 'Dalam siklus telaah', iconName: 'TrendingUp' },
-      { title: 'Pelaksanaan Riset', value: (researchRecords.length || 3).toString(), change: 'Riset terpilih & berjalan', iconName: 'CheckCircle2' },
-      { title: 'Rekomendasi Terbit', value: bridaRecStats.published.toString(), change: 'Tersampaikan ke OPD', iconName: 'Award' },
-    ];
-
+  // =========================================================================
+  // KEPALA BRIDA (EXECUTIVE VIEW)
+  // =========================================================================
+  if (isKepalaBrida) {
     return (
-      <div className="space-y-6">
-        {/* Stats Grid */}
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {bridaStats.map((stat) => (
-            <Card key={stat.title}>
-              <CardHeader className="flex flex-row items-center justify-between pb-2">
-                <CardTitle className="text-xs font-bold uppercase tracking-wider text-gray-500">
-                  {stat.title}
-                </CardTitle>
-                {renderIcon(stat.iconName)}
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold text-gray-900 dark:text-white">{stat.value}</div>
-                <p className="text-[10px] text-gray-400 font-semibold mt-1">{stat.change}</p>
-              </CardContent>
-            </Card>
-          ))}
+      <div className="space-y-6 max-w-7xl mx-auto pb-12 font-sans">
+        
+        {/* Top Executive Header Banner */}
+        <div className="border border-slate-200 bg-white p-6 md:p-8 flex flex-col md:flex-row md:items-center justify-between gap-6 border-l-4 border-l-[#0f2c59]">
+          <div className="space-y-1">
+            <div className="flex items-center gap-2 text-[#0f2c59] text-xs font-bold uppercase tracking-widest">
+              <ShieldCheck className="w-4 h-4" />
+              Executive Dashboard Pimpinan • Badan Riset & Inovasi Daerah
+            </div>
+            <h1 className="text-xl md:text-2xl font-bold tracking-tight text-slate-900">
+              Laporan Strategis Kinerja Kelitbangan Daerah
+            </h1>
+            <p className="text-slate-600 text-xs max-w-3xl leading-relaxed">
+              Ringkasan komprehensif usulan riset OPD, visualisasi geospasial (GIS) sebaran riset Kabupaten Sleman, status realisasi alokasi pagu anggaran, serta antrean dokumen digital yang memerlukan pengesahan.
+            </p>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-3 shrink-0">
+            <button
+              onClick={() => router.push('/executive/approvals')}
+              className="px-4 py-2 bg-[#0f2c59] hover:bg-[#0a1e3f] text-white text-xs font-semibold uppercase tracking-wider transition border border-[#0f2c59] flex items-center gap-2"
+            >
+              <ClipboardCheck className="w-4 h-4 text-sky-300" />
+              <span>Approval Usulan</span>
+            </button>
+            <button
+              onClick={() => router.push('/executive/legalization')}
+              className="px-4 py-2 bg-white hover:bg-slate-50 text-slate-800 text-xs font-semibold uppercase tracking-wider transition border border-slate-300 flex items-center gap-2"
+            >
+              <FileCheck className="w-4 h-4 text-[#0f2c59]" />
+              <span>Pengesahan TTE</span>
+            </button>
+          </div>
         </div>
 
-        {/* Recommendations Card Row */}
-        <Card className="border-indigo-100 bg-indigo-50/5">
-          <CardHeader className="pb-3 border-b border-indigo-100/40">
-            <CardTitle className="text-xs font-bold uppercase tracking-wider text-indigo-700 flex items-center justify-between">
-              <span>Status Rekomendasi BRIDA kepada OPD</span>
-              <button
-                onClick={() => router.push('/recommendations')}
-                className="text-3xs uppercase font-extrabold text-indigo-650 hover:underline"
-              >
-                Kelola di Rec Center ➔
-              </button>
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="pt-4 text-xs font-semibold select-none">
-            <div className="grid gap-4 sm:grid-cols-4 text-center">
-              <div className="p-3 border rounded bg-white dark:bg-gray-900">
-                <span className="text-[8px] text-gray-400 uppercase block font-bold">Draft</span>
-                <span className="text-xl font-bold text-gray-800 dark:text-white mt-1 block">{bridaRecStats.draft}</span>
-              </div>
-              <div className="p-3 border rounded bg-white dark:bg-gray-900">
-                <span className="text-[8px] text-gray-400 uppercase block font-bold">Under Review</span>
-                <span className="text-xl font-bold text-amber-700 mt-1 block">{bridaRecStats.review}</span>
-              </div>
-              <div className="p-3 border rounded bg-white dark:bg-gray-900">
-                <span className="text-[8px] text-gray-400 uppercase block font-bold">Approved</span>
-                <span className="text-xl font-bold text-emerald-700 mt-1 block">{bridaRecStats.approved}</span>
-              </div>
-              <div className="p-3 border rounded bg-white dark:bg-gray-900">
-                <span className="text-[8px] text-gray-400 uppercase block font-bold">Published</span>
-                <span className="text-xl font-bold text-indigo-700 mt-1 block">{bridaRecStats.published}</span>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+        {/* 4 Macro KPI Strip (Single Container Delimited by Lines) */}
+        <div className="border border-slate-200 bg-white grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 divide-y sm:divide-y-0 sm:divide-x divide-slate-200">
+          <div className="p-6 space-y-1">
+            <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider block">Total Usulan Masuk</span>
+            <span className="text-3xl font-bold text-slate-900 block font-mono">{totalSubmitted}</span>
+            <span className="text-xs text-slate-600 font-medium block pt-1">Dari 18 Instansi OPD Sleman</span>
+          </div>
 
-        {/* Main Info Blocks */}
-        <div className="grid gap-6 md:grid-cols-3">
-          <Card className="md:col-span-2">
-            <CardHeader>
-              <CardTitle className="text-sm font-bold text-gray-800 dark:text-gray-200">
-                Daftar Usulan Penelitian Terkini
-              </CardTitle>
-              <CardDescription className="text-[10px]">
-                Status progress pengumpulan usulan dan seleksi proposal
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
-                {proposals.slice(0, 4).map((p) => (
-                  <div key={p.id} className="p-3 bg-gray-50 dark:bg-gray-900/40 border border-gray-150 dark:border-gray-850 rounded flex items-center justify-between">
-                    <div>
-                      <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-blue-100 text-blue-800 mr-2">
-                        {p.code || 'RSH'}
-                      </span>
-                      <span className="text-xs font-bold text-gray-900 dark:text-white">{p.title}</span>
+          <div className="p-6 space-y-1">
+            <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider block">Kajian Aktif Lapangan</span>
+            <span className="text-3xl font-bold text-[#0f2c59] block font-mono">{inProgressStudies}</span>
+            <span className="text-xs text-slate-600 font-medium block pt-1">Dalam tahapan survei & riset</span>
+          </div>
+
+          <div className="p-6 space-y-1">
+            <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider block">Rekomendasi Disahkan</span>
+            <span className="text-3xl font-bold text-emerald-800 block font-mono">{completedCount}</span>
+            <span className="text-xs text-slate-600 font-medium block pt-1">TTE Digital Resmi Terbit</span>
+          </div>
+
+          <div className="p-6 space-y-1">
+            <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider block">Realisasi Pagu Riset</span>
+            <span className="text-3xl font-bold text-slate-900 block font-mono">61.4%</span>
+            <span className="text-xs text-slate-600 font-medium block pt-1">Rp 890 Jt / Rp 1.45 Miliar</span>
+          </div>
+        </div>
+
+        {/* Middle Section: GIS Map (Left 7 cols) & Sebaran Isu (Right 5 cols) */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          
+          {/* GIS Interactive Sleman Map */}
+          <div className="lg:col-span-7 border border-slate-200 bg-white p-6 space-y-4">
+            <div className="flex items-center justify-between border-b border-slate-200 pb-3">
+              <div>
+                <h3 className="font-bold text-slate-900 text-xs uppercase tracking-wider flex items-center gap-2">
+                  <MapPin className="w-4 h-4 text-[#0f2c59]" />
+                  Peta Sebaran Lokasi Riset Daerah (GIS Sleman)
+                </h3>
+                <p className="text-xs text-slate-500 mt-0.5">Pilih titik penanda untuk meninjau rincian kegiatan riset pada kapanewon terkait.</p>
+              </div>
+              <span className="text-xs font-semibold text-slate-700 bg-slate-100 px-2.5 py-1 border border-slate-300">
+                {gisLocations.length} Titik Lokasi
+              </span>
+            </div>
+
+            {/* Vector Map Canvas */}
+            <div className="relative w-full h-80 bg-[#0a1e3f] overflow-hidden border border-[#1b3b6f] flex items-center justify-center">
+              {/* Grid Lines */}
+              <div className="absolute inset-0 opacity-15 bg-[linear-gradient(to_right,#ffffff_1px,transparent_1px),linear-gradient(to_bottom,#ffffff_1px,transparent_1px)] bg-[size:24px_24px]" />
+
+              {/* Sleman Area Outline */}
+              <div className="absolute inset-8 border border-sky-400/30 bg-[#0f2c59]/40 flex items-center justify-center">
+                <span className="text-xs font-bold tracking-widest text-sky-200/40 uppercase font-mono">
+                  Wilayah Riset Kabupaten Sleman
+                </span>
+              </div>
+
+              {/* GIS Markers */}
+              {gisLocations.map((item, idx) => {
+                const isSelected = selectedGisPoint?.kapanewon === item.kapanewon;
+                return (
+                  <button
+                    key={idx}
+                    onClick={() => setSelectedGisPoint(item)}
+                    style={{ left: item.coords.x, top: item.coords.y }}
+                    className={`absolute -translate-x-1/2 -translate-y-1/2 group transition-transform ${isSelected ? 'scale-125 z-20' : 'hover:scale-110 z-10'}`}
+                  >
+                    <div className={`w-6 h-6 flex items-center justify-center text-xs font-bold border ${
+                      isSelected
+                        ? 'bg-sky-400 text-[#0a1e3f] border-white font-mono'
+                        : 'bg-[#0f2c59] hover:bg-sky-600 text-white border-sky-300'
+                    }`}>
+                      <span>{idx + 1}</span>
                     </div>
-                    <span className="text-[10px] font-semibold text-gray-500 uppercase">{p.status}</span>
+                    <span className="absolute left-1/2 -translate-x-1/2 top-7 whitespace-nowrap bg-[#0a1e3f] text-2xs font-semibold text-white px-2 py-0.5 border border-[#1b3b6f] pointer-events-none opacity-0 group-hover:opacity-100 transition">
+                      {item.kapanewon}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Selected Location Info Delimited with Lines */}
+            {selectedGisPoint && (
+              <div className="border border-slate-200 bg-slate-50 p-4 text-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2">
+                    <span className="font-mono text-2xs font-bold text-[#0f2c59] bg-[#dde6f2] px-2 py-0.5 border border-[#bfd2e6]">
+                      {selectedGisPoint.kapanewon}
+                    </span>
+                    <span className="text-2xs text-slate-600 font-semibold uppercase">{selectedGisPoint.category}</span>
+                  </div>
+                  <h4 className="font-bold text-slate-900 text-sm">{selectedGisPoint.title}</h4>
+                  <p className="text-slate-600 text-xs">Instansi Pengusul: {selectedGisPoint.opd} • Skema: {selectedGisPoint.scheme}</p>
+                </div>
+                <div className="text-left sm:text-right shrink-0 border-t sm:border-t-0 sm:border-l border-slate-200 sm:pl-4 pt-2 sm:pt-0">
+                  <span className="text-xs text-slate-500 font-medium block">Progres Pelaksanaan</span>
+                  <span className="text-lg font-bold text-[#0f2c59] font-mono block">{selectedGisPoint.progress}%</span>
+                  <span className="text-2xs text-slate-600 font-mono">Rp {selectedGisPoint.allocatedBudget.toLocaleString('id-ID')}</span>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Right Column: Sebaran Isu & Alokasi Anggaran */}
+          <div className="lg:col-span-5 space-y-6">
+            {/* Sebaran Isu Strategis */}
+            <div className="border border-slate-200 bg-white p-6 space-y-4">
+              <div className="border-b border-slate-200 pb-3">
+                <h3 className="font-bold text-slate-900 text-xs uppercase tracking-wider flex items-center gap-2">
+                  <PieChart className="w-4 h-4 text-[#0f2c59]" />
+                  Sebaran Isu Strategis Riset (%)
+                </h3>
+              </div>
+
+              <div className="space-y-3">
+                {categoryStats.map((item, idx) => (
+                  <div key={idx} className="space-y-1">
+                    <div className="flex justify-between items-center text-xs">
+                      <span className="font-medium text-slate-800">{item.category}</span>
+                      <span className="font-bold text-[#0f2c59] font-mono">{item.percent}% ({item.count})</span>
+                    </div>
+                    <div className="w-full bg-slate-100 h-2 overflow-hidden border border-slate-200">
+                      <div
+                        className="bg-[#0f2c59] h-full transition-all duration-500"
+                        style={{ width: `${item.percent}%` }}
+                      />
+                    </div>
                   </div>
                 ))}
               </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-sm font-bold text-gray-800 dark:text-gray-200">
-                Pintasan Kerja Litbang
-              </CardTitle>
-              <CardDescription className="text-[10px]">Modul Operasional</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-2">
-              <button
-                onClick={() => router.push('/identification')}
-                className="w-full text-left p-2.5 rounded border border-gray-200 hover:bg-blue-50 text-xs font-bold text-gray-800 flex items-center justify-between transition"
-              >
-                <span>Identifikasi Masalah</span>
-                <ArrowRight className="w-3.5 h-3.5 text-gray-400" />
-              </button>
-              <button
-                onClick={() => router.push('/research')}
-                className="w-full text-left p-2.5 rounded border border-gray-200 hover:bg-blue-50 text-xs font-bold text-gray-800 flex items-center justify-between transition"
-              >
-                <span>Pelaksanaan & Monitoring</span>
-                <ArrowRight className="w-3.5 h-3.5 text-gray-400" />
-              </button>
-              <button
-                onClick={() => router.push('/recommendations')}
-                className="w-full text-left p-2.5 rounded border border-gray-200 hover:bg-blue-50 text-xs font-bold text-gray-800 flex items-center justify-between transition"
-              >
-                <span>Rekomendasi Kebijakan</span>
-                <ArrowRight className="w-3.5 h-3.5 text-gray-400" />
-              </button>
-            </CardContent>
-          </Card>
-        </div>
-      </div>
-    );
-  };
-
-  // 3. KEPALA BRIDA DASHBOARD VIEW
-  const renderKepalaDashboard = () => {
-    const kepalaStats = [
-      { title: 'Usulan Menunggu Telaah', value: proposals.filter(p => p.status === 'SUBMITTED' || p.status === 'UNDER_SELECTION').length.toString(), change: 'Menunggu persetujuan', iconName: 'Clock' },
-      { title: 'Riset Aktif Berjalan', value: researchRecords.length.toString(), change: 'Target capaian daerah', iconName: 'TrendingUp' },
-      { title: 'Laporan Siap Pengesahan', value: (summary?.reports?.submitted || 0).toString(), change: 'Draf laporan final', iconName: 'FileText' },
-      { title: 'Rekomendasi Terbit', value: bridaRecStats.published.toString(), change: 'Telah disampaikan ke OPD', iconName: 'CheckCircle2' },
-    ];
-
-    return (
-      <div className="space-y-6">
-        {/* Stats Grid */}
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {kepalaStats.map((stat) => (
-            <Card key={stat.title}>
-              <CardHeader className="flex flex-row items-center justify-between pb-2">
-                <CardTitle className="text-xs font-bold uppercase tracking-wider text-gray-500">
-                  {stat.title}
-                </CardTitle>
-                {renderIcon(stat.iconName)}
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold text-gray-900 dark:text-white">{stat.value}</div>
-                <p className="text-[10px] text-gray-400 font-semibold mt-1">{stat.change}</p>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-
-        {/* Main Review Section */}
-        <div className="grid gap-6 md:grid-cols-3">
-          <Card className="md:col-span-2">
-            <CardHeader>
-              <CardTitle className="text-sm font-bold text-gray-800 dark:text-gray-200">
-                Antrean Persetujuan Rekomendasi Kebijakan
-              </CardTitle>
-              <CardDescription className="text-[10px]">
-                Dokumen rekomendasi yang membutuhkan persetujuan dan penerbitan Kepala BRIDA
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              {pendingReviews.length === 0 ? (
-                <div className="p-6 text-center text-xs text-gray-500 border border-dashed rounded">
-                  Tidak ada antrean telaah rekomendasi yang tertunda saat ini.
-                </div>
-              ) : (
-                <div className="space-y-3">
-                  {pendingReviews.map((item) => (
-                    <div key={item.id} className="p-3 border border-gray-200 dark:border-gray-800 rounded bg-white dark:bg-gray-900/40 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 text-xs">
-                      <div>
-                        <div className="flex items-center gap-2">
-                          <span className="px-1.5 py-0.5 rounded text-[8px] font-bold bg-amber-100 text-amber-800">
-                            REKOMENDASI OPD
-                          </span>
-                          <span className="text-[10px] text-gray-400 font-medium">{item.submittedDate || '2026'}</span>
-                        </div>
-                        <p className="font-bold text-gray-900 dark:text-white mt-1.5">{item.title}</p>
-                        <p className="text-[11px] text-gray-500 mt-0.5">{item.recommendationDescription}</p>
-                      </div>
-                      <button
-                        onClick={() => router.push(`/recommendations/${item.id}`)}
-                        className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded text-xs shrink-0"
-                      >
-                        Telaah & Putuskan
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-sm font-bold text-gray-800 dark:text-gray-200">
-                Pusat Rekomendasi
-              </CardTitle>
-              <CardDescription className="text-[10px]">Distribusi Kebijakan</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <div className="p-3 bg-indigo-50 border border-indigo-200 rounded text-xs">
-                <span className="text-[10px] text-indigo-700 font-bold uppercase block">Rekomendasi Dipublikasikan</span>
-                <span className="text-xl font-extrabold text-indigo-900 block mt-1">{bridaRecStats.published} Dokumen</span>
-              </div>
-              <button
-                onClick={() => router.push('/recommendations')}
-                className="w-full py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded text-xs transition"
-              >
-                Buka Rekomendasi Center
-              </button>
-            </CardContent>
-          </Card>
-        </div>
-      </div>
-    );
-  };
-
-  // 4. OPD DASHBOARD VIEW
-  const renderOpdDashboard = () => (
-    <div className="space-y-6">
-      <div className="grid gap-4 sm:grid-cols-3">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-xs font-bold uppercase tracking-wider text-gray-500">
-              Rekomendasi Diterima
-            </CardTitle>
-            <FileText className="h-5 w-5 text-blue-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-gray-900 dark:text-white">{opdStats.total}</div>
-            <p className="text-[10px] text-gray-400 font-semibold mt-1">Khusus OPD Anda</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-xs font-bold uppercase tracking-wider text-gray-500">
-              Prioritas Tinggi
-            </CardTitle>
-            <AlertCircle className="h-5 w-5 text-amber-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-amber-700">{opdStats.high}</div>
-            <p className="text-[10px] text-gray-400 font-semibold mt-1">Perlu tindak lanjut segera</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-xs font-bold uppercase tracking-wider text-gray-500">
-              Prioritas Strategis
-            </CardTitle>
-            <Award className="h-5 w-5 text-indigo-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-indigo-700">{opdStats.strategic}</div>
-            <p className="text-[10px] text-gray-400 font-semibold mt-1">Program prioritas daerah</p>
-          </CardContent>
-        </Card>
-      </div>
-
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-sm font-bold text-gray-800 dark:text-gray-200">
-            Daftar Rekomendasi Kebijakan dari BRIDA
-          </CardTitle>
-          <CardDescription className="text-[10px]">
-            Rekomendasi berbasis penelitian yang telah dipublikasikan dan disahkan oleh Kepala BRIDA
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          {receivedRecs.length === 0 ? (
-            <div className="p-8 text-center text-xs text-gray-500 border border-dashed rounded">
-              Belum ada rekomendasi yang dipublikasikan untuk OPD Anda saat ini.
             </div>
-          ) : (
-            <div className="space-y-3">
-              {receivedRecs.map((rec) => (
-                <div key={rec.id} className="p-4 border rounded hover:border-blue-300 transition flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <span className="px-1.5 py-0.5 rounded text-[8px] font-bold bg-blue-100 text-blue-800">
-                        {rec.id}
-                      </span>
-                      <span className="px-1.5 py-0.5 rounded text-[8px] font-bold bg-emerald-100 text-emerald-800">
-                        PUBLISHED
-                      </span>
+
+            {/* Status Alokasi Anggaran */}
+            <div className="border border-slate-200 bg-white p-6 space-y-4">
+              <div className="border-b border-slate-200 pb-3">
+                <h3 className="font-bold text-slate-900 text-xs uppercase tracking-wider flex items-center gap-2">
+                  <TrendingUp className="w-4 h-4 text-[#0f2c59]" />
+                  Alokasi Pagu & Sumber Daya Kelitbangan
+                </h3>
+              </div>
+
+              <div className="divide-y divide-slate-200 text-xs">
+                <div className="flex items-center justify-between py-2.5">
+                  <span className="text-slate-600">Total Pagu Indikatif:</span>
+                  <span className="font-bold text-slate-900 font-mono">Rp 1.450.000.000</span>
+                </div>
+                <div className="flex items-center justify-between py-2.5">
+                  <span className="text-slate-600">Realisasi RKA Belanja:</span>
+                  <span className="font-bold text-[#0f2c59] font-mono">Rp 890.000.000 (61.4%)</span>
+                </div>
+                <div className="flex items-center justify-between py-2.5">
+                  <span className="text-slate-600">Sisa Pagu Tersedia:</span>
+                  <span className="font-bold text-emerald-800 font-mono">Rp 560.000.000</span>
+                </div>
+                <div className="flex items-center justify-between py-2.5">
+                  <span className="text-slate-600">Skema Riset:</span>
+                  <span className="font-medium text-slate-800">Swakelola (65%) • Mitra PT (35%)</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    );
+  }
+
+  // =========================================================================
+  // ADMIN BRIDA (OPERATIONAL VIEW)
+  // =========================================================================
+  if (isAdmin) {
+    return (
+      <div className="space-y-6 max-w-7xl mx-auto pb-12 font-sans">
+        
+        {/* Operational Header Banner */}
+        <div className="border border-slate-200 bg-white p-6 md:p-8 flex flex-col md:flex-row md:items-center justify-between gap-6 border-l-4 border-l-[#0f2c59]">
+          <div className="space-y-1">
+            <div className="flex items-center gap-2 text-[#0f2c59] text-xs font-bold uppercase tracking-widest">
+              <ClipboardList className="w-4 h-4" />
+              Pusat Kendali Operasional • Admin Litbang BRIDA
+            </div>
+            <h1 className="text-xl md:text-2xl font-bold tracking-tight text-slate-900">
+              Dashboard Manajemen Usulan & Pelaksanaan Riset
+            </h1>
+            <p className="text-slate-600 text-xs max-w-3xl leading-relaxed">
+              Verifikasi kelengkapan administrasi usulan masuk dari OPD, lakukan scoring pembobotan instrumen riset, pantau penyusunan KAK/RKA, dan siapkan naskah rekomendasi kebijakan.
+            </p>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-3 shrink-0">
+            <button
+              onClick={() => router.push('/admin/verification')}
+              className="px-4 py-2 bg-[#0f2c59] hover:bg-[#0a1e3f] text-white text-xs font-semibold uppercase tracking-wider transition border border-[#0f2c59] flex items-center gap-2"
+            >
+              <ClipboardList className="h-4 w-4 text-sky-300" />
+              <span>Inbox Verifikasi ({pendingVerification})</span>
+            </button>
+            <button
+              onClick={() => router.push('/admin/scoring')}
+              className="px-4 py-2 bg-white hover:bg-slate-50 text-slate-800 text-xs font-semibold uppercase tracking-wider transition border border-slate-300 flex items-center gap-2"
+            >
+              <Award className="h-4 w-4 text-[#0f2c59]" />
+              <span>Penelaahan & Scoring</span>
+            </button>
+          </div>
+        </div>
+
+        {/* 4 Operational KPI Strips in a Single Delimited Grid */}
+        <div className="border border-slate-200 bg-white grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 divide-y sm:divide-y-0 sm:divide-x divide-slate-200">
+          <div className="p-6 space-y-1">
+            <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider block">Antrean Verifikasi</span>
+            <span className="text-3xl font-bold text-amber-800 block font-mono">{pendingVerification}</span>
+            <span className="text-xs text-slate-600 font-medium block pt-1">Usulan baru dari OPD</span>
+          </div>
+
+          <div className="p-6 space-y-1">
+            <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider block">Siap Discoring</span>
+            <span className="text-3xl font-bold text-[#0f2c59] block font-mono">{inReviewOrScoring}</span>
+            <span className="text-xs text-slate-600 font-medium block pt-1">Penilaian 4 kriteria teknis</span>
+          </div>
+
+          <div className="p-6 space-y-1">
+            <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider block">Kajian Riset Aktif</span>
+            <span className="text-3xl font-bold text-slate-900 block font-mono">{inProgressStudies}</span>
+            <span className="text-xs text-slate-600 font-medium block pt-1">Penyusunan KAK, RKA & Tim</span>
+          </div>
+
+          <div className="p-6 space-y-1">
+            <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider block">Rekomendasi Terbit</span>
+            <span className="text-3xl font-bold text-emerald-800 block font-mono">{completedCount}</span>
+            <span className="text-xs text-slate-600 font-medium block pt-1">Policy Brief siap diterapkan</span>
+          </div>
+        </div>
+
+        {/* Two Columns: Action Queue & OPD Monitoring */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          
+          {/* LEFT: Quick Action Navigation */}
+          <div className="lg:col-span-7 space-y-6">
+            <div className="border border-slate-200 bg-white p-6 space-y-4">
+              <div className="border-b border-slate-200 pb-3">
+                <h3 className="font-bold text-slate-900 text-xs uppercase tracking-wider flex items-center gap-2">
+                  <Layers className="h-4 w-4 text-[#0f2c59]" />
+                  Alur Modul Operasional Litbang BRIDA
+                </h3>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div
+                  onClick={() => router.push('/admin/verification')}
+                  className="p-4 border border-slate-200 bg-slate-50 hover:bg-white hover:border-[#0f2c59] cursor-pointer transition space-y-1"
+                >
+                  <span className="text-2xs font-bold text-[#0f2c59] uppercase tracking-wider block">Tahap 1</span>
+                  <h4 className="font-bold text-xs text-slate-900">Verifikasi Gatekeeper</h4>
+                  <p className="text-2xs text-slate-500">Pengecekan 4 kelengkapan administrasi</p>
+                </div>
+
+                <div
+                  onClick={() => router.push('/admin/scoring')}
+                  className="p-4 border border-slate-200 bg-slate-50 hover:bg-white hover:border-[#0f2c59] cursor-pointer transition space-y-1"
+                >
+                  <span className="text-2xs font-bold text-[#0f2c59] uppercase tracking-wider block">Tahap 2</span>
+                  <h4 className="font-bold text-xs text-slate-900">Penelaahan & Scoring</h4>
+                  <p className="text-2xs text-slate-500">Formulasi skor prioritas digital</p>
+                </div>
+
+                <div
+                  onClick={() => router.push('/admin/research')}
+                  className="p-4 border border-slate-200 bg-slate-50 hover:bg-white hover:border-[#0f2c59] cursor-pointer transition space-y-1"
+                >
+                  <span className="text-2xs font-bold text-[#0f2c59] uppercase tracking-wider block">Tahap 3</span>
+                  <h4 className="font-bold text-xs text-slate-900">Manajemen Kajian</h4>
+                  <p className="text-2xs text-slate-500">Penyusunan KAK, RKA, & Tim Peneliti</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Sebaran Isu */}
+            <div className="border border-slate-200 bg-white p-6 space-y-4">
+              <div className="border-b border-slate-200 pb-3 flex justify-between items-center">
+                <h3 className="font-bold text-slate-900 text-xs uppercase tracking-wider flex items-center gap-2">
+                  <PieChart className="h-4 w-4 text-[#0f2c59]" />
+                  Proporsi Topik Isu Riset Daerah
+                </h3>
+                <span className="text-2xs text-slate-500 font-mono">{totalSubmitted} Usulan Masuk</span>
+              </div>
+
+              <div className="space-y-3">
+                {categoryStats.map((item) => (
+                  <div key={item.category} className="space-y-1">
+                    <div className="flex items-center justify-between text-xs">
+                      <span className="text-slate-800 font-medium">{item.category}</span>
+                      <span className="text-[#0f2c59] font-bold font-mono">{item.count} ({item.percent}%)</span>
                     </div>
-                    <h4 className="text-sm font-bold text-gray-900 mt-1">{rec.title}</h4>
-                    <p className="text-xs text-gray-600 mt-0.5 line-clamp-2">{rec.recommendationDescription}</p>
+                    <div className="w-full bg-slate-100 h-2 border border-slate-200 overflow-hidden">
+                      <div
+                        className="bg-[#0f2c59] h-full transition-all duration-500"
+                        style={{ width: `${item.percent}%` }}
+                      />
+                    </div>
                   </div>
-                  <button
-                    onClick={() => router.push(`/opd/recommendations/${rec.id}`)}
-                    className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded text-xs shrink-0"
-                  >
-                    Buka Detail
-                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* RIGHT: Monitoring Tindak Lanjut OPD */}
+          <div className="lg:col-span-5 border border-slate-200 bg-white p-6 space-y-4">
+            <div className="border-b border-slate-200 pb-3">
+              <h3 className="font-bold text-slate-900 text-xs uppercase tracking-wider flex items-center gap-2">
+                <ClipboardCheck className="h-4 w-4 text-[#0f2c59]" />
+                Monitoring Laporan Pemanfaatan OPD
+              </h3>
+            </div>
+
+            <div className="grid grid-cols-2 divide-x divide-slate-200 border border-slate-200 bg-slate-50 py-3 text-center">
+              <div>
+                <span className="text-2xs text-slate-500 font-semibold uppercase block">Sudah Lapor</span>
+                <span className="text-xl font-bold text-[#0f2c59] font-mono">{reportedFollowUpCount} OPD</span>
+              </div>
+              <div>
+                <span className="text-2xs text-slate-500 font-semibold uppercase block">Belum Lapor</span>
+                <span className="text-xl font-bold text-amber-800 font-mono">{pendingFollowUpCount} OPD</span>
+              </div>
+            </div>
+
+            <div className="divide-y divide-slate-200 text-xs">
+              {completedProposals.map((item) => (
+                <div key={item.id} className="py-3 space-y-1">
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="font-bold text-slate-900 truncate">{item.opdName}</span>
+                    {item.followUpReport ? (
+                      <span className="px-2 py-0.5 bg-emerald-50 text-emerald-800 text-2xs font-semibold uppercase border border-emerald-300">
+                        Rating: {item.followUpReport.satisfactionRating}/5
+                      </span>
+                    ) : (
+                      <span className="px-2 py-0.5 bg-amber-50 text-amber-900 text-2xs font-semibold uppercase border border-amber-300">
+                        Menunggu Laporan
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-2xs text-slate-600 line-clamp-1">{item.title}</p>
                 </div>
               ))}
             </div>
-          )}
-        </CardContent>
-      </Card>
-    </div>
-  );
 
+            <div className="pt-2">
+              <button
+                onClick={() => router.push('/admin/recommendation-builder')}
+                className="w-full py-2 bg-[#0f2c59] hover:bg-[#0a1e3f] text-white text-xs font-semibold uppercase tracking-wider transition border border-[#0f2c59] flex items-center justify-center gap-2"
+              >
+                <FileText className="h-4 w-4 text-sky-300" />
+                <span>Penyusunan Rekomendasi Kebijakan</span>
+              </button>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+    );
+  }
+
+  // =========================================================================
+  // OPD VIEW (USER PENGUSUL)
+  // =========================================================================
   return (
-    <div className="space-y-6">
-      <PageHeader
-        title={`Dashboard ${user.role.replace('_', ' ')}`}
-        description={`Selamat datang, ${user.name}. Sistem Informasi Riset dan Inovasi Daerah (SIM-RIDA).`}
-      />
+    <div className="space-y-6 max-w-7xl mx-auto pb-12 font-sans">
+      
+      {/* OPD Header Banner */}
+      <div className="border border-slate-200 bg-white p-6 md:p-8 flex flex-col md:flex-row md:items-center justify-between gap-6 border-l-4 border-l-[#0f2c59]">
+        <div className="space-y-1">
+          <div className="flex items-center gap-2 text-[#0f2c59] text-xs font-bold uppercase tracking-widest">
+            <Send className="w-4 h-4" />
+            Portal Pengajuan Riset • {user?.name || activeOpdName}
+          </div>
+          <h1 className="text-xl md:text-2xl font-bold tracking-tight text-slate-900">
+            Sistem Informasi Usulan Riset & Inovasi Daerah
+          </h1>
+          <p className="text-slate-600 text-xs max-w-3xl leading-relaxed">
+            Ajukan permasalahan kebijakan dan kebutuhan riset teknis instansi Anda kepada BRIDA Kabupaten Sleman untuk dikaji secara ilmiah dan dirumuskan menjadi rekomendasi kebijakan resmi.
+          </p>
+        </div>
 
-      {user.role === 'ADMIN_BRIDA' && renderAdminDashboard()}
-      {user.role === 'BRIDA' && renderBridaDashboard()}
-      {user.role === 'KEPALA_BRIDA' && renderKepalaDashboard()}
-      {user.role === 'OPD' && renderOpdDashboard()}
+        <div className="flex flex-wrap items-center gap-3 shrink-0">
+          <button
+            onClick={() => router.push('/opd/proposals/new')}
+            className="px-4 py-2 bg-[#0f2c59] hover:bg-[#0a1e3f] text-white text-xs font-semibold uppercase tracking-wider transition border border-[#0f2c59] flex items-center gap-2"
+          >
+            <FilePlus2 className="h-4 w-4 text-sky-300" />
+            <span>Tambah Usulan Baru</span>
+          </button>
+          <button
+            onClick={() => router.push('/opd/tracking')}
+            className="px-4 py-2 bg-white hover:bg-slate-50 text-slate-800 text-xs font-semibold uppercase tracking-wider transition border border-slate-300 flex items-center gap-2"
+          >
+            <Activity className="h-4 w-4 text-[#0f2c59]" />
+            <span>Tracking Usulan</span>
+          </button>
+        </div>
+      </div>
+
+      {/* 4 OPD Metrics in Single Grid Container */}
+      <div className="border border-slate-200 bg-white grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 divide-y sm:divide-y-0 sm:divide-x divide-slate-200">
+        <div className="p-6 space-y-1">
+          <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider block">Usulan Terkirim</span>
+          <span className="text-3xl font-bold text-slate-900 block font-mono">{totalSubmitted}</span>
+          <span className="text-xs text-slate-600 font-medium block pt-1">{draftCount} tersimpan di draf</span>
+        </div>
+
+        <div className="p-6 space-y-1">
+          <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider block">Proses Verifikasi</span>
+          <span className="text-3xl font-bold text-amber-800 block font-mono">{pendingVerification}</span>
+          <span className="text-xs text-slate-600 font-medium block pt-1">Pengecekan berkas administrasi</span>
+        </div>
+
+        <div className="p-6 space-y-1">
+          <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider block">Kajian Berjalan</span>
+          <span className="text-3xl font-bold text-[#0f2c59] block font-mono">{inReviewOrScoring + inProgressStudies}</span>
+          <span className="text-xs text-slate-600 font-medium block pt-1">Tahap riset & formulasi</span>
+        </div>
+
+        <div className="p-6 space-y-1">
+          <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider block">Rekomendasi Terbit</span>
+          <span className="text-3xl font-bold text-emerald-800 block font-mono">{completedCount}</span>
+          <span className="text-xs text-slate-600 font-medium block pt-1">Siap diunduh & ditindaklanjuti</span>
+        </div>
+      </div>
+
+      {/* Usulan Terkini Table */}
+      <div className="border border-slate-200 bg-white p-6 space-y-4">
+        <div className="flex items-center justify-between border-b border-slate-200 pb-3">
+          <h3 className="font-bold text-slate-900 text-xs uppercase tracking-wider flex items-center gap-2">
+            <FileText className="h-4 w-4 text-[#0f2c59]" />
+            Daftar Usulan Penelitian Instansi Terkini
+          </h3>
+          <button
+            onClick={() => router.push('/opd/tracking')}
+            className="text-xs text-[#0f2c59] hover:underline font-semibold uppercase tracking-wider flex items-center gap-1"
+          >
+            <span>Lihat Semua ({proposals.length})</span>
+            <ArrowRight className="h-3.5 w-3.5" />
+          </button>
+        </div>
+
+        <div className="divide-y divide-slate-200">
+          {proposals.slice(0, 4).map((item) => (
+            <div key={item.id} className="py-4 first:pt-0 last:pb-0 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div className="space-y-1.5">
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="font-mono text-2xs font-bold text-slate-700 bg-slate-100 px-2 py-0.5 border border-slate-300">
+                    {item.code}
+                  </span>
+                  <span className="text-2xs font-semibold text-[#0f2c59] bg-[#dde6f2] px-2 py-0.5 border border-[#bfd2e6] uppercase">
+                    {item.category}
+                  </span>
+                  {getStatusBadge(item.status)}
+                </div>
+                <h4 className="text-xs font-bold text-slate-900 leading-snug">
+                  {item.title}
+                </h4>
+                <p className="text-xs text-slate-600 line-clamp-1">
+                  {item.problemStatement}
+                </p>
+              </div>
+
+              <div className="shrink-0 self-start sm:self-center">
+                <button
+                  onClick={() => {
+                    selectProposal(item.id);
+                    router.push('/opd/tracking');
+                  }}
+                  className="px-3 py-1.5 bg-white hover:bg-slate-50 text-slate-800 text-xs font-semibold uppercase tracking-wider border border-slate-300 transition flex items-center gap-1.5"
+                >
+                  <Activity className="h-3.5 w-3.5 text-[#0f2c59]" />
+                  <span>Tracking</span>
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
     </div>
   );
 }

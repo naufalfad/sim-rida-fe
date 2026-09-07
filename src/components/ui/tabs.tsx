@@ -29,7 +29,7 @@ export const Tabs: React.FC<TabsProps> = ({
         'flex overflow-x-auto scrollbar-none',
         {
           'border-b border-slate-200 dark:border-slate-800 gap-6': variant === 'line',
-          'bg-slate-100 p-1 rounded-none dark:bg-slate-850 gap-1 inline-flex': variant === 'pill',
+          'bg-slate-100 p-0.5 border border-slate-200 dark:bg-slate-850 gap-0.5 inline-flex': variant === 'pill',
         },
         className
       )}
@@ -42,16 +42,16 @@ export const Tabs: React.FC<TabsProps> = ({
             onClick={() => onChange(tab.id)}
             type="button"
             className={cn(
-              'flex items-center gap-2 py-2 px-1 text-sm font-medium transition-all whitespace-nowrap focus:outline-none relative',
+              'flex items-center gap-2 py-2 px-1 text-xs uppercase tracking-wider font-semibold transition-all whitespace-nowrap focus:outline-none relative',
               {
                 // Line Variant
-                'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-300':
+                'text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200':
                   variant === 'line' && !isActive,
-                'text-blue-650 dark:text-blue-400': variant === 'line' && isActive,
+                'text-[#0f2c59] dark:text-blue-300': variant === 'line' && isActive,
                 // Pill Variant
-                'text-slate-650 hover:text-slate-900 rounded-none px-3 py-1.5 dark:text-slate-400 dark:hover:text-slate-200':
+                'text-slate-600 hover:text-slate-900 px-3 py-1.5 dark:text-slate-400 dark:hover:text-slate-200':
                   variant === 'pill' && !isActive,
-                'bg-white text-blue-750 font-semibold shadow-sm rounded-none px-3 py-1.5 dark:bg-slate-900 dark:text-blue-400':
+                'bg-[#0f2c59] text-white px-3 py-1.5 shadow-none':
                   variant === 'pill' && isActive,
               }
             )}
@@ -61,10 +61,10 @@ export const Tabs: React.FC<TabsProps> = ({
             {tab.count !== undefined && (
               <span
                 className={cn(
-                  'ml-1 px-1.5 py-0.5 text-2xs rounded-full font-bold',
+                  'ml-1 px-1.5 py-0.2 text-2xs font-bold border',
                   isActive
-                    ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-450'
-                    : 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400'
+                    ? 'bg-[#0a1e3f] text-white border-transparent'
+                    : 'bg-slate-200 text-slate-700 border-slate-300'
                 )}
               >
                 {tab.count}
@@ -72,7 +72,7 @@ export const Tabs: React.FC<TabsProps> = ({
             )}
             {/* Active underline for line variant */}
             {variant === 'line' && isActive && (
-              <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-600 dark:bg-blue-500" />
+              <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#0f2c59] dark:bg-blue-400" />
             )}
           </button>
         );

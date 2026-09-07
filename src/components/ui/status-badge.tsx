@@ -14,16 +14,16 @@ export const StatusBadge: React.FC<StatusBadgeProps> = ({
   ...props
 }) => {
   const color = STATUS_COLORS[status] || {
-    bg: 'bg-slate-100',
+    bg: 'bg-slate-50',
     text: 'text-slate-800',
-    border: 'border-slate-200',
+    border: 'border-slate-300',
   };
   const label = STATUS_LABELS[status] || status;
 
   return (
     <span
       className={cn(
-        'inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-semibold border transition-colors',
+        'inline-flex items-center gap-1.5 px-2.5 py-0.5 text-xs font-semibold uppercase tracking-wider border transition-colors',
         color.bg,
         color.text,
         color.border,
@@ -34,7 +34,7 @@ export const StatusBadge: React.FC<StatusBadgeProps> = ({
       {showDot && (
         <span
           className={cn(
-            'h-1.5 w-1.5 rounded-full bg-current',
+            'h-1.5 w-1.5 bg-current',
             // optional pulse effect for active stages
             (status === 'OPD_IMPLEMENTING' || status === 'SUBSTANTIVE_REVIEW' || status === 'ADMINISTRATIVE_REVIEW') && 'animate-pulse'
           )}

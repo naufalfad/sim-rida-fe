@@ -14,28 +14,28 @@ export const Badge: React.FC<BadgeProps> = ({
   return (
     <span
       className={cn(
-        'inline-flex items-center rounded-md px-2 py-1 text-xs font-semibold ring-1 ring-inset transition-all',
+        'inline-flex items-center px-2 py-0.5 text-xs font-semibold uppercase tracking-wider border transition-all',
         {
-          // Primary / Blue
-          'bg-blue-50 text-blue-700 ring-blue-700/10 dark:bg-blue-900/20 dark:text-blue-300 dark:ring-blue-500/20':
+          // Primary / Navy Blue
+          'bg-[#f0f4f9] text-[#0f2c59] border-[#bfd2e6] dark:bg-slate-800 dark:text-blue-300 dark:border-slate-700':
             variant === 'primary',
           // Secondary / Gray
-          'bg-slate-50 text-slate-600 ring-slate-500/10 dark:bg-slate-800 dark:text-slate-300 dark:ring-slate-700':
+          'bg-slate-100 text-slate-700 border-slate-300 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700':
             variant === 'secondary',
           // Success / Green
-          'bg-emerald-50 text-emerald-700 ring-emerald-600/10 dark:bg-emerald-950/30 dark:text-emerald-400 dark:ring-emerald-500/20':
+          'bg-emerald-50 text-emerald-800 border-emerald-300 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800':
             variant === 'success',
           // Danger / Red
-          'bg-rose-50 text-rose-700 ring-rose-600/10 dark:bg-rose-950/30 dark:text-rose-400 dark:ring-rose-500/20':
+          'bg-rose-50 text-rose-800 border-rose-300 dark:bg-rose-950/40 dark:text-rose-300 dark:border-rose-800':
             variant === 'danger',
-          // Warning / Yellow
-          'bg-amber-50 text-amber-800 ring-amber-600/10 dark:bg-amber-950/30 dark:text-amber-400 dark:ring-amber-500/20':
+          // Warning / Amber
+          'bg-amber-50 text-amber-900 border-amber-300 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-800':
             variant === 'warning',
-          // Info / Indigo
-          'bg-indigo-50 text-indigo-700 ring-indigo-600/10 dark:bg-indigo-950/30 dark:text-indigo-400 dark:ring-indigo-500/20':
+          // Info / Slate Blue
+          'bg-blue-50 text-blue-900 border-blue-300 dark:bg-blue-950/40 dark:text-blue-300 dark:border-blue-800':
             variant === 'info',
           // Outline
-          'bg-transparent text-slate-700 border border-slate-300 dark:text-slate-300 dark:border-slate-700':
+          'bg-white text-slate-800 border-slate-300 dark:bg-transparent dark:text-slate-200 dark:border-slate-700':
             variant === 'outline',
         },
         className
