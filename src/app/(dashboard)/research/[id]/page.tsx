@@ -253,12 +253,24 @@ export default function ResearchDetailPage() {
             </div>
 
             {/* 3. Selection Result */}
-            <div className="p-3 border rounded bg-gray-50/50 dark:bg-gray-900/50 space-y-2 flex flex-col justify-between">
+            <div className="p-3 border rounded bg-purple-50/10 dark:bg-purple-950/20 border-purple-200 dark:border-purple-900/40 space-y-2 flex flex-col justify-between">
               <div>
-                <span className="text-[10px] text-gray-400 font-bold block uppercase leading-none mb-1">
+                <span className="text-[10px] text-purple-600 font-bold block uppercase leading-none mb-1">
                   3. Selection Score
                 </span>
-                {selectionScoreInfo && sourceProposal ? (
+                {sourceProposal?.selection || record?.selection || sourceProposal?.totalScore !== undefined || record?.totalScore !== undefined ? (
+                  <>
+                    <div className="flex items-baseline gap-1.5 mb-1">
+                      <span className="font-extrabold text-purple-700 dark:text-purple-400 text-sm">
+                        {sourceProposal?.selection?.totalScore ?? record?.selection?.totalScore ?? sourceProposal?.totalScore ?? record?.totalScore ?? '-'} / 100
+                      </span>
+                      <span className="text-[10px] text-gray-400">Poin</span>
+                    </div>
+                    <span className="inline-flex items-center px-1.5 py-0.2 rounded text-[9px] font-bold bg-purple-50 text-purple-700 dark:bg-purple-950 dark:text-purple-300 border border-purple-200">
+                      {sourceProposal?.selection?.result === 'SELECTED' ? '✓ LOLOS' : sourceProposal?.selection?.result || 'FINALIZED'}
+                    </span>
+                  </>
+                ) : selectionScoreInfo && sourceProposal ? (
                   <>
                     <span className="font-bold text-purple-700 dark:text-purple-400 block mb-1">
                       {selectionScoreInfo.total} / {selectionScoreInfo.max} Score
@@ -268,15 +280,15 @@ export default function ResearchDetailPage() {
                     </span>
                   </>
                 ) : (
-                  <span className="italic text-gray-400 block">Dummy/Legacy scores</span>
+                  <span className="italic text-gray-400 block">Belum ada nilai seleksi</span>
                 )}
               </div>
               {sourceProposal && (
                 <button
-                  onClick={() => router.push(`/research-proposals/${sourceProposal.id}/selection`)}
-                  className="w-full text-center py-1 border border-blue-200 hover:border-blue-500 rounded bg-white dark:bg-gray-950 text-blue-600 font-bold text-3xs uppercase transition-all mt-2"
+                  onClick={() => router.push(`/research-proposals/${sourceProposal.id}`)}
+                  className="w-full text-center py-1 border border-purple-200 hover:border-purple-500 rounded bg-white dark:bg-gray-950 text-purple-600 font-bold text-3xs uppercase transition-all mt-2"
                 >
-                  View Selection
+                  Lihat Hasil Seleksi
                 </button>
               )}
             </div>
@@ -302,6 +314,124 @@ export default function ResearchDetailPage() {
           </div>
         </CardContent>
       </Card>
+
+      {/* Hasil Seleksi & Penetapan Skor Riset Detail Card */}
+      {(sourceProposal?.selection || record?.selection) && (
+        <Card className="border-purple-200 dark:border-purple-900/60 bg-gradient-to-b from-purple-50/20 to-transparent shadow-sm">
+          <CardHeader className="pb-3 border-b border-purple-100 dark:border-purple-900/40">
+            <div className="flex flex-wrap justify-between items-center gap-2">
+              <CardTitle className="text-xs font-bold uppercase tracking-wider text-purple-700 dark:text-purple-400 flex items-center gap-1.5">
+                <Award className="h-4 w-4 text-purple-600" />
+                <span>Hasil Seleksi & Penetapan Skor Riset</span>
+              </CardTitle>
+              <div className="flex items-center gap-2">
+                <span className="text-3xs font-mono text-gray-500 bg-white dark:bg-gray-900 px-2 py-0.5 border rounded">
+                  {sourceProposal?.selection?.code || record?.selection?.code}
+                </span>
+                <span className="inline-flex items-center px-2 py-0.5 rounded text-3xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-250 dark:bg-emerald-950/40 dark:text-emerald-400">
+                  ✓ LOLOS SELEKSI LITBANG
+                </span>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent className="pt-4 space-y-4 text-xs">
+            {/* Score Summary Box */}
+            <div className="p-4 bg-white dark:bg-gray-900 rounded-lg border border-purple-100 dark:border-purple-900/30 flex flex-col sm:flex-row justify-between items-center gap-4">
+              <div className="space-y-1 text-center sm:text-left">
+                <span className="text-[10px] text-gray-400 font-bold uppercase block">Nilai Total Akhir Seleksi</span>
+                <div className="flex items-baseline gap-2">
+                  <span className="text-3xl font-extrabold text-purple-700 dark:text-purple-400">
+                    {sourceProposal?.selection?.totalScore ?? record?.selection?.totalScore ?? sourceProposal?.totalScore ?? '-'}
+                  </span>
+                  <span className="text-xs text-gray-400 font-semibold">/ 100 Poin</span>
+                </div>
+              </div>
+
+              <div className="flex flex-wrap gap-4 text-xs">
+                <div className="bg-gray-50 dark:bg-gray-800/60 p-2.5 rounded border border-gray-200/60 dark:border-gray-750">
+                  <span className="text-[9px] text-gray-400 font-bold uppercase block">Evaluator / Penilai</span>
+                  <span className="font-bold text-gray-800 dark:text-gray-200">
+                    {sourceProposal?.selection?.finalizedBy?.name || record?.selection?.finalizedBy?.name || 'Tim Litbang BRIDA'}
+                  </span>
+                </div>
+                <div className="bg-gray-50 dark:bg-gray-800/60 p-2.5 rounded border border-gray-200/60 dark:border-gray-750">
+                  <span className="text-[9px] text-gray-400 font-bold uppercase block">Waktu Penetapan</span>
+                  <span className="font-medium text-gray-700 dark:text-gray-300">
+                    {(sourceProposal?.selection?.finalizedAt || record?.selection?.finalizedAt)
+                      ? new Date(sourceProposal?.selection?.finalizedAt || record?.selection?.finalizedAt || '').toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })
+                      : record.approvedDate}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* Criteria Breakdown Rubric Table */}
+            {((sourceProposal?.selection?.scores && sourceProposal.selection.scores.length > 0) || (record?.selection?.scores && record.selection.scores.length > 0)) && (
+              <div className="space-y-2">
+                <span className="text-[10px] text-gray-500 font-bold uppercase block">
+                  Rincian Rubrik Penilaian Kriteria Seleksi
+                </span>
+                <div className="overflow-x-auto rounded border border-gray-200 dark:border-gray-800">
+                  <table className="w-full text-left text-xs border-collapse">
+                    <thead>
+                      <tr className="bg-gray-50 dark:bg-gray-850/80 text-gray-600 dark:text-gray-300 text-3xs uppercase tracking-wider font-semibold border-b dark:border-gray-800">
+                        <th className="py-2 px-3 w-10 text-center">No</th>
+                        <th className="py-2 px-3 w-20">Kode</th>
+                        <th className="py-2 px-3">Kriteria Penilaian</th>
+                        <th className="py-2 px-3 w-20 text-center">Bobot</th>
+                        <th className="py-2 px-3 w-24 text-center">Skor (0-100)</th>
+                        <th className="py-2 px-3 w-28 text-right">Nilai Tertimbang</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-150 dark:divide-gray-800 bg-white dark:bg-gray-900">
+                      {(sourceProposal?.selection?.scores || record?.selection?.scores || []).map((sc: any, idx: number) => (
+                        <tr key={sc.id || idx} className="hover:bg-gray-50/50 dark:hover:bg-gray-850/30">
+                          <td className="py-2.5 px-3 text-center text-gray-400 font-bold">{idx + 1}</td>
+                          <td className="py-2.5 px-3 font-mono font-bold text-gray-600 dark:text-gray-300">{sc.code}</td>
+                          <td className="py-2.5 px-3">
+                            <div className="font-bold text-gray-900 dark:text-white">{sc.name}</div>
+                            {sc.description && (
+                              <div className="text-[10px] text-gray-400 mt-0.5">{sc.description}</div>
+                            )}
+                            {sc.note && (
+                              <div className="text-[10px] text-purple-700 dark:text-purple-400 italic mt-0.5">Catatan: {sc.note}</div>
+                            )}
+                          </td>
+                          <td className="py-2.5 px-3 text-center font-semibold text-gray-700 dark:text-gray-300">{sc.weight}%</td>
+                          <td className="py-2.5 px-3 text-center font-bold text-purple-700 dark:text-purple-400">{sc.score}</td>
+                          <td className="py-2.5 px-3 text-right font-mono font-extrabold text-gray-900 dark:text-white">{sc.weightedScore ?? ((sc.score * sc.weight) / 100).toFixed(1)}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                    <tfoot>
+                      <tr className="bg-purple-50/50 dark:bg-purple-950/20 font-bold text-gray-900 dark:text-white border-t border-purple-200 dark:border-purple-800">
+                        <td colSpan={3} className="py-2.5 px-3 text-right uppercase text-3xs tracking-wider">Total Skor Kelayakan:</td>
+                        <td className="py-2.5 px-3 text-center text-purple-700 dark:text-purple-400">100%</td>
+                        <td className="py-2.5 px-3"></td>
+                        <td className="py-2.5 px-3 text-right font-mono text-sm text-purple-700 dark:text-purple-400">
+                          {sourceProposal?.selection?.totalScore ?? record?.selection?.totalScore ?? '-'}
+                        </td>
+                      </tr>
+                    </tfoot>
+                  </table>
+                </div>
+              </div>
+            )}
+
+            {/* Catatan / Justifikasi Penetapan */}
+            {(sourceProposal?.selection?.selectionNote || record?.selection?.selectionNote) && (
+              <div className="p-3 bg-purple-50/40 dark:bg-purple-950/20 border border-purple-200/60 dark:border-purple-900/40 rounded text-xs">
+                <span className="text-[10px] text-purple-700 dark:text-purple-400 font-bold uppercase block mb-1">
+                  Catatan / Justifikasi Penetapan Seleksi
+                </span>
+                <p className="italic text-gray-700 dark:text-gray-300 leading-relaxed font-medium">
+                  &quot;{sourceProposal?.selection?.selectionNote || record?.selection?.selectionNote}&quot;
+                </p>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
 
       {/* Research Planning Section */}
       <Card className="border-blue-200 dark:border-blue-900/60 bg-blue-50/5 dark:bg-blue-950/5">

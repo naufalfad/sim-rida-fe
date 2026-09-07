@@ -7,54 +7,78 @@ export interface EvidenceSource {
   version: string;
 }
 
-export interface AnalysisHistoryItem {
-  date: string;
-  confidence: number;
-  status: 'DRAFT' | 'IN_REVIEW' | 'VALIDATED' | 'REJECTED';
-}
-
-export interface AuditActivity {
-  id: string;
-  date: string;
-  identificationId: string;
-  opd: string;
-  user: string;
-  action: string;
-  details: string;
-}
-
 export interface Identification {
   id: string;
+  code: string;
   opdId?: string;
   opd: string;
-  topic: string;
+  opdName: string;
+  year: number;
+  field: string;
+  sector?: string; // compatibility alias for field
+  title: string;
+  topic: string; // compatibility alias for title
   date: string;
-  confidence: number;
-  status: 'DRAFT' | 'ANALYZING' | 'IN_REVIEW' | 'VALIDATED' | 'REJECTED';
-  primaryIssue: string;
-  problemDescription: string;
-  potentialNeed: string;
+  status: 'DRAFT' | 'UNDER_REVIEW' | 'APPROVED' | 'REJECTED' | 'VALIDATED';
   priority: 'LOW' | 'MEDIUM' | 'HIGH';
-  sector: string;
-  reasoningSummary: string;
+  confidence?: number; // compatibility alias
+  bridaFindings: string;
+  currentCondition: string;
+  problemStatement: string;
+  primaryIssue: string; // compatibility alias
+  problemDescription: string; // compatibility alias
+  impact: string;
+  potentialNeed: string;
+  baselineRelationship?: string;
+  analysisNotes?: string;
+  sourceVersionId?: string;
+  sourceVersion?: any;
   evidenceSources: EvidenceSource[];
   bridaNotes: string;
-  validatedProblem: string;
-  validatedNeed: string;
   rejectionReason: string;
+  createdById?: string;
+  createdBy?: string;
+  reviewedById?: string;
+  reviewedBy?: string;
+  reviewedAt?: string;
+  reviewNote?: string;
   updatedBy: string;
-  history: AnalysisHistoryItem[];
+  raw: ProblemIdentification;
 }
 
 interface IdentificationState {
   identifications: Identification[];
-  activities: AuditActivity[];
+  selectedIdentification: Identification | null;
   isLoading: boolean;
   isLoaded: boolean;
   error: string | null;
 
   // Actions
-  fetchIdentifications: () => Promise<void>;
+  fetchIdentifications: (params?: Record<string, any>) => Promise<void>;
+  fetchIdentificationById: (id: string) => Promise<Identification | null>;
+  createIdentification: (data: {
+    opdId?: string;
+    opdName?: string;
+    year?: number;
+    field: string;
+    title: string;
+    bridaFindings: string;
+    currentCondition: string;
+    problemStatement: string;
+    impact: string;
+    potentialNeed: string;
+    priority?: 'LOW' | 'MEDIUM' | 'HIGH';
+    status?: 'DRAFT' | 'UNDER_REVIEW';
+    sourceVersionId?: string;
+    baselineRelationship?: string;
+    analysisNotes?: string;
+  }) => Promise<ProblemIdentification>;
+  updateIdentification: (id: string, data: any) => Promise<ProblemIdentification>;
+  approveIdentification: (id: string, notes?: string) => Promise<ProblemIdentification>;
+  rejectIdentification: (id: string, notes?: string) => Promise<ProblemIdentification>;
+  deleteIdentification: (id: string) => Promise<void>;
+
+  // Compatibility aliases
   addIdentification: (
     opd: string,
     topic: string,
@@ -63,101 +87,92 @@ interface IdentificationState {
     potentialNeed: string,
     priority: 'LOW' | 'MEDIUM' | 'HIGH',
     sector: string,
-    confidence: number,
-    evidenceSources: EvidenceSource[],
-    userName: string,
-    status?: 'DRAFT' | 'IN_REVIEW'
+    confidence?: number,
+    evidenceSources?: EvidenceSource[],
+    userName?: string,
+    status?: 'DRAFT' | 'UNDER_REVIEW'
   ) => Promise<string>;
-
   updateIdentificationResult: (
     id: string,
-    updatedData: Partial<Omit<Identification, 'id' | 'history'>>,
-    userName: string
+    updatedData: Partial<Identification>,
+    userName?: string
   ) => Promise<void>;
-
-  validateIdentification: (id: string, userName: string, notes: string) => Promise<void>;
-  rejectIdentification: (id: string, userName: string, reason: string) => Promise<void>;
-
-  reAnalyzeOPD: (
-    id: string,
-    newConfidence: number,
-    newIssue: string,
-    newDescription: string,
-    newNeed: string,
-    userName: string
-  ) => Promise<void>;
+  validateIdentification: (id: string, userName?: string, notes?: string) => Promise<void>;
 }
 
-const mapBackendToIdentification = (p: ProblemIdentification): Identification => {
-  const opdId = p.relatedOpds?.[0]?.opdId || p.relatedOpds?.[0]?.opd?.id;
-  const primaryOpd = p.relatedOpds?.[0]?.opd?.name || 'Dinas Terkait';
-  const sector = 'Pembangunan Daerah';
+export const mapBackendToIdentification = (p: ProblemIdentification): Identification => {
+  const opdId = p.opdId || p.opd?.id || p.relatedOpds?.[0]?.opdId || p.relatedOpds?.[0]?.opd?.id;
+  const opdName = p.opd?.name || p.relatedOpds?.[0]?.opd?.name || 'Perangkat Daerah';
+  const field = p.field || 'Pembangunan Daerah';
+  const year = p.year || 2026;
   const dateStr = p.createdAt
     ? new Date(p.createdAt).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })
     : '2026';
 
-  let statusMapped: Identification['status'] = 'IN_REVIEW';
-  if (p.status === 'APPROVED') statusMapped = 'VALIDATED';
-  else if (p.status === 'REJECTED') statusMapped = 'REJECTED';
-  else if (p.status === 'AI_GENERATED') statusMapped = 'IN_REVIEW';
-  else if (p.status === 'DRAFT') statusMapped = 'DRAFT';
-  else if (p.status === 'UNDER_REVIEW') statusMapped = 'IN_REVIEW';
-
-  const findings = p.findings || [];
-  const primaryFinding = findings[0] || {};
-  const confidence = Math.round((primaryFinding.confidence || 0.85) * 100);
-
   const evidenceSources: EvidenceSource[] = p.sourceVersion
     ? [
         {
-          documentId: p.sourceVersion.externalSourceId || 'src-1',
-          documentName: p.sourceVersion.externalSource?.title || 'Dokumen Sumber',
-          version: `v${p.sourceVersion.versionNumber || '1.0'}`,
+          documentId: p.sourceVersion.externalSource?.id || p.sourceVersion.id,
+          documentName: p.sourceVersion.externalSource?.title || p.sourceVersion.fileName || 'Dokumen Baseline Mimika',
+          version: `v${p.sourceVersion.versionNumber || '1'}`,
         },
       ]
     : [];
 
+  const creatorName = p.createdBy?.name || 'BRIDA Litbang';
+  const reviewerName = p.reviewedBy?.name || '';
+
   return {
     id: p.id,
+    code: p.code || `PRI-${p.id.slice(0, 6)}`,
     opdId,
-    opd: primaryOpd,
+    opd: opdName,
+    opdName,
+    year,
+    field,
+    sector: field,
+    title: p.title,
     topic: p.title,
     date: dateStr,
-    confidence,
-    status: statusMapped,
-    primaryIssue: primaryFinding.title || p.title,
-    problemDescription: p.description,
-    potentialNeed: primaryFinding.description || 'Diperlukan tindak lanjut riset daerah.',
-    priority: 'HIGH',
-    sector,
-    reasoningSummary: primaryFinding.evidence || 'Hasil analisis telaah dokumen perencanaan.',
+    status: p.status,
+    priority: p.priority || 'MEDIUM',
+    confidence: 100,
+    bridaFindings: p.bridaFindings || p.description || '',
+    currentCondition: p.currentCondition || p.description || '',
+    problemStatement: p.problemStatement || p.title || '',
+    primaryIssue: p.problemStatement || p.title || '',
+    problemDescription: p.currentCondition || p.description || '',
+    impact: p.impact || '',
+    potentialNeed: p.potentialNeed || '',
+    baselineRelationship: p.baselineRelationship || '',
+    analysisNotes: p.analysisNotes || '',
+    sourceVersionId: p.sourceVersionId,
+    sourceVersion: p.sourceVersion,
     evidenceSources,
-    bridaNotes: p.reviewNote || '',
-    validatedProblem: p.title,
-    validatedNeed: p.description,
+    bridaNotes: p.reviewNote || p.analysisNotes || '',
     rejectionReason: p.status === 'REJECTED' ? p.reviewNote || '' : '',
-    updatedBy: p.reviewedBy?.name || p.createdBy?.name || 'BRIDA Litbang',
-    history: [
-      {
-        date: dateStr,
-        confidence,
-        status: statusMapped,
-      },
-    ],
+    createdById: p.createdById,
+    createdBy: creatorName,
+    reviewedById: p.reviewedById,
+    reviewedBy: reviewerName,
+    reviewedAt: p.reviewedAt,
+    reviewNote: p.reviewNote,
+    updatedBy: reviewerName || creatorName,
+    raw: p,
   };
 };
 
 export const useIdentificationStore = create<IdentificationState>((set, get) => ({
   identifications: [],
-  activities: [],
+  selectedIdentification: null,
   isLoading: false,
   isLoaded: false,
   error: null,
 
-  fetchIdentifications: async () => {
+  fetchIdentifications: async (params) => {
     set({ isLoading: true, error: null });
     try {
-      const records = await problemIdentificationService.getAll();
+      const records = await problemIdentificationService.getAll(params);
       const mapped = records.map(mapBackendToIdentification);
       set({
         identifications: mapped,
@@ -167,11 +182,85 @@ export const useIdentificationStore = create<IdentificationState>((set, get) => 
     } catch (err: any) {
       set({
         isLoading: false,
-        error: err.message || 'Gagal memuat data identifikasi masalah',
+        error: err.message || 'Gagal memuat data identifikasi kebutuhan',
       });
     }
   },
 
+  fetchIdentificationById: async (id: string) => {
+    set({ isLoading: true, error: null });
+    try {
+      const record = await problemIdentificationService.getById(id);
+      const mapped = mapBackendToIdentification(record);
+      set({
+        selectedIdentification: mapped,
+        isLoading: false,
+      });
+      return mapped;
+    } catch (err: any) {
+      set({
+        isLoading: false,
+        error: err.message || 'Gagal memuat data identifikasi kebutuhan',
+      });
+      return null;
+    }
+  },
+
+  createIdentification: async (data) => {
+    try {
+      const created = await problemIdentificationService.create(data);
+      await get().fetchIdentifications();
+      return created;
+    } catch (err: any) {
+      console.error('Error creating identification:', err);
+      throw err;
+    }
+  },
+
+  updateIdentification: async (id, data) => {
+    try {
+      const updated = await problemIdentificationService.update(id, data);
+      await get().fetchIdentifications();
+      return updated;
+    } catch (err: any) {
+      console.error('Error updating identification:', err);
+      throw err;
+    }
+  },
+
+  approveIdentification: async (id, notes) => {
+    try {
+      const res = await problemIdentificationService.approve(id, notes);
+      await get().fetchIdentifications();
+      return res;
+    } catch (err: any) {
+      console.error('Error approving identification:', err);
+      throw err;
+    }
+  },
+
+  rejectIdentification: async (id, notes) => {
+    try {
+      const res = await problemIdentificationService.reject(id, notes);
+      await get().fetchIdentifications();
+      return res;
+    } catch (err: any) {
+      console.error('Error rejecting identification:', err);
+      throw err;
+    }
+  },
+
+  deleteIdentification: async (id) => {
+    try {
+      await problemIdentificationService.delete(id);
+      await get().fetchIdentifications();
+    } catch (err: any) {
+      console.error('Error deleting identification:', err);
+      throw err;
+    }
+  },
+
+  // Backward compatibility alias
   addIdentification: async (
     opd,
     topic,
@@ -183,79 +272,42 @@ export const useIdentificationStore = create<IdentificationState>((set, get) => 
     confidence,
     evidenceSources,
     userName,
-    status = 'IN_REVIEW'
+    status = 'UNDER_REVIEW'
   ) => {
-    try {
-      const code = `PRI-${Date.now().toString().slice(-6)}`;
-      const res = await problemIdentificationService.create({
-        code,
-        title: topic,
-        description: problemDescription,
-        primaryIssue,
-        problemDescription,
-        potentialNeed,
-        priority,
-        opdName: opd,
-        findings: [
-          {
-            title: primaryIssue || topic,
-            description: problemDescription,
-            evidence: potentialNeed,
-            confidence: (confidence || 88) / 100,
-            sourceReference: evidenceSources?.[0]?.documentName || 'Dokumen Baseline Mimika',
-          },
-        ],
-      });
-      await get().fetchIdentifications();
-      return res.id;
-    } catch (err) {
-      console.error('Error adding identification:', err);
-      return `id-${Date.now()}`;
-    }
+    const res = await problemIdentificationService.create({
+      title: topic,
+      opdName: opd,
+      field: sector,
+      bridaFindings: problemDescription,
+      currentCondition: problemDescription,
+      problemStatement: primaryIssue || topic,
+      impact: 'Dampak terhadap capaian kinerja daerah',
+      potentialNeed: potentialNeed,
+      priority,
+      status: status === 'DRAFT' ? 'DRAFT' : 'UNDER_REVIEW',
+    });
+    await get().fetchIdentifications();
+    return res.id;
   },
 
   updateIdentificationResult: async (id, updatedData, userName) => {
-    try {
-      await problemIdentificationService.update(id, {
-        title: updatedData.topic,
-        description: updatedData.problemDescription,
-      });
-      await get().fetchIdentifications();
-    } catch (err) {
-      console.error('Error updating identification:', err);
-    }
+    await problemIdentificationService.update(id, {
+      title: updatedData.title || updatedData.topic,
+      field: updatedData.field,
+      bridaFindings: updatedData.bridaFindings,
+      currentCondition: updatedData.currentCondition || updatedData.problemDescription,
+      problemStatement: updatedData.problemStatement || updatedData.primaryIssue,
+      impact: updatedData.impact,
+      potentialNeed: updatedData.potentialNeed,
+      priority: updatedData.priority,
+      analysisNotes: updatedData.analysisNotes || updatedData.bridaNotes,
+    });
+    await get().fetchIdentifications();
   },
 
   validateIdentification: async (id, userName, notes) => {
-    try {
-      await problemIdentificationService.validate(id, 'APPROVE', notes);
-      await get().fetchIdentifications();
-    } catch (err) {
-      console.error('Error validating identification:', err);
-      throw err;
-    }
-  },
-
-  rejectIdentification: async (id, userName, reason) => {
-    try {
-      await problemIdentificationService.validate(id, 'REJECT', reason);
-      await get().fetchIdentifications();
-    } catch (err) {
-      console.error('Error rejecting identification:', err);
-      throw err;
-    }
-  },
-
-  reAnalyzeOPD: async (id, newConfidence, newIssue, newDescription, newNeed, userName) => {
-    try {
-      await problemIdentificationService.update(id, {
-        title: newIssue,
-        description: newDescription,
-      });
-      await get().fetchIdentifications();
-    } catch (err) {
-      console.error('Error re-analyzing OPD:', err);
-    }
+    await problemIdentificationService.approve(id, notes);
+    await get().fetchIdentifications();
   },
 }));
 
@@ -266,4 +318,5 @@ if (typeof window !== 'undefined') {
     }
   }, 0);
 }
+
 

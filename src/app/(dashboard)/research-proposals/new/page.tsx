@@ -40,7 +40,7 @@ function NewProposalForm() {
   // Find source identification
   const sourceIdent = useMemo(() => {
     if (!identificationId) return null;
-    return identifications.find((i) => i.id === identificationId && i.status === 'VALIDATED');
+    return identifications.find((i) => i.id === identificationId && (i.status === 'APPROVED' || (i.status as string) === 'VALIDATED'));
   }, [identifications, identificationId]);
 
   // Form Fields State
@@ -65,7 +65,7 @@ function NewProposalForm() {
   useEffect(() => {
     if (sourceIdent) {
       setTitle(`Kajian Kebutuhan ${sourceIdent.topic} Kabupaten`);
-      setSector(sourceIdent.sector);
+      setSector(sourceIdent.sector || sourceIdent.field || '');
       setPriority(sourceIdent.priority);
       setBackground(sourceIdent.problemDescription);
       setProblemStatement(sourceIdent.primaryIssue);

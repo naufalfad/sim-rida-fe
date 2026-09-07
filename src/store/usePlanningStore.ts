@@ -24,6 +24,7 @@ export interface KakDocument {
   updatedBy: string;
   updatedAt: string;
   budgetEstimates: number;
+  budgetEstimate?: number;
   sector: string;
 }
 
@@ -137,7 +138,7 @@ export const usePlanningStore = create<PlanningState>((set, get) => ({
         else if (k.status === 'SUBMITTED') status = 'UNDER_REVIEW';
         else if (k.status === 'RETURNED') status = 'REVISION_REQUIRED';
 
-        const totalAmount = Number(k.rab?.totalAmount || k.rabSummary?.totalAmount || k.budgetEstimates || 0);
+        const budgetEstimate = Number(k.budgetEstimate ?? k.budgetEstimates ?? 0);
         const mappedKak: KakDocument = {
           id: k.id,
           researchId: k.researchProposalId || k.researchProposal?.id || k.id,
@@ -160,7 +161,7 @@ export const usePlanningStore = create<PlanningState>((set, get) => ({
           version: String(k.version || '1.0'),
           updatedBy: 'BRIDA Litbang',
           updatedAt: k.updatedAt ? new Date(k.updatedAt).toLocaleDateString('id-ID') : '2026',
-          budgetEstimates: totalAmount,
+          budgetEstimates: budgetEstimate,
           sector: 'Pembangunan Daerah',
         };
 
@@ -285,6 +286,8 @@ export const usePlanningStore = create<PlanningState>((set, get) => ({
           indicators: data.indicators,
           deliverables: data.personnel,
           personnel: data.personnel,
+          budgetEstimate: typeof data.budgetEstimates !== 'undefined' ? Number(data.budgetEstimates) : undefined,
+          budgetEstimates: typeof data.budgetEstimates !== 'undefined' ? Number(data.budgetEstimates) : undefined,
         });
       } else {
         await planningService.createKak({
@@ -312,6 +315,8 @@ export const usePlanningStore = create<PlanningState>((set, get) => ({
           indicators: data.indicators || '',
           deliverables: data.personnel || '',
           personnel: data.personnel || '',
+          budgetEstimate: Number(data.budgetEstimates || data.budgetEstimate || 0),
+          budgetEstimates: Number(data.budgetEstimates || data.budgetEstimate || 0),
         });
       }
       await get().fetchPlanning();

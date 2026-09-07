@@ -20,6 +20,44 @@ export interface SelectionDetail {
   recommendationPotentialNotes: string;
 }
 
+export interface SelectionScoreItem {
+  id?: string;
+  scoreId?: string;
+  criteriaId: string;
+  code: string;
+  name: string;
+  description?: string;
+  weight: number;
+  score: number;
+  weightedScore?: number;
+  note?: string;
+}
+
+export interface ProposalSelectionData {
+  id: string;
+  code: string;
+  status: string;
+  totalScore?: number | null;
+  result?: string | null;
+  selectionNote?: string | null;
+  cancelReason?: string | null;
+  selectedAt?: string | null;
+  finalizedAt?: string | null;
+  finalizedBy?: {
+    id: string;
+    name: string;
+    email?: string;
+    role?: string;
+  } | null;
+  createdBy?: {
+    id: string;
+    name: string;
+    email?: string;
+    role?: string;
+  } | null;
+  scores: SelectionScoreItem[];
+}
+
 export interface SelectionNotes {
   summary: string;
   strengths: string;
@@ -68,6 +106,9 @@ export interface ResearchProposal {
   submittedDate: string;
   updatedDate: string;
   activities: ProposalActivity[];
+  selection?: ProposalSelectionData | null;
+  totalScore?: number | null;
+  selectionResult?: string | null;
   selectionDetail?: SelectionDetail;
   selectionDetails?: SelectionDetail;
   selectionNotes?: SelectionNotes;
@@ -83,6 +124,8 @@ export interface ResearchRecord {
   status: 'PLANNED' | 'ACTIVE' | 'COMPLETED';
   priority: 'LOW' | 'MEDIUM' | 'HIGH';
   approvedDate: string;
+  selection?: ProposalSelectionData | null;
+  totalScore?: number | null;
 }
 
 interface ResearchStore {
@@ -124,7 +167,7 @@ interface ResearchStore {
 
   saveSelectionResult: (
     id: string,
-    scores: SelectionDetail,
+    scores: SelectionDetail | Array<{ criteriaId: string; score: number; note?: string }>,
     notes: Omit<SelectionNotes, 'recommendation'> & { recommendation: 'SELECT' | 'REJECT' | 'NEED REVISION' },
     userName: string
   ) => Promise<void>;
@@ -145,6 +188,93 @@ const mapBackendToProposal = (p: BackendProposal): ResearchProposal => {
 
   const dateStr = p.createdAt ? new Date(p.createdAt).toLocaleDateString('id-ID') : '2026';
   const subDateStr = p.submittedAt ? new Date(p.submittedAt).toLocaleDateString('id-ID') : '';
+
+  // Map selection details from real backend payload
+  const sel = p.selection;
+  let mappedSelection: ProposalSelectionData | null = null;
+  let totalScore: number | null = null;
+  let selectionResult: string | null = null;
+  let selectionHistory: SelectionHistoryItem[] = [];
+
+  if (sel) {
+    totalScore = sel.totalScore !== null && sel.totalScore !== undefined ? Number(sel.totalScore) : null;
+    selectionResult = sel.result || null;
+    const mappedScores: SelectionScoreItem[] = Array.isArray(sel.scores)
+      ? sel.scores.map((s: any) => {
+          const weight = typeof s.weight === 'number' ? s.weight : (s.weightSnapshot || s.criteria?.weight || 0);
+          const score = typeof s.score === 'number' ? s.score : 0;
+          const weightedScore = typeof s.weightedScore === 'number'
+            ? s.weightedScore
+            : Math.round(((score * weight) / 100) * 100) / 100;
+          return {
+            id: s.id || s.scoreId,
+            criteriaId: s.criteriaId,
+            code: s.code || s.criteria?.code || '',
+            name: s.name || s.criteria?.name || '',
+            description: s.description || s.criteria?.description || '',
+            weight,
+            score,
+            weightedScore,
+            note: s.note || '',
+          };
+        })
+      : [];
+
+    mappedSelection = {
+      id: sel.id,
+      code: sel.code,
+      status: sel.status,
+      totalScore: totalScore,
+      result: sel.result,
+      selectionNote: sel.selectionNote || sel.summary || sel.notes || '',
+      cancelReason: sel.cancelReason,
+      selectedAt: sel.selectedAt,
+      finalizedAt: sel.finalizedAt,
+      finalizedBy: sel.finalizedBy,
+      createdBy: sel.createdBy,
+      scores: mappedScores,
+    };
+
+    if (sel.finalizedAt || sel.status === 'FINALIZED' || sel.result) {
+      selectionHistory.push({
+        date: sel.finalizedAt ? new Date(sel.finalizedAt).toLocaleDateString('id-ID') : dateStr,
+        user: sel.finalizedBy?.name || 'Tim Evaluator Litbang BRIDA',
+        score: totalScore !== null ? `${totalScore} / 100` : 'Selesai',
+        recommendation: sel.result === 'SELECTED' ? 'SELECT' : 'REJECT',
+        summary: sel.selectionNote || 'Hasil evaluasi penetapan kelayakan usulan penelitian telah disetujui.',
+      });
+    }
+  }
+
+  const activities: ProposalActivity[] = [
+    {
+      id: `act-create-${p.id}`,
+      date: dateStr,
+      user: p.createdBy?.name || 'BRIDA Litbang',
+      action: 'Inisiasi Proposal',
+      details: 'Proposal penelitian dibuat.',
+    },
+  ];
+
+  if (p.submittedAt) {
+    activities.unshift({
+      id: `act-submit-${p.id}`,
+      date: subDateStr,
+      user: p.createdBy?.name || 'BRIDA Litbang',
+      action: 'Pengajuan Seleksi',
+      details: 'Usulan penelitian diajukan untuk proses seleksi kelayakan.',
+    });
+  }
+
+  if (sel?.finalizedAt) {
+    activities.unshift({
+      id: `act-select-${p.id}`,
+      date: new Date(sel.finalizedAt).toLocaleDateString('id-ID'),
+      user: sel.finalizedBy?.name || 'Evaluator BRIDA',
+      action: 'Penetapan Skor Seleksi',
+      details: `Skor total: ${totalScore ?? '-'} (${sel.result === 'SELECTED' ? 'Direkomendasikan Lanjut' : 'Tidak Terpilih'}).`,
+    });
+  }
 
   return {
     id: p.id,
@@ -169,16 +299,11 @@ const mapBackendToProposal = (p: BackendProposal): ResearchProposal => {
     status,
     submittedDate: subDateStr,
     updatedDate: dateStr,
-    selectionHistory: [],
-    activities: [
-      {
-        id: `act-${p.id}`,
-        date: dateStr,
-        user: p.createdBy?.name || 'BRIDA Litbang',
-        action: 'Inisiasi Proposal',
-        details: 'Proposal penelitian dibuat.',
-      },
-    ],
+    selection: mappedSelection,
+    totalScore: totalScore,
+    selectionResult: selectionResult,
+    selectionHistory,
+    activities,
   };
 };
 
@@ -213,6 +338,8 @@ export const useResearchStore = create<ResearchStore>((set, get) => ({
         if (p.implementation?.status === 'COMPLETED') implStatus = 'COMPLETED';
         else if (p.implementation?.status === 'ONGOING') implStatus = 'ACTIVE';
 
+        const mappedProp = mapped.find((mp) => mp.id === p.id);
+
         return {
           id: p.id,
           title: p.title,
@@ -222,6 +349,8 @@ export const useResearchStore = create<ResearchStore>((set, get) => ({
           status: implStatus,
           priority: (p.priority as any) || 'HIGH',
           approvedDate: p.reviewedAt ? new Date(p.reviewedAt).toLocaleDateString('id-ID') : '2026',
+          selection: mappedProp?.selection || null,
+          totalScore: mappedProp?.totalScore || null,
         };
       });
 
@@ -339,8 +468,30 @@ export const useResearchStore = create<ResearchStore>((set, get) => ({
   saveSelectionResult: async (id, scores, notes, userName) => {
     try {
       const decision = notes.recommendation === 'SELECT' ? 'SELECTED' : 'NOT_SELECTED';
+      
+      // Check if selection already exists or needs creation
+      let selection = (get().proposals.find(p => p.id === id)?.selection as any);
+      if (!selection || !selection.id) {
+        try {
+          selection = await researchSelectionService.create({ researchProposalId: id });
+        } catch (e: any) {
+          // If already exists or error, continue
+        }
+      }
+
+      const selectionId = selection?.id || id;
+
+      // If scores array is provided, save scores first
+      if (Array.isArray(scores) && scores.length > 0) {
+        try {
+          await researchSelectionService.bulkUpdateScores(selectionId, scores);
+        } catch (scoreErr) {
+          console.warn('Could not bulk update scores directly:', scoreErr);
+        }
+      }
+
       await researchSelectionService.finalize(
-        id,
+        selectionId,
         decision,
         notes.summary || 'Hasil telaah penilaian seleksi kelayakan usulan penelitian telah disetujui.'
       );

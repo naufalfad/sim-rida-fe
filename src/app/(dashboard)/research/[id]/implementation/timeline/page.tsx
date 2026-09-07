@@ -1,30 +1,29 @@
 'use client';
 
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useRef } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useResearchStore } from '@/store/useResearchStore';
 import { useAuthStore } from '@/store/useAuthStore';
 import { useToast } from '@/components/ui/toast';
 import { PageHeader } from '@/components/ui/page-header';
-import { Card, CardContent } from '@/components/ui/card';
-import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table';
-import { Dialog } from '@/components/ui/dialog';
-import { Milestone, useImplementationStore } from '@/store/useImplementationStore';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { useImplementationStore } from '@/store/useImplementationStore';
+import { downloadTimelineTemplate } from '@/utils/excelTemplate';
 import {
   ArrowLeft,
-  Plus,
-  Edit2,
-  Trash2,
+  FileSpreadsheet,
+  Download,
+  UploadCloud,
+  FileCheck2,
   Calendar,
-  AlertTriangle,
-  CheckCircle2,
-  List,
-  GanttChartSquare,
   Clock,
-  Save,
-  Check,
-  X,
-  Info
+  User,
+  AlertCircle,
+  CheckCircle2,
+  RefreshCw,
+  FileText,
+  Layers,
+  Sparkles
 } from 'lucide-react';
 
 export default function TimelinePage() {
@@ -36,16 +35,23 @@ export default function TimelinePage() {
   const { researchRecords } = useResearchStore();
   const {
     getImplementation,
-    getMilestones,
-    updateMilestone,
-    deleteMilestone
+    getDocuments,
+    getTimelineDocument,
+    uploadTimelineExcel,
   } = useImplementationStore();
 
   const id = params?.id || '';
   const isBrida = user?.role === 'BRIDA' || user?.role === 'ADMIN_BRIDA';
 
   const impl = getImplementation(id);
-  const milestones = getMilestones(id);
+  const documents = getDocuments(id);
+  const timelineDoc = getTimelineDocument(id);
+
+  // File upload state
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [fileNotes, setFileNotes] = useState('');
+  const [isUploading, setIsUploading] = useState(false);
 
   // Find target research record
   const record = useMemo(() => {
@@ -75,82 +81,73 @@ export default function TimelinePage() {
     };
   }, [researchRecords, id, impl]);
 
-  // Read-only locks checks
   const isResearchCompleted = impl.status === 'COMPLETED';
 
-  // View state: 'LIST' | 'TIMELINE'
-  const [viewMode, setViewMode] = useState<'LIST' | 'TIMELINE'>('LIST');
-
-  // Milestone Detail Modal
-  const [selectedMilestone, setSelectedMilestone] = useState<Milestone | null>(null);
-  const [isDetailOpen, setIsDetailOpen] = useState(false);
-
-  // Progress Update Modal
-  const [updatingMilestone, setUpdatingMilestone] = useState<Milestone | null>(null);
-  const [isProgressOpen, setIsProgressOpen] = useState(false);
-  const [newProgress, setNewProgress] = useState(0);
-  const [progressNotes, setProgressNotes] = useState('');
-
-  // Delete confirm modal state
-  const [deletingId, setDeletingId] = useState('');
-  const [isDeleteOpen, setIsDeleteOpen] = useState(false);
-
-  // Compute weight totals
-  const totalWeight = useMemo(() => {
-    return milestones.reduce((sum, m) => sum + m.weight, 0);
-  }, [milestones]);
-
-  const handleOpenDetail = (m: Milestone) => {
-    setSelectedMilestone(m);
-    setIsDetailOpen(true);
+  // Handle Download Template
+  const handleDownloadTemplate = () => {
+    try {
+      downloadTimelineTemplate(record.title, record.opd);
+      toast('Format template Excel timeline berhasil diunduh.', 'success');
+    } catch (err: any) {
+      toast('Gagal mengunduh template: ' + err.message, 'error');
+    }
   };
 
-  const handleOpenProgress = (m: Milestone) => {
-    setUpdatingMilestone(m);
-    setNewProgress(m.progress);
-    setProgressNotes('');
-    setIsProgressOpen(true);
+  // Handle File Selection
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (files && files.length > 0) {
+      const file = files[0];
+      const validExtensions = ['.xlsx', '.xls', '.csv'];
+      const fileExt = file.name.substring(file.name.lastIndexOf('.')).toLowerCase();
+      
+      if (!validExtensions.includes(fileExt)) {
+        toast('Format file harus berupa Excel (.xlsx, .xls) atau .csv', 'warning');
+        return;
+      }
+
+      if (file.size > 10 * 1024 * 1024) {
+        toast('Ukuran file maksimal adalah 10MB.', 'warning');
+        return;
+      }
+
+      setSelectedFile(file);
+    }
   };
 
-  const handleSaveProgress = () => {
-    if (!updatingMilestone) return;
-
-    if (newProgress < 0 || newProgress > 100) {
-      toast('Progress harus bernilai antara 0 hingga 100.', 'warning');
+  // Handle Upload
+  const handleUploadSubmit = async () => {
+    if (!selectedFile) {
+      toast('Silakan pilih file Excel timeline terlebih dahulu.', 'warning');
       return;
     }
 
-    updateMilestone(id, updatingMilestone.id, { progress: newProgress, notes: progressNotes }, user?.name || 'BRIDA Litbang');
-    setIsProgressOpen(false);
-    toast(`Progress milestone "${updatingMilestone.title}" diperbarui ke ${newProgress}%.`, 'success');
+    try {
+      setIsUploading(true);
+      await uploadTimelineExcel(id, selectedFile, fileNotes || `Timeline Pelaksanaan Riset ${record.title}`);
+      setSelectedFile(null);
+      setFileNotes('');
+      if (fileInputRef.current) fileInputRef.current.value = '';
+      toast('Dokumen Timeline Excel berhasil diunggah.', 'success');
+    } catch (err: any) {
+      toast('Gagal mengunggah dokumen: ' + (err.message || 'Terjadi kesalahan.'), 'error');
+    } finally {
+      setIsUploading(false);
+    }
   };
 
-  const handleMarkDelayed = (m: Milestone) => {
-    updateMilestone(id, m.id, { status: 'DELAYED', notes: 'Ditandai manual terlambat (DELAYED)' }, user?.name || 'BRIDA Litbang');
-    toast(`Milestone "${m.title}" ditandai sebagai DELAYED.`, 'warning');
-  };
-
-  const handleTriggerDelete = (mId: string) => {
-    setDeletingId(mId);
-    setIsDeleteOpen(true);
-  };
-
-  const handleConfirmDelete = () => {
-    deleteMilestone(id, deletingId);
-    setIsDeleteOpen(false);
-    toast('Milestone berhasil dihapus dari timeline.', 'success');
-  };
-
-  const getMilestoneStatusBadge = (status: string) => {
-    switch (status) {
-      case 'COMPLETED':
-        return 'bg-emerald-50 text-emerald-700 border-emerald-200';
-      case 'IN_PROGRESS':
-        return 'bg-blue-50 text-blue-700 border-blue-200';
-      case 'DELAYED':
-        return 'bg-rose-50 text-rose-700 border-rose-200';
-      default:
-        return 'bg-gray-100 text-gray-600 border-gray-250';
+  // Handle Download Active Timeline
+  const handleDownloadActiveTimeline = () => {
+    if (!timelineDoc) return;
+    if (timelineDoc.fileUrl) {
+      const fullUrl = timelineDoc.fileUrl.startsWith('http')
+        ? timelineDoc.fileUrl
+        : `http://localhost:5000/${timelineDoc.fileUrl.replace(/\\/g, '/')}`;
+      window.open(fullUrl, '_blank');
+    } else {
+      // Fallback download template if local mock
+      downloadTimelineTemplate(record.title, record.opd);
+      toast('Mengunduh salinan berkas timeline...', 'info');
     }
   };
 
@@ -159,7 +156,7 @@ export default function TimelinePage() {
       <div className="space-y-6 text-center py-12 font-sans">
         <h2 className="text-lg font-bold text-gray-800 dark:text-white">Rekod Penelitian Tidak Ditemukan</h2>
         <button
-          onClick={() => router.push('/research')}
+          onClick={() => router.push('/implementation')}
           className="mt-4 px-4 py-2 bg-blue-600 text-white rounded text-xs font-bold"
         >
           Kembali ke Daftar
@@ -170,396 +167,269 @@ export default function TimelinePage() {
 
   return (
     <div className="space-y-6 font-sans">
-      
       {/* Back button */}
       <div>
         <button
           onClick={() => router.push(`/research/${id}/implementation`)}
-          className="flex items-center gap-1.5 text-xs text-gray-500 hover:text-gray-700 font-semibold"
+          className="flex items-center gap-1.5 text-xs text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 font-semibold"
         >
           <ArrowLeft className="h-4 w-4" />
-          <span>Kembali ke Pelaksanaan</span>
+          <span>Kembali ke Ringkasan Pelaksanaan</span>
         </button>
       </div>
 
       <PageHeader
-        title="Penyusunan Research Timeline & Milestone"
-        description={`Pengelolaan draf rencana kerja dan bobot milestone pelaksanaan untuk riset: "${record.title}"`}
+        title="Dokumen & Timeline Pelaksanaan Riset"
+        description={`Manajemen berkas jadwal & timeline kegiatan riset berbasis format Excel untuk: "${record.title}"`}
         action={
-          isBrida && !isResearchCompleted && (
-            <button
-              onClick={() => router.push(`/research/${id}/implementation/timeline/new`)}
-              className="px-3 py-1.5 bg-purple-650 hover:bg-purple-700 text-white rounded text-xs font-bold transition-all flex items-center gap-1.5 shadow"
-            >
-              <Plus className="h-4 w-4" />
-              <span>Add Milestone</span>
-            </button>
-          )
+          <button
+            onClick={handleDownloadTemplate}
+            className="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded text-xs font-bold transition-all flex items-center gap-1.5 shadow"
+          >
+            <Download className="h-4 w-4" />
+            <span>Unduh Format Template (.xlsx)</span>
+          </button>
         }
       />
 
-      {/* Weight warning banner (Section 13) */}
-      {totalWeight !== 100 ? (
-        <div className="p-3 bg-amber-50 dark:bg-amber-950/20 border border-amber-250 rounded text-amber-750 dark:text-amber-400 text-2xs flex items-center gap-2 font-semibold">
-          <AlertTriangle className="h-4 w-4 text-amber-500 shrink-0" />
-          <span>WARNING: Total bobot milestone saat ini adalah {totalWeight}%. Bobot kumulatif wajib berjumlah 100% untuk menyelesaikan timeline.</span>
-        </div>
-      ) : (
-        <div className="p-3 bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-250 rounded text-emerald-750 dark:text-emerald-450 text-2xs flex items-center gap-2 font-semibold">
-          <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0" />
-          <span>Bobot timeline tervalidasi 100%. Rencana kerja sinkron.</span>
-        </div>
-      )}
+      {/* Main Grid: Upload & Download Hub */}
+      <div className="grid gap-6 md:grid-cols-3">
+        
+        {/* ================= LEFT SECTION (Active Timeline & Download Hub) ================= */}
+        <div className="md:col-span-2 space-y-6">
 
-      {/* Mode selectors */}
-      <div className="flex justify-between items-center bg-gray-50 dark:bg-gray-900 p-1.5 border rounded">
-        <span className="text-[10px] text-gray-400 font-bold uppercase tracking-wider pl-1.5">
-          Tampilan: {viewMode} VIEW
-        </span>
-        <div className="flex gap-1">
-          <button
-            onClick={() => setViewMode('LIST')}
-            className={`px-3 py-1 text-3xs font-bold uppercase rounded flex items-center gap-1 transition-all ${
-              viewMode === 'LIST'
-                ? 'bg-purple-600 text-white shadow'
-                : 'text-gray-650 hover:bg-gray-100 dark:hover:bg-gray-800'
-            }`}
-          >
-            <List className="h-3.5 w-3.5" />
-            <span>List</span>
-          </button>
-          <button
-            onClick={() => setViewMode('TIMELINE')}
-            className={`px-3 py-1 text-3xs font-bold uppercase rounded flex items-center gap-1 transition-all ${
-              viewMode === 'TIMELINE'
-                ? 'bg-purple-600 text-white shadow'
-                : 'text-gray-650 hover:bg-gray-100 dark:hover:bg-gray-800'
-            }`}
-          >
-            <GanttChartSquare className="h-3.5 w-3.5" />
-            <span>Timeline</span>
-          </button>
-        </div>
-      </div>
+          {/* Active Timeline Status Card */}
+          <Card className="border-t-4 border-t-emerald-600 shadow-sm">
+            <CardHeader className="pb-3 border-b dark:border-gray-850">
+              <CardTitle className="text-xs font-bold uppercase tracking-wider text-gray-700 dark:text-gray-300 flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <FileSpreadsheet className="h-4 w-4 text-emerald-600" />
+                  <span>Dokumen Timeline Pelaksanaan Aktif</span>
+                </div>
+                {timelineDoc ? (
+                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-3xs font-extrabold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                    <CheckCircle2 className="h-3 w-3" />
+                    <span>TERSEDIA (EXCEL)</span>
+                  </span>
+                ) : (
+                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-3xs font-extrabold bg-amber-50 text-amber-700 border border-amber-200">
+                    <AlertCircle className="h-3 w-3" />
+                    <span>BELUM DIUNGGAH</span>
+                  </span>
+                )}
+              </CardTitle>
+            </CardHeader>
 
-      {/* Conditionally render views */}
-      {viewMode === 'LIST' ? (
-        /* List View Table */
-        <Card>
-          <CardContent className="p-0">
-            {milestones.length === 0 ? (
-              <div className="p-12 text-center text-xs text-gray-450 italic">
-                Belum ada milestone rencana kerja yang didaftarkan.
-              </div>
-            ) : (
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead className="w-12 text-center text-3xs uppercase tracking-wider font-bold">No</TableHead>
-                    <TableHead className="text-3xs uppercase tracking-wider font-bold">Milestone Name</TableHead>
-                    <TableHead className="text-3xs uppercase tracking-wider font-bold">Periode</TableHead>
-                    <TableHead className="text-3xs uppercase tracking-wider font-bold text-center">Bobot (%)</TableHead>
-                    <TableHead className="text-3xs uppercase tracking-wider font-bold text-center">Progress</TableHead>
-                    <TableHead className="text-3xs uppercase tracking-wider font-bold text-center">Status</TableHead>
-                    <TableHead className="text-3xs uppercase tracking-wider font-bold">Responsible</TableHead>
-                    {!isResearchCompleted && <TableHead className="text-3xs uppercase tracking-wider font-bold text-right">Action</TableHead>}
-                  </TableRow>
-                </TableHeader>
-                <TableBody className="text-xs font-medium">
-                  {milestones.map((m, idx) => (
-                    <TableRow key={m.id} className="hover:bg-gray-50/50">
-                      <TableCell className="text-center font-bold text-gray-400">{idx + 1}</TableCell>
-                      <TableCell>
-                        <button
-                          onClick={() => handleOpenDetail(m)}
-                          className="font-bold text-blue-650 dark:text-blue-450 hover:underline text-left"
-                        >
-                          {m.title}
-                        </button>
-                        <p className="text-[10px] text-gray-400 font-normal leading-relaxed truncate max-w-xs">{m.description}</p>
-                      </TableCell>
-                      <TableCell className="text-gray-600 font-bold whitespace-nowrap text-3xs">
-                        {m.startDate} s/d {m.endDate}
-                      </TableCell>
-                      <TableCell className="text-center font-extrabold text-gray-800 dark:text-gray-250">{m.weight}%</TableCell>
-                      <TableCell className="text-center font-extrabold text-purple-750 dark:text-purple-400">
-                        {m.progress}%
-                      </TableCell>
-                      <TableCell className="text-center">
-                        <span className={`inline-block px-1.5 py-0.2 rounded text-[9px] font-bold border ${getMilestoneStatusBadge(m.status)}`}>
-                          {m.status}
-                        </span>
-                      </TableCell>
-                      <TableCell className="text-gray-600 text-3xs whitespace-nowrap">{m.responsibleUnit}</TableCell>
-                      
-                      {/* Action buttons (only show if not completed) */}
-                      {!isResearchCompleted && (
-                        <TableCell className="text-right whitespace-nowrap">
-                          <div className="flex justify-end gap-1.5">
-                            {isBrida && m.status !== 'COMPLETED' && (
-                              <>
-                                <button
-                                  onClick={() => handleOpenProgress(m)}
-                                  className="px-2 py-0.5 border border-purple-200 hover:bg-purple-50 text-purple-700 text-3xs font-bold uppercase rounded bg-white"
-                                >
-                                  Update
-                                </button>
-                                <button
-                                  onClick={() => handleMarkDelayed(m)}
-                                  className="px-2 py-0.5 border border-rose-250 hover:bg-rose-50 text-rose-650 text-3xs font-bold uppercase rounded bg-white"
-                                >
-                                  Delayed
-                                </button>
-                              </>
-                            )}
-                            {isBrida && m.status !== 'COMPLETED' && (
-                              <button
-                                onClick={() => handleTriggerDelete(m.id)}
-                                className="p-1 text-gray-400 hover:text-rose-600 rounded border hover:bg-slate-50"
-                                title="Delete"
-                              >
-                                <Trash2 className="h-3.5 w-3.5" />
-                              </button>
-                            )}
-                          </div>
-                        </TableCell>
-                      )}
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            )}
-          </CardContent>
-        </Card>
-      ) : (
-        /* Timeline View (Visual Chronological bars) */
-        <Card>
-          <CardContent className="p-6 space-y-6">
-            {milestones.length === 0 ? (
-              <div className="p-6 text-center text-xs text-gray-450 italic">
-                Belum ada milestone rencana kerja yang didaftarkan.
-              </div>
-            ) : (
-              <div className="relative pl-6 border-l border-slate-200 dark:border-slate-800 space-y-6 py-2">
-                {milestones.map((m) => {
-                  const isDone = m.status === 'COMPLETED';
-                  const isActive = m.status === 'IN_PROGRESS';
-                  const isLate = m.status === 'DELAYED';
-
-                  return (
-                    <div key={m.id} className="relative text-xs space-y-1 select-none">
-                      
-                      {/* Left icon circle */}
-                      <span className={`absolute -left-[30px] top-1.5 h-4 w-4 rounded-full border border-white flex items-center justify-center text-[9px] font-bold ${
-                        isDone
-                          ? 'bg-emerald-500 text-white'
-                          : isLate
-                          ? 'bg-rose-500 text-white'
-                          : isActive
-                          ? 'bg-blue-500 text-white'
-                          : 'bg-slate-300 text-white'
-                      }`}>
-                        {isDone ? '✓' : isLate ? '!' : isActive ? '●' : '○'}
-                      </span>
-
-                      <div className="flex justify-between items-baseline">
-                        <button
-                          onClick={() => handleOpenDetail(m)}
-                          className="font-bold text-gray-900 dark:text-white hover:underline text-left text-xs"
-                        >
-                          {m.title}
-                        </button>
-                        <span className="text-[10px] text-gray-400 font-semibold">{m.startDate} s/d {m.endDate}</span>
+            <CardContent className="pt-4 space-y-4 text-xs">
+              {timelineDoc ? (
+                <div className="p-4 bg-emerald-50/50 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-850 rounded-lg space-y-3">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                    <div className="flex items-start gap-3">
+                      <div className="p-2.5 bg-emerald-600 text-white rounded-md shrink-0 shadow">
+                        <FileSpreadsheet className="h-6 w-6" />
                       </div>
-
-                      <p className="text-[10px] text-gray-455 max-w-xl leading-relaxed">{m.description}</p>
-                      
-                      <div className="flex gap-4 pt-1 items-center">
-                        <div className="flex items-center gap-1 text-[10px]">
-                          <span className="text-gray-400 font-bold uppercase text-[8px]">Bobot:</span>
-                          <span className="font-extrabold">{m.weight}%</span>
+                      <div>
+                        <h4 className="font-bold text-gray-900 dark:text-white text-sm">{timelineDoc.name}</h4>
+                        <div className="flex flex-wrap items-center gap-3 text-2xs text-gray-500 dark:text-gray-400 mt-1">
+                          <span className="flex items-center gap-1">
+                            <Calendar className="h-3 w-3" />
+                            <span>Diupload: {timelineDoc.uploadDate || '01 Sep 2026'}</span>
+                          </span>
+                          <span className="flex items-center gap-1">
+                            <User className="h-3 w-3" />
+                            <span>Pengunggah: {timelineDoc.uploadedBy || 'BRIDA Litbang'}</span>
+                          </span>
+                          <span className="flex items-center gap-1">
+                            <Layers className="h-3 w-3" />
+                            <span>Tipe: {timelineDoc.type}</span>
+                          </span>
                         </div>
-                        <div className="flex items-center gap-1 text-[10px]">
-                          <span className="text-gray-400 font-bold uppercase text-[8px]">Progress:</span>
-                          <span className="font-extrabold text-purple-750">{m.progress}%</span>
-                        </div>
-                        <span className={`px-1.5 py-0.2 rounded text-[8px] font-bold border ${getMilestoneStatusBadge(m.status)}`}>
-                          {m.status}
-                        </span>
                       </div>
-
                     </div>
-                  );
-                })}
-              </div>
-            )}
-          </CardContent>
-        </Card>
-      )}
 
-      {/* ================= MODAL: MILESTONE DETAIL (Section 17) ================= */}
-      <Dialog
-        isOpen={isDetailOpen}
-        onClose={() => setIsDetailOpen(false)}
-        title="Detail Milestone / Rencana Kerja"
-        description="Informasi rencana penugasan, deskripsi bab kegiatan, dan log aktivitas."
-        footer={
-          <button
-            onClick={() => setIsDetailOpen(false)}
-            className="px-4 py-2 bg-blue-650 hover:bg-blue-700 text-white rounded text-xs font-semibold"
-          >
-            Tutup Detail
-          </button>
-        }
-      >
-        {selectedMilestone && (
-          <div className="space-y-4 text-xs font-sans">
-            <div>
-              <span className="text-gray-400 block font-bold text-[8px] uppercase">Nama Milestone</span>
-              <span className="font-bold text-gray-900 text-sm">{selectedMilestone.title}</span>
-            </div>
+                    <button
+                      onClick={handleDownloadActiveTimeline}
+                      className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-md shadow flex items-center justify-center gap-2 transition-all shrink-0"
+                    >
+                      <Download className="h-4 w-4" />
+                      <span>Unduh Timeline</span>
+                    </button>
+                  </div>
 
-            <div>
-              <span className="text-gray-400 block font-bold text-[8px] uppercase">Deskripsi Kegiatan</span>
-              <p className="text-gray-650 leading-relaxed italic">{selectedMilestone.description}</p>
-            </div>
-
-            <div className="grid gap-4 sm:grid-cols-3">
-              <div>
-                <span className="text-gray-400 block font-bold text-[8px] uppercase">Periode</span>
-                <span className="font-bold text-gray-700">{selectedMilestone.startDate} s/d {selectedMilestone.endDate}</span>
-              </div>
-              <div>
-                <span className="text-gray-400 block font-bold text-[8px] uppercase">Bobot Kerja</span>
-                <span className="font-bold text-gray-700">{selectedMilestone.weight}%</span>
-              </div>
-              <div>
-                <span className="text-gray-400 block font-bold text-[8px] uppercase">Penanggung Jawab</span>
-                <span className="font-bold text-gray-750">{selectedMilestone.responsibleUnit}</span>
-              </div>
-            </div>
-
-            <div className="grid gap-4 sm:grid-cols-2 pt-2 border-t">
-              <div>
-                <span className="text-gray-400 block font-bold text-[8px] uppercase">Progress Saat Ini</span>
-                <span className="font-extrabold text-purple-750 text-sm">{selectedMilestone.progress}%</span>
-              </div>
-              <div>
-                <span className="text-gray-400 block font-bold text-[8px] uppercase">Status Administrasi</span>
-                <span className={`inline-block px-1.5 py-0.2 rounded text-[9px] font-bold border mt-0.5 ${getMilestoneStatusBadge(selectedMilestone.status)}`}>
-                  {selectedMilestone.status}
-                </span>
-              </div>
-            </div>
-
-            {/* History Logs list */}
-            <div className="pt-3 border-t">
-              <span className="font-bold text-[8px] text-gray-400 block uppercase mb-2">History Milestone Updates</span>
-              {selectedMilestone.activities.length === 0 ? (
-                <span className="text-[10px] text-gray-400 italic">Belum ada riwayat update.</span>
+                  <p className="text-[11px] text-gray-600 dark:text-gray-400 leading-relaxed border-t border-emerald-200 dark:border-emerald-850/60 pt-2.5 italic">
+                    * Dokumen Excel ini merupakan acuan resmi jadwal kegiatan dan tahapan penelitian. Seluruh stakeholder dan Kepala BRIDA dapat mengunduh dokumen di atas untuk memantau detail pelaksanaan.
+                  </p>
+                </div>
               ) : (
-                <div className="relative border-l pl-3 space-y-3">
-                  {selectedMilestone.activities.map((act, index) => (
-                    <div key={index} className="relative text-2xs space-y-0.5">
-                      <span className="absolute -left-[15.5px] top-1 h-1.5 w-1.5 rounded-full bg-blue-650" />
-                      <div className="flex justify-between items-center text-[8px] text-gray-400 font-semibold">
-                        <span>{act.date}</span>
-                        <span>{act.user}</span>
-                      </div>
-                      <p className="font-bold text-gray-800">{act.action}</p>
-                      <p className="text-[9px] text-gray-450 italic leading-normal">{act.notes}</p>
-                    </div>
-                  ))}
+                <div className="p-8 text-center bg-gray-50 dark:bg-gray-900/50 border border-dashed rounded-lg space-y-3">
+                  <div className="mx-auto w-12 h-12 rounded-full bg-amber-50 dark:bg-amber-950/40 text-amber-600 flex items-center justify-center">
+                    <FileSpreadsheet className="h-6 w-6" />
+                  </div>
+                  <div className="max-w-md mx-auto space-y-1">
+                    <h4 className="font-bold text-gray-800 dark:text-gray-200 text-xs">Belum Ada Dokumen Timeline yang Diunggah</h4>
+                    <p className="text-2xs text-gray-500 dark:text-gray-400 leading-relaxed">
+                      Silakan unduh template format standar yang telah disediakan di sebelah kanan, isi matriks jadwal kegiatan riset, lalu unggah file Excel Anda ke sistem.
+                    </p>
+                  </div>
+                  <button
+                    onClick={handleDownloadTemplate}
+                    className="inline-flex items-center gap-1.5 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded text-2xs font-bold transition-all shadow"
+                  >
+                    <Download className="h-3.5 w-3.5" />
+                    <span>Unduh Format Template Excel (.xlsx)</span>
+                  </button>
                 </div>
               )}
-            </div>
 
-          </div>
-        )}
-      </Dialog>
+              {/* Upload Form Box (For BRIDA / Researchers) */}
+              {isBrida && !isResearchCompleted && (
+                <div className="pt-2 border-t dark:border-gray-850 space-y-3">
+                  <h4 className="font-bold text-2xs uppercase tracking-wider text-gray-600 dark:text-gray-400 flex items-center gap-1.5">
+                    <UploadCloud className="h-4 w-4 text-emerald-600" />
+                    <span>{timelineDoc ? 'Unggah Versi Baru / Ganti File Timeline' : 'Unggah Berkas Timeline Pelaksanaan (Excel)'}</span>
+                  </h4>
 
-      {/* ================= MODAL: UPDATE PROGRESS (Section 18) ================= */}
-      <Dialog
-        isOpen={isProgressOpen}
-        onClose={() => setIsProgressOpen(false)}
-        title={`Update Progress: ${updatingMilestone?.title || ''}`}
-        description="Perbarui persentase progress dan berikan catatan progress saat ini."
-        footer={
-          <>
-            <button
-              onClick={handleSaveProgress}
-              className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded text-xs font-semibold transition-all"
-            >
-              Simpan Update
-            </button>
-            <button
-              onClick={() => setIsProgressOpen(false)}
-              className="px-4 py-2 border border-gray-300 hover:bg-gray-50 text-gray-700 dark:border-gray-750 dark:text-gray-300 rounded text-xs font-semibold transition-all bg-white dark:bg-gray-950"
-            >
-              Batal
-            </button>
-          </>
-        }
-      >
-        {updatingMilestone && (
-          <div className="space-y-4 text-xs font-sans">
-            <div className="space-y-1.5">
-              <div className="flex justify-between items-baseline">
-                <label className="font-bold text-gray-750 uppercase text-3xs">Progress Persentase (%) *</label>
-                <span className="font-extrabold text-purple-750 text-sm">{newProgress}%</span>
+                  <div className="grid gap-3 sm:grid-cols-3">
+                    <div className="sm:col-span-2 space-y-2">
+                      <div className="border border-dashed border-emerald-300 dark:border-emerald-700 rounded-md p-3 text-center bg-emerald-50/20 dark:bg-emerald-950/10 hover:bg-emerald-50/40 transition-colors">
+                        <input
+                          ref={fileInputRef}
+                          type="file"
+                          accept=".xlsx,.xls,.csv"
+                          onChange={handleFileChange}
+                          className="hidden"
+                          id="excel-file-upload"
+                        />
+                        <label htmlFor="excel-file-upload" className="cursor-pointer space-y-1 block">
+                          <UploadCloud className="h-6 w-6 text-emerald-600 mx-auto" />
+                          <span className="text-2xs font-bold text-emerald-700 dark:text-emerald-400 block">
+                            {selectedFile ? selectedFile.name : 'Klik untuk memilih file Excel (.xlsx, .xls, .csv)'}
+                          </span>
+                          <span className="text-[10px] text-gray-500 block">
+                            {selectedFile ? `${(selectedFile.size / 1024).toFixed(1)} KB` : 'Format didukung: Template Standar atau Dokumen Excel Mandiri (Maks. 10MB)'}
+                          </span>
+                        </label>
+                      </div>
+
+                      <input
+                        type="text"
+                        placeholder="Keterangan / Catatan versi timeline (Opsional)..."
+                        value={fileNotes}
+                        onChange={(e) => setFileNotes(e.target.value)}
+                        className="w-full text-2xs p-2 border rounded bg-white dark:bg-gray-950 dark:border-gray-800"
+                      />
+                    </div>
+
+                    <div className="flex flex-col justify-end">
+                      <button
+                        onClick={handleUploadSubmit}
+                        disabled={!selectedFile || isUploading}
+                        className="w-full py-2.5 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold text-xs rounded shadow flex items-center justify-center gap-1.5 transition-all"
+                      >
+                        {isUploading ? (
+                          <>
+                            <RefreshCw className="h-3.5 w-3.5 animate-spin" />
+                            <span>Mengunggah...</span>
+                          </>
+                        ) : (
+                          <>
+                            <UploadCloud className="h-3.5 w-3.5" />
+                            <span>{timelineDoc ? 'Perbarui File' : 'Simpan & Unggah'}</span>
+                          </>
+                        )}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Guidelines and Column Structure info card */}
+          <Card>
+            <CardHeader className="pb-2 border-b dark:border-gray-850">
+              <CardTitle className="text-xs font-bold uppercase tracking-wider text-gray-600 dark:text-gray-400 flex items-center gap-1.5">
+                <Sparkles className="h-4 w-4 text-emerald-600" />
+                <span>Panduan Kolom Format Template Excel</span>
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="pt-3 space-y-3 text-xs leading-relaxed">
+              <p className="text-2xs text-gray-500 dark:text-gray-400">
+                Template standar SIM-RIDA telah diformat secara terstruktur untuk memudahkan tim peneliti dan OPD dalam menyusun matriks jadwal kerja riset:
+              </p>
+
+              <div className="grid gap-2 sm:grid-cols-2 text-2xs">
+                <div className="p-2.5 bg-gray-50 dark:bg-gray-900 border rounded space-y-0.5">
+                  <span className="font-bold text-gray-800 dark:text-gray-200">1. Tahapan / Rincian Kegiatan</span>
+                  <p className="text-gray-500 text-[11px]">Rangkaian aktivitas riset (Persiapan, Survei Lapangan, FGD, Analisis, Seminar Hasil, Finalisasi).</p>
+                </div>
+                <div className="p-2.5 bg-gray-50 dark:bg-gray-900 border rounded space-y-0.5">
+                  <span className="font-bold text-gray-800 dark:text-gray-200">2. Target Output / Luaran</span>
+                  <p className="text-gray-500 text-[11px]">Keluaran nyata pada setiap tahapan (SK Tim, Tabulasi Data, Notula FGD, Naskah Akademis).</p>
+                </div>
+                <div className="p-2.5 bg-gray-50 dark:bg-gray-900 border rounded space-y-0.5">
+                  <span className="font-bold text-gray-800 dark:text-gray-200">3. Waktu Pelaksanaan (Mulai - Selesai)</span>
+                  <p className="text-gray-500 text-[11px]">Alokasi pekan/bulan pengerjaan riset (e.g. Bulan 1 - M1 s/d Bulan 2 - M4).</p>
+                </div>
+                <div className="p-2.5 bg-gray-50 dark:bg-gray-900 border rounded space-y-0.5">
+                  <span className="font-bold text-gray-800 dark:text-gray-200">4. Penanggung Jawab (PIC) & Status</span>
+                  <p className="text-gray-500 text-[11px]">PIC penanggung jawab (Ketua Peneliti, Surveyor, BRIDA) serta status pelaksanaan.</p>
+                </div>
               </div>
-              <input
-                type="range" min="0" max="100" value={newProgress}
-                onChange={(e) => setNewProgress(Number(e.target.value))}
-                className="w-full h-1.5 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-purple-650"
-              />
-              <span className="text-[9px] text-gray-400 block italic leading-normal">
-                * Keterangan: 0% otomatis diset ke PENDING, 1-99% diset IN PROGRESS, dan 100% diset COMPLETED.
-              </span>
-            </div>
+            </CardContent>
+          </Card>
 
-            <div className="space-y-1.5">
-              <label className="block font-bold text-gray-750 uppercase text-3xs">Catatan Kemajuan / Kendala *</label>
-              <textarea
-                value={progressNotes}
-                onChange={(e) => setProgressNotes(e.target.value)}
-                placeholder="Deskripsikan pekerjaan yang selesai atau hambatan jika ada..."
-                rows={3}
-                className="block w-full px-3 py-2 border rounded focus:outline-none resize-none bg-white text-gray-900"
-              />
-            </div>
-          </div>
-        )}
-      </Dialog>
+        </div>
 
-      {/* ================= MODAL: CONFIRM DELETE MILESTONE ================= */}
-      <Dialog
-        isOpen={isDeleteOpen}
-        onClose={() => setIsDeleteOpen(false)}
-        title="Hapus Milestone"
-        description="Hapus milestone ini?"
-        footer={
-          <>
-            <button
-              onClick={handleConfirmDelete}
-              className="px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded text-xs font-semibold transition-all"
-            >
-              Hapus
-            </button>
-            <button
-              onClick={() => setIsDeleteOpen(false)}
-              className="px-4 py-2 border border-gray-300 hover:bg-gray-50 text-gray-700 dark:border-gray-750 dark:text-gray-300 rounded text-xs font-semibold transition-all bg-white dark:bg-gray-950"
-            >
-              Batal
-            </button>
-          </>
-        }
-      >
-        <p className="text-xs text-gray-500 leading-relaxed">
-          Milestone terpilih beserta riwayat progress-nya akan dihapus permanen dari draf rencana kerja timeline riset.
-        </p>
-      </Dialog>
+        {/* ================= RIGHT SECTION (Template Download & Research Info) ================= */}
+        <div className="space-y-6">
 
+          {/* Standard Template Card */}
+          <Card className="border-t-4 border-t-emerald-600 shadow-sm">
+            <CardHeader className="pb-2 border-b dark:border-gray-850">
+              <CardTitle className="text-xs font-bold uppercase tracking-wider text-gray-600 dark:text-gray-400 flex items-center gap-1.5">
+                <FileCheck2 className="h-4 w-4 text-emerald-600" />
+                <span>Format Standar BRIDA</span>
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="pt-4 space-y-4 text-xs font-medium font-sans">
+              <div className="p-3 bg-emerald-50/50 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-900 rounded-lg space-y-2">
+                <div className="flex items-center gap-2 text-emerald-800 dark:text-emerald-300 font-bold text-2xs">
+                  <FileSpreadsheet className="h-4 w-4 text-emerald-600 shrink-0" />
+                  <span>Template_Timeline_Pelaksanaan_Riset.xlsx</span>
+                </div>
+                <p className="text-[11px] text-gray-600 dark:text-gray-400 leading-relaxed">
+                  Gunakan format standar dari BRIDA atau tim peneliti dipersilakan mengunggah format timeline riset mandiri.
+                </p>
+                <button
+                  onClick={handleDownloadTemplate}
+                  className="w-full py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-2xs uppercase rounded flex items-center justify-center gap-1.5 shadow transition-all"
+                >
+                  <Download className="h-3.5 w-3.5" />
+                  <span>Unduh Format Template (.xlsx)</span>
+                </button>
+              </div>
+
+              <div className="space-y-2 text-2xs text-gray-500">
+                <div className="flex justify-between items-center py-1 border-b dark:border-gray-850">
+                  <span>Status Pelaksanaan:</span>
+                  <span className="font-bold text-gray-800 dark:text-gray-200">{impl.status || 'ACTIVE'}</span>
+                </div>
+                <div className="flex justify-between items-center py-1 border-b dark:border-gray-850">
+                  <span>Target Selesai:</span>
+                  <span className="font-semibold text-gray-700 dark:text-gray-300">{impl.plannedEndDate || '30 Nov 2026'}</span>
+                </div>
+                <div className="flex justify-between items-center py-1">
+                  <span>Jumlah Dokumen Terlampir:</span>
+                  <span className="font-semibold text-gray-700 dark:text-gray-300">{documents.length} Berkas</span>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+        </div>
+
+      </div>
     </div>
   );
 }

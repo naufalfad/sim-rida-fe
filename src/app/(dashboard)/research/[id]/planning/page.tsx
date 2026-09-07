@@ -122,10 +122,11 @@ export default function PlanningOverviewPage() {
     return states;
   }, [kak, rab]);
 
-  // Budget Consistency Check
+  // Budget Consistency Check (RAB belanja tidak boleh melebihi pagu KAK)
   const isBudgetConsistent = useMemo(() => {
     if (kak.status === 'NOT_STARTED') return false;
-    return kak.budgetEstimates === 0 || kak.budgetEstimates === rabTotal || rabTotal > 0;
+    if (kak.budgetEstimates <= 0) return true;
+    return rabTotal <= kak.budgetEstimates;
   }, [kak, rabTotal]);
 
   // Validation checks before submit
@@ -133,7 +134,7 @@ export default function PlanningOverviewPage() {
     const checks = {
       kakComplete: kak.status !== 'NOT_STARTED' && !!kak.title && !!kak.background && !!kak.objective && !!kak.methodology && !!kak.output,
       rabComplete: rab.items.length > 0,
-      rabTotalValid: rabTotal > 0,
+      rabTotalValid: rabTotal > 0 && (kak.budgetEstimates <= 0 || rabTotal <= kak.budgetEstimates),
       budgetConsistent: isBudgetConsistent,
     };
 
@@ -142,7 +143,10 @@ export default function PlanningOverviewPage() {
     else if (!checks.kakComplete) errors.push('Pengisian field wajib KAK belum lengkap');
     
     if (rab.items.length === 0) errors.push('Rincian item RAB masih kosong');
-    else if (!checks.rabTotalValid) errors.push('Total anggaran RAB harus lebih dari Rp 0');
+    else if (rabTotal <= 0) errors.push('Total anggaran RAB harus lebih dari Rp 0');
+    else if (kak.budgetEstimates > 0 && rabTotal > kak.budgetEstimates) {
+      errors.push(`Total belanja RAB (${formatIDR(rabTotal)}) melebihi Pagu Anggaran KAK (${formatIDR(kak.budgetEstimates)})`);
+    }
 
     const isValid = errors.length === 0;
 
@@ -418,7 +422,7 @@ export default function PlanningOverviewPage() {
               </CardTitle>
             </CardHeader>
             <CardContent className="pt-4 space-y-4 text-xs font-semibold">
-              <div className="grid gap-4 sm:grid-cols-3 text-center p-3 bg-gray-50 dark:bg-gray-900 border rounded">
+              <div className="grid gap-4 sm:grid-cols-4 text-center p-3 bg-gray-50 dark:bg-gray-900 border rounded">
                 <div>
                   <span className="text-[10px] text-gray-400 block font-bold uppercase mb-0.5">Pagu Anggaran KAK</span>
                   <span className="text-sm font-bold text-gray-800 dark:text-gray-250">{formatIDR(kak.budgetEstimates)}</span>
@@ -428,24 +432,30 @@ export default function PlanningOverviewPage() {
                   <span className="text-sm font-bold text-purple-750 dark:text-purple-400">{formatIDR(rabTotal)}</span>
                 </div>
                 <div>
+                  <span className="text-[10px] text-gray-400 block font-bold uppercase mb-0.5">Sisa Pagu Anggaran</span>
+                  <span className={`text-sm font-bold ${kak.budgetEstimates > 0 && rabTotal > kak.budgetEstimates ? 'text-rose-600' : 'text-emerald-600 dark:text-emerald-400'}`}>
+                    {kak.budgetEstimates > 0 ? formatIDR(kak.budgetEstimates - rabTotal) : '-'}
+                  </span>
+                </div>
+                <div>
                   <span className="text-[10px] text-gray-400 block font-bold uppercase mb-0.5">Status Sinkronisasi</span>
                   {kak.status !== 'NOT_STARTED' && isBudgetConsistent ? (
                     <span className="inline-flex items-center gap-1 text-2xs font-bold text-emerald-600 dark:text-emerald-450 mt-1">
                       <Check className="h-4 w-4" />
-                      <span>Budget Consistent</span>
+                      <span>{kak.budgetEstimates > 0 && rabTotal > 0 ? 'Sesuai Pagu' : 'Dalam Batas'}</span>
                     </span>
                   ) : (
                     <span className="inline-flex items-center gap-1 text-2xs font-bold text-rose-600 dark:text-rose-450 mt-1">
                       <X className="h-4 w-4" />
-                      <span>Budget Mismatch</span>
+                      <span>Melebihi Pagu</span>
                     </span>
                   )}
                 </div>
               </div>
 
               {kak.status !== 'NOT_STARTED' && !isBudgetConsistent && (
-                <p className="text-[11px] text-gray-400 font-medium leading-relaxed italic text-center">
-                  * Total RAB tidak sesuai dengan pagu anggaran kasar yang tercantum pada dokumen KAK. Selaraskan pagu KAK atau item belanja RAB terlebih dahulu.
+                <p className="text-[11px] text-rose-500 font-medium leading-relaxed italic text-center">
+                  * Total usulan belanja RAB ({formatIDR(rabTotal)}) melebihi batas pagu anggaran KAK ({formatIDR(kak.budgetEstimates)}). Harap sesuaikan rincian belanja RAB atau perbarui pagu KAK.
                 </p>
               )}
             </CardContent>

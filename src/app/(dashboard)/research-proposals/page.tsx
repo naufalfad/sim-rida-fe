@@ -42,9 +42,9 @@ export default function ResearchProposalsListPage() {
   // Validated identification selection modal state (when clicking + Buat Usulan)
   const [isSelectionModalOpen, setIsSelectionModalOpen] = useState(false);
 
-  // Filter out validated identifications that don't have proposals yet (or allow all validated)
+  // Filter out validated/approved identifications that don't have proposals yet (or allow all validated)
   const availableIdentifications = useMemo(() => {
-    return identifications.filter((i) => i.status === 'VALIDATED');
+    return identifications.filter((i) => i.status === 'APPROVED' || (i.status as string) === 'VALIDATED');
   }, [identifications]);
 
   // Dashboard calculation
@@ -338,6 +338,7 @@ export default function ResearchProposalsListPage() {
                   <TableHead className="text-3xs uppercase tracking-wider font-semibold">Judul Penelitian / Kajian</TableHead>
                   <TableHead className="text-3xs uppercase tracking-wider font-semibold">Organisasi Perangkat Daerah</TableHead>
                   <TableHead className="text-3xs uppercase tracking-wider font-semibold text-center w-24">Prioritas</TableHead>
+                  <TableHead className="text-3xs uppercase tracking-wider font-semibold text-center w-32">Skor Seleksi</TableHead>
                   <TableHead className="text-3xs uppercase tracking-wider font-semibold text-center w-36">Status</TableHead>
                   <TableHead className="text-3xs uppercase tracking-wider font-semibold text-center w-32">Tanggal Diajukan</TableHead>
                   <TableHead className="text-3xs uppercase tracking-wider font-semibold text-center w-20">Action</TableHead>
@@ -346,7 +347,7 @@ export default function ResearchProposalsListPage() {
               <TableBody>
                 {filteredProposals.map((prop) => (
                   <TableRow key={prop.id}>
-                    <TableCell className="font-bold text-gray-500">{prop.id}</TableCell>
+                    <TableCell className="font-bold text-gray-500">{prop.code || prop.id}</TableCell>
                     <TableCell className="max-w-sm truncate" title={prop.title}>
                       <div className="font-bold text-gray-800 dark:text-gray-200 truncate">{prop.title}</div>
                       <div className="text-3xs text-gray-400 mt-0.5">Sektor: {prop.sector} • Ref ID: {prop.identificationId}</div>
@@ -358,6 +359,26 @@ export default function ResearchProposalsListPage() {
                       }`}>
                         {prop.priority}
                       </span>
+                    </TableCell>
+                    <TableCell className="text-center">
+                      {prop.selection?.totalScore !== null && prop.selection?.totalScore !== undefined ? (
+                        <div className="inline-flex flex-col items-center">
+                          <span className="inline-flex items-center px-2 py-0.5 rounded text-3xs font-extrabold bg-purple-50 text-purple-700 dark:bg-purple-950/60 dark:text-purple-300 border border-purple-250">
+                            {prop.selection.totalScore} / 100
+                          </span>
+                          {prop.selection.result && (
+                            <span className="text-[9px] text-gray-400 mt-0.5 font-medium">
+                              {prop.selection.result === 'SELECTED' ? 'Lolos' : 'Tidak Lolos'}
+                            </span>
+                          )}
+                        </div>
+                      ) : prop.totalScore !== null && prop.totalScore !== undefined ? (
+                        <span className="inline-flex items-center px-2 py-0.5 rounded text-3xs font-extrabold bg-purple-50 text-purple-700 dark:bg-purple-950/60 dark:text-purple-300 border border-purple-250">
+                          {prop.totalScore} / 100
+                        </span>
+                      ) : (
+                        <span className="text-[10px] text-gray-300 dark:text-gray-600 italic">Belum Dinilai</span>
+                      )}
                     </TableCell>
                     <TableCell className="text-center">{renderStatusBadge(prop.status)}</TableCell>
                     <TableCell className="text-2xs text-center font-medium text-gray-500">{prop.submittedDate}</TableCell>

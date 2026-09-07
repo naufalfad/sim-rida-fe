@@ -244,6 +244,7 @@ export default function ResearchListPage() {
                   <TableHead className="text-3xs uppercase tracking-wider font-semibold">OPD Pelaksana</TableHead>
                   <TableHead className="text-3xs uppercase tracking-wider font-semibold text-center w-28">Status</TableHead>
                   <TableHead className="text-3xs uppercase tracking-wider font-semibold text-center w-24">Prioritas</TableHead>
+                  <TableHead className="text-3xs uppercase tracking-wider font-semibold text-center w-28">Skor Seleksi</TableHead>
                   <TableHead className="text-3xs uppercase tracking-wider font-semibold text-center w-36">Tanggal Penetapan</TableHead>
                   <TableHead className="text-3xs uppercase tracking-wider font-semibold text-center w-20">Action</TableHead>
                 </TableRow>
@@ -251,7 +252,7 @@ export default function ResearchListPage() {
               <TableBody>
                 {filteredRecords.map((item) => (
                   <TableRow key={item.id}>
-                    <TableCell className="font-bold text-gray-500">{item.id}</TableCell>
+                    <TableCell className="font-bold text-gray-500">{item.proposalId || item.id}</TableCell>
                     <TableCell className="font-bold text-gray-900 dark:text-white max-w-md truncate" title={item.title}>
                       {item.title}
                     </TableCell>
@@ -263,6 +264,19 @@ export default function ResearchListPage() {
                       }>
                         {item.priority}
                       </span>
+                    </TableCell>
+                    <TableCell className="text-center">
+                      {item.selection?.totalScore !== null && item.selection?.totalScore !== undefined ? (
+                        <span className="inline-flex items-center px-2 py-0.5 rounded text-3xs font-extrabold bg-purple-50 text-purple-700 dark:bg-purple-950/60 dark:text-purple-300 border border-purple-250">
+                          {item.selection.totalScore} / 100
+                        </span>
+                      ) : item.totalScore !== null && item.totalScore !== undefined ? (
+                        <span className="inline-flex items-center px-2 py-0.5 rounded text-3xs font-extrabold bg-purple-50 text-purple-700 dark:bg-purple-950/60 dark:text-purple-300 border border-purple-250">
+                          {item.totalScore} / 100
+                        </span>
+                      ) : (
+                        <span className="text-[10px] text-gray-300 dark:text-gray-600 italic">-</span>
+                      )}
                     </TableCell>
                     <TableCell className="text-2xs text-center font-medium text-gray-500">{item.approvedDate}</TableCell>
                     <TableCell>

@@ -106,6 +106,7 @@ interface ImplementationState {
   getMonitoring: (researchId: string) => MonitoringRecord[];
   getActivities: (researchId: string) => ImplementationActivity[];
   getDocuments: (researchId: string) => EvidenceFile[];
+  getTimelineDocument: (researchId: string) => EvidenceFile | null;
   getOverallProgress: (researchId: string) => number;
   getTimelineStatus: (researchId: string) => 'ON_TRACK' | 'MINOR_DELAY' | 'DELAYED' | 'AT_RISK';
 
@@ -124,6 +125,7 @@ interface ImplementationState {
     evidences?: Omit<EvidenceFile, 'id' | 'uploadDate'>[]
   ) => Promise<void>;
   uploadDocument: (researchId: string, file: File, title: string, documentType?: string) => Promise<void>;
+  uploadTimelineExcel: (researchId: string, file: File, description?: string) => Promise<void>;
   markResearchAsCompleted: (researchId: string, userName?: string) => Promise<void>;
 }
 
@@ -267,14 +269,15 @@ export const useImplementationStore = create<ImplementationState>((set, get) => 
         const mappedDocuments: EvidenceFile[] = (impl.documents || []).map((d: any) => ({
           id: d.id,
           name: d.title || d.fileName || 'Dokumen Pelaksanaan',
-          type: d.documentType || 'PDF',
-          uploadDate: d.uploadedAt ? new Date(d.uploadedAt).toLocaleDateString('id-ID') : '',
-          uploadedBy: 'BRIDA Litbang',
+          type: d.documentType || 'EXCEL',
+          uploadDate: d.createdAt || d.uploadedAt ? new Date(d.createdAt || d.uploadedAt).toLocaleDateString('id-ID') : new Date().toLocaleDateString('id-ID'),
+          uploadedBy: d.uploadedBy?.name || d.uploadedBy || 'BRIDA Litbang',
           fileUrl: d.fileUrl || d.filePath || '',
         }));
         docMap[impl.id] = mappedDocuments;
         if (impl.researchProposalId) docMap[impl.researchProposalId] = mappedDocuments;
         if (impl.researchProposal?.code) docMap[impl.researchProposal.code] = mappedDocuments;
+        if (impl.code) docMap[impl.code] = mappedDocuments;
 
         // Implementation Activity history
         actMap[impl.researchProposalId] = [
@@ -346,6 +349,18 @@ export const useImplementationStore = create<ImplementationState>((set, get) => 
 
   getDocuments: (researchId: string) => {
     return get().documents[researchId] || [];
+  },
+
+  getTimelineDocument: (researchId: string) => {
+    const docs = get().getDocuments(researchId);
+    return docs.find(
+      (d) =>
+        d.type === 'TIMELINE' ||
+        d.name.toLowerCase().endsWith('.xlsx') ||
+        d.name.toLowerCase().endsWith('.xls') ||
+        d.name.toLowerCase().endsWith('.csv') ||
+        d.name.toLowerCase().includes('timeline')
+    ) || null;
   },
 
   getOverallProgress: (researchId: string) => {
@@ -482,12 +497,95 @@ export const useImplementationStore = create<ImplementationState>((set, get) => 
     }
   },
 
+  uploadTimelineExcel: async (researchId, file, description) => {
+    try {
+      const existing = get().implementations[researchId];
+      const targetId = existing?.id || researchId;
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('documentType', 'TIMELINE');
+      if (description) formData.append('description', description);
+      
+      const uploadedDoc = await implementationService.uploadDocument(targetId, formData);
+
+      // Instantly inject into local store state
+      const newEvidence: EvidenceFile = {
+        id: uploadedDoc?.id || `doc-${Date.now()}`,
+        name: uploadedDoc?.fileName || file.name,
+        type: 'TIMELINE',
+        uploadDate: uploadedDoc?.createdAt ? new Date(uploadedDoc.createdAt).toLocaleDateString('id-ID') : new Date().toLocaleDateString('id-ID'),
+        uploadedBy: uploadedDoc?.uploadedBy?.name || 'BRIDA Litbang',
+        fileUrl: uploadedDoc?.filePath || '',
+      };
+
+      set((state) => {
+        const prevDocs = state.documents[researchId] || [];
+        const updatedDocs = [
+          newEvidence,
+          ...prevDocs.filter(
+            (d) =>
+              d.id !== newEvidence.id &&
+              d.type !== 'TIMELINE' &&
+              !d.name.toLowerCase().endsWith('.xlsx') &&
+              !d.name.toLowerCase().endsWith('.xls') &&
+              !d.name.toLowerCase().endsWith('.csv')
+          ),
+        ];
+        const newDocMap = { ...state.documents, [researchId]: updatedDocs };
+        if (existing?.id) newDocMap[existing.id] = updatedDocs;
+        if (existing?.researchId) newDocMap[existing.researchId] = updatedDocs;
+        if (existing?.proposalCode) newDocMap[existing.proposalCode] = updatedDocs;
+        if (targetId) newDocMap[targetId] = updatedDocs;
+        return { documents: newDocMap };
+      });
+
+      await get().fetchImplementations();
+    } catch (err) {
+      console.error('Error uploading timeline Excel:', err);
+      throw err;
+    }
+  },
+
   markResearchAsCompleted: async (researchId, userName) => {
     try {
       const existing = get().implementations[researchId];
       const targetId = existing?.id || researchId;
-      await implementationService.complete(targetId);
-      await get().fetchImplementations();
+      
+      const nowFormatted = new Date().toLocaleDateString('id-ID');
+      
+      set((state) => {
+        const currentImpl = state.implementations[researchId] || existing || createDefaultImplementation(researchId);
+        const updatedRecord: ImplementationRecord = {
+          ...currentImpl,
+          status: 'COMPLETED',
+          overallProgress: 100,
+          completedBy: userName || 'BRIDA Litbang',
+          completedDate: nowFormatted,
+        };
+        const newImpls = { ...state.implementations, [researchId]: updatedRecord };
+        if (existing?.id) newImpls[existing.id] = updatedRecord;
+        if (existing?.researchId) newImpls[existing.researchId] = updatedRecord;
+        if (existing?.proposalCode) newImpls[existing.proposalCode] = updatedRecord;
+        if (targetId) newImpls[targetId] = updatedRecord;
+
+        const updatedRaw = state.rawImplementations.map((raw) =>
+          raw.id === targetId || raw.researchProposalId === researchId || raw.id === researchId
+            ? { ...raw, status: 'COMPLETED', progress: 100 }
+            : raw
+        );
+
+        return { implementations: newImpls, rawImplementations: updatedRaw };
+      });
+
+      try {
+        await implementationService.complete(targetId);
+      } catch (err: any) {
+        console.warn('Backend complete note:', err?.message);
+      }
+
+      try {
+        await get().fetchImplementations();
+      } catch (_) {}
     } catch (err) {
       console.error('Error completing implementation:', err);
       throw err;

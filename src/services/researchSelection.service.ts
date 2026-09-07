@@ -6,7 +6,21 @@ export interface SelectionCriterion {
   name: string;
   description?: string;
   weight: number;
-  orderIndex: number;
+  isActive?: boolean;
+  order?: number;
+}
+
+export interface SelectionScore {
+  id?: string;
+  scoreId?: string;
+  criteriaId: string;
+  code: string;
+  name: string;
+  description?: string;
+  weight: number;
+  score: number;
+  weightedScore?: number;
+  note?: string;
 }
 
 export interface ResearchSelection {
@@ -15,11 +29,15 @@ export interface ResearchSelection {
   researchProposalId: string;
   researchProposal?: any;
   status: string;
-  finalScore?: number;
-  recommendation?: string;
-  notes?: string;
-  scores?: any[];
-  history?: any[];
+  totalScore?: number;
+  result?: string;
+  selectionNote?: string;
+  selectedAt?: string;
+  finalizedAt?: string;
+  finalizedBy?: any;
+  createdBy?: any;
+  scores?: SelectionScore[];
+  criteria?: SelectionScore[];
   createdAt: string;
   updatedAt: string;
 }
@@ -45,8 +63,13 @@ export const researchSelectionService = {
     return response.data.data;
   },
 
-  score: async (id: string, scores: Array<{ criterionId: string; score: number; justification?: string }>): Promise<any> => {
-    const response = await axiosInstance.post<{ success: boolean; data: any }>(`/research-selections/${id}/score`, { scores });
+  score: async (id: string, scores: Array<{ criteriaId: string; score: number; note?: string }>): Promise<any> => {
+    const response = await axiosInstance.patch<{ success: boolean; data: any }>(`/research-selections/${id}/scores`, { scores });
+    return response.data.data;
+  },
+
+  bulkUpdateScores: async (id: string, scores: Array<{ criteriaId: string; score: number; note?: string }>): Promise<any> => {
+    const response = await axiosInstance.patch<{ success: boolean; data: any }>(`/research-selections/${id}/scores`, { scores });
     return response.data.data;
   },
 
@@ -62,3 +85,4 @@ export const researchSelectionService = {
     return response.data.data;
   },
 };
+

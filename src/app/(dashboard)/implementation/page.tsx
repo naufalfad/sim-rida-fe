@@ -248,7 +248,7 @@ export default function ImplementationListPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-extrabold text-emerald-700 dark:text-emerald-400">{completedCount}</div>
-            <p className="text-[9px] text-gray-400 mt-1">Milestone 100%, siap penyusunan laporan</p>
+            <p className="text-[9px] text-gray-400 mt-1">Pelaksanaan selesai, siap penyusunan laporan</p>
           </CardContent>
         </Card>
       </div>
@@ -349,7 +349,7 @@ export default function ImplementationListPage() {
                 <TableHead className="min-w-60 text-2xs font-extrabold uppercase">Judul Penelitian & OPD</TableHead>
                 <TableHead className="w-48 text-2xs font-extrabold uppercase">Pelaksana / Mitra</TableHead>
                 <TableHead className="w-44 text-2xs font-extrabold uppercase">Periode & Durasi</TableHead>
-                <TableHead className="w-36 text-2xs font-extrabold uppercase">Progress & Status</TableHead>
+                <TableHead className="w-40 text-2xs font-extrabold uppercase">Status Pelaksanaan</TableHead>
                 <TableHead className="w-36 text-right text-2xs font-extrabold uppercase pr-4">Aksi</TableHead>
               </TableRow>
             </TableHeader>
@@ -418,18 +418,9 @@ export default function ImplementationListPage() {
                     </TableCell>
 
                     <TableCell className="align-top py-3">
-                      <div className="space-y-1.5">
-                        <div className="flex items-center justify-between text-[11px] font-bold">
-                          <span className="text-gray-500">Progress:</span>
-                          <span className="text-purple-700 dark:text-purple-400">{item.progress}%</span>
-                        </div>
-                        <div className="w-full bg-gray-200 dark:bg-gray-800 h-1.5 rounded-full overflow-hidden">
-                          <div
-                            className="bg-purple-600 h-full rounded-full transition-all"
-                            style={{ width: `${item.progress}%` }}
-                          />
-                        </div>
+                      <div className="space-y-1">
                         <div>{getStatusBadge(item.status)}</div>
+                        <span className="text-[10px] text-gray-400 block">Jadwal & Matriks Excel</span>
                       </div>
                     </TableCell>
 
@@ -453,7 +444,7 @@ export default function ImplementationListPage() {
                       ) : (
                         <button
                           onClick={() => router.push(`/research/${item.researchId}/implementation`)}
-                          className="px-3 py-1.5 border border-emerald-300 hover:bg-emerald-50 text-emerald-700 dark:text-emerald-400 rounded text-2xs font-bold transition-all flex items-center gap-1 ml-auto bg-white dark:bg-gray-950"
+                          className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded text-2xs font-bold transition-all shadow flex items-center gap-1 ml-auto"
                         >
                           <Eye className="h-3 w-3" />
                           <span>Lihat Detail</span>

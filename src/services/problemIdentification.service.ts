@@ -3,19 +3,58 @@ import axiosInstance from '../lib/axios';
 export interface ProblemIdentification {
   id: string;
   code: string;
+  opdId?: string;
+  opd?: {
+    id: string;
+    name: string;
+    code?: string;
+    shortName?: string;
+  };
+  year: number;
+  field: string;
   title: string;
-  description: string;
-  status: string;
+  description?: string;
+  bridaFindings: string;
+  currentCondition: string;
+  problemStatement: string;
+  impact: string;
+  potentialNeed: string;
+  priority: 'LOW' | 'MEDIUM' | 'HIGH';
+  status: 'DRAFT' | 'UNDER_REVIEW' | 'APPROVED' | 'REJECTED';
   sourceVersionId?: string;
-  sourceVersion?: any;
+  sourceVersion?: {
+    id: string;
+    versionNumber: number;
+    fileUrl?: string;
+    fileName?: string;
+    externalSource?: {
+      id: string;
+      code: string;
+      title: string;
+      institution?: string;
+    };
+  };
+  baselineRelationship?: string;
+  analysisNotes?: string;
   createdById: string;
-  createdBy?: any;
+  createdBy?: {
+    id: string;
+    name: string;
+    email: string;
+    role: string;
+  };
   reviewedById?: string;
-  reviewedBy?: any;
+  reviewedBy?: {
+    id: string;
+    name: string;
+    email: string;
+    role: string;
+  };
   reviewedAt?: string;
   reviewNote?: string;
-  findings?: any[];
   relatedOpds?: any[];
+  findings?: any[];
+  researchProposals?: any[];
   createdAt: string;
   updatedAt: string;
 }
@@ -48,4 +87,17 @@ export const problemIdentificationService = {
     });
     return response.data.data;
   },
+
+  approve: async (id: string, notes?: string): Promise<ProblemIdentification> => {
+    return problemIdentificationService.validate(id, 'APPROVE', notes);
+  },
+
+  reject: async (id: string, notes?: string): Promise<ProblemIdentification> => {
+    return problemIdentificationService.validate(id, 'REJECT', notes);
+  },
+
+  delete: async (id: string): Promise<void> => {
+    await axiosInstance.delete(`/problem-identifications/${id}`);
+  },
 };
+

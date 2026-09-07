@@ -23,7 +23,8 @@ import {
   FileText,
   Activity,
   AlertTriangle,
-  Info
+  Info,
+  Award
 } from 'lucide-react';
 
 export default function ProposalDetailPage() {
@@ -507,6 +508,128 @@ export default function ProposalDetailPage() {
             </CardContent>
           </Card>
 
+          {/* ================= HASIL SELEKSI & PENETAPAN SKOR RISET (RUBRIK PENILAIAN) ================= */}
+          {proposal.selection && (
+            <Card className="border-purple-200 dark:border-purple-900/60 bg-gradient-to-b from-purple-50/20 to-transparent shadow-sm">
+              <CardHeader className="pb-3 border-b border-purple-100 dark:border-purple-900/40">
+                <div className="flex flex-wrap justify-between items-center gap-2">
+                  <CardTitle className="text-xs font-bold uppercase tracking-wider text-purple-700 dark:text-purple-400 flex items-center gap-1.5">
+                    <Award className="h-4 w-4 text-purple-600" />
+                    <span>Hasil Seleksi & Penetapan Skor Riset</span>
+                  </CardTitle>
+                  <div className="flex items-center gap-2">
+                    <span className="text-3xs font-mono text-gray-500 bg-white dark:bg-gray-900 px-2 py-0.5 border rounded">
+                      {proposal.selection.code}
+                    </span>
+                    <span className={`inline-flex items-center px-2 py-0.5 rounded text-3xs font-bold border ${
+                      proposal.selection.result === 'SELECTED'
+                        ? 'bg-emerald-50 text-emerald-700 border-emerald-250 dark:bg-emerald-950/40 dark:text-emerald-400'
+                        : proposal.selection.result === 'NOT_SELECTED'
+                        ? 'bg-rose-50 text-rose-700 border-rose-250 dark:bg-rose-950/40 dark:text-rose-400'
+                        : 'bg-purple-50 text-purple-700 border-purple-200 dark:bg-purple-950/40 dark:text-purple-400'
+                    }`}>
+                      {proposal.selection.result === 'SELECTED' ? '✓ LOLOS SELEKSI' : proposal.selection.result === 'NOT_SELECTED' ? '✕ TIDAK LOLOS' : proposal.selection.status}
+                    </span>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent className="pt-4 space-y-4 text-xs">
+                {/* Score Summary Box */}
+                <div className="p-4 bg-white dark:bg-gray-900 rounded-lg border border-purple-100 dark:border-purple-900/30 flex flex-col sm:flex-row justify-between items-center gap-4">
+                  <div className="space-y-1 text-center sm:text-left">
+                    <span className="text-[10px] text-gray-400 font-bold uppercase block">Nilai Total Akhir</span>
+                    <div className="flex items-baseline gap-2">
+                      <span className="text-3xl font-extrabold text-purple-700 dark:text-purple-400">
+                        {proposal.selection.totalScore ?? proposal.totalScore ?? '-'}
+                      </span>
+                      <span className="text-xs text-gray-400 font-semibold">/ 100 Poin</span>
+                    </div>
+                  </div>
+
+                  <div className="flex flex-wrap gap-4 text-xs">
+                    <div className="bg-gray-50 dark:bg-gray-800/60 p-2.5 rounded border border-gray-200/60 dark:border-gray-750">
+                      <span className="text-[9px] text-gray-400 font-bold uppercase block">Evaluator / Penilai</span>
+                      <span className="font-bold text-gray-800 dark:text-gray-200">
+                        {proposal.selection.finalizedBy?.name || proposal.selection.createdBy?.name || 'Tim Litbang BRIDA'}
+                      </span>
+                    </div>
+                    <div className="bg-gray-50 dark:bg-gray-800/60 p-2.5 rounded border border-gray-200/60 dark:border-gray-750">
+                      <span className="text-[9px] text-gray-400 font-bold uppercase block">Waktu Penetapan</span>
+                      <span className="font-medium text-gray-700 dark:text-gray-300">
+                        {proposal.selection.finalizedAt ? new Date(proposal.selection.finalizedAt).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }) : proposal.updatedDate}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Criteria Breakdown Rubric Table */}
+                {proposal.selection.scores && proposal.selection.scores.length > 0 && (
+                  <div className="space-y-2">
+                    <span className="text-[10px] text-gray-500 font-bold uppercase block">
+                      Rincian Rubrik Penilaian Kriteria Seleksi
+                    </span>
+                    <div className="overflow-x-auto rounded border border-gray-200 dark:border-gray-800">
+                      <table className="w-full text-left text-xs border-collapse">
+                        <thead>
+                          <tr className="bg-gray-50 dark:bg-gray-850/80 text-gray-600 dark:text-gray-300 text-3xs uppercase tracking-wider font-semibold border-b dark:border-gray-800">
+                            <th className="py-2 px-3 w-10 text-center">No</th>
+                            <th className="py-2 px-3 w-20">Kode</th>
+                            <th className="py-2 px-3">Kriteria Penilaian</th>
+                            <th className="py-2 px-3 w-20 text-center">Bobot</th>
+                            <th className="py-2 px-3 w-24 text-center">Skor (0-100)</th>
+                            <th className="py-2 px-3 w-28 text-right">Nilai Tertimbang</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-gray-150 dark:divide-gray-800 bg-white dark:bg-gray-900">
+                          {proposal.selection.scores.map((sc, idx) => (
+                            <tr key={sc.id || idx} className="hover:bg-gray-50/50 dark:hover:bg-gray-850/30">
+                              <td className="py-2.5 px-3 text-center text-gray-400 font-bold">{idx + 1}</td>
+                              <td className="py-2.5 px-3 font-mono font-bold text-gray-600 dark:text-gray-300">{sc.code}</td>
+                              <td className="py-2.5 px-3">
+                                <div className="font-bold text-gray-900 dark:text-white">{sc.name}</div>
+                                {sc.description && (
+                                  <div className="text-[10px] text-gray-400 mt-0.5">{sc.description}</div>
+                                )}
+                                {sc.note && (
+                                  <div className="text-[10px] text-purple-700 dark:text-purple-400 italic mt-0.5">Catatan: {sc.note}</div>
+                                )}
+                              </td>
+                              <td className="py-2.5 px-3 text-center font-semibold text-gray-700 dark:text-gray-300">{sc.weight}%</td>
+                              <td className="py-2.5 px-3 text-center font-bold text-purple-700 dark:text-purple-400">{sc.score}</td>
+                              <td className="py-2.5 px-3 text-right font-mono font-extrabold text-gray-900 dark:text-white">{sc.weightedScore ?? ((sc.score * sc.weight) / 100).toFixed(1)}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                        <tfoot>
+                          <tr className="bg-purple-50/50 dark:bg-purple-950/20 font-bold text-gray-900 dark:text-white border-t border-purple-200 dark:border-purple-800">
+                            <td colSpan={3} className="py-2.5 px-3 text-right uppercase text-3xs tracking-wider">Total Skor Kelayakan:</td>
+                            <td className="py-2.5 px-3 text-center text-purple-700 dark:text-purple-400">100%</td>
+                            <td className="py-2.5 px-3"></td>
+                            <td className="py-2.5 px-3 text-right font-mono text-sm text-purple-700 dark:text-purple-400">
+                              {proposal.selection.totalScore ?? '-'}
+                            </td>
+                          </tr>
+                        </tfoot>
+                      </table>
+                    </div>
+                  </div>
+                )}
+
+                {/* Catatan / Justifikasi Penetapan */}
+                {proposal.selection.selectionNote && (
+                  <div className="p-3 bg-purple-50/40 dark:bg-purple-950/20 border border-purple-200/60 dark:border-purple-900/40 rounded text-xs">
+                    <span className="text-[10px] text-purple-700 dark:text-purple-400 font-bold uppercase block mb-1">
+                      Catatan / Justifikasi Penetapan Seleksi
+                    </span>
+                    <p className="italic text-gray-700 dark:text-gray-300 leading-relaxed font-medium">
+                      &quot;{proposal.selection.selectionNote}&quot;
+                    </p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          )}
+
         </div>
 
         {/* ================= RIGHT SECTION (Source ID, Selection notes, history logs) ================= */}
@@ -544,12 +667,12 @@ export default function ProposalDetailPage() {
           )}
 
           {/* Selection Rating Score metric representation (if selection completed) */}
-          {selectionScoreInfo && proposal.selectionNotes && (
+          {(proposal.selection || (selectionScoreInfo && proposal.selectionNotes)) && (
             <Card>
               <CardHeader className="pb-2 border-b dark:border-gray-850">
                 <CardTitle className="text-xs font-bold uppercase tracking-wider text-gray-500 flex items-center gap-1.5">
                   <ClipboardList className="h-4 w-4 text-purple-600" />
-                  <span>Hasil Seleksi Internal</span>
+                  <span>Ringkasan Skor Seleksi</span>
                 </CardTitle>
               </CardHeader>
               <CardContent className="pt-4 space-y-4 text-xs">
@@ -559,13 +682,13 @@ export default function ProposalDetailPage() {
                   <div className="flex justify-between items-baseline font-bold">
                     <span className="text-gray-400 text-[10px] uppercase">Skor Kelayakan</span>
                     <span className="text-purple-700 dark:text-purple-400 text-sm">
-                      {selectionScoreInfo.total} / {selectionScoreInfo.max} ({selectionScoreInfo.percentage}%)
+                      {proposal.selection?.totalScore ?? selectionScoreInfo?.total ?? '-'} / 100
                     </span>
                   </div>
                   <div className="w-full bg-gray-200 dark:bg-gray-800 rounded-full h-2 overflow-hidden">
                     <div
                       className="bg-purple-600 h-2 rounded-full transition-all"
-                      style={{ width: `${selectionScoreInfo.percentage}%` }}
+                      style={{ width: `${Math.min(100, proposal.selection?.totalScore ?? selectionScoreInfo?.percentage ?? 0)}%` }}
                     />
                   </div>
                 </div>
@@ -573,37 +696,22 @@ export default function ProposalDetailPage() {
                 {/* Selection details */}
                 <div className="pt-2 border-t dark:border-gray-850 space-y-2">
                   <div>
-                    <span className="text-gray-450 block font-bold text-[9px] uppercase">Rekomendasi Seleksi</span>
-                    <span className="inline-block px-1.5 py-0.2 rounded text-[10px] font-bold bg-purple-50 text-purple-700 dark:bg-purple-950 dark:text-purple-400 border border-purple-250 mt-0.5">
-                      {proposal.selectionNotes.recommendation}
+                    <span className="text-gray-450 block font-bold text-[9px] uppercase">Keputusan Seleksi</span>
+                    <span className={`inline-block px-1.5 py-0.2 rounded text-[10px] font-bold border mt-0.5 ${
+                      (proposal.selection?.result || proposal.selectionNotes?.recommendation) === 'SELECTED' || (proposal.selection?.result || proposal.selectionNotes?.recommendation) === 'SELECT'
+                        ? 'bg-emerald-50 text-emerald-700 border-emerald-250 dark:bg-emerald-950 dark:text-emerald-400'
+                        : 'bg-rose-50 text-rose-700 border-rose-250 dark:bg-rose-950 dark:text-rose-400'
+                    }`}>
+                      {proposal.selection?.result || proposal.selectionNotes?.recommendation}
                     </span>
                   </div>
 
-                  <div>
-                    <span className="text-gray-450 block font-bold text-[9px] uppercase">Ringkasan Seleksi (Summary)</span>
-                    <p className="italic text-gray-600 dark:text-gray-400 text-[11px] leading-relaxed mt-0.5">
-                      &quot;{proposal.selectionNotes.summary}&quot;
-                    </p>
-                  </div>
-
-                  {proposal.selectionNotes.strengths && (
+                  {(proposal.selection?.selectionNote || proposal.selectionNotes?.summary) && (
                     <div>
-                      <span className="text-gray-450 block font-bold text-[9px] uppercase">Kekuatan Usulan</span>
-                      <p className="text-gray-650 dark:text-gray-400 text-[11px] leading-relaxed mt-0.5">{proposal.selectionNotes.strengths}</p>
-                    </div>
-                  )}
-
-                  {proposal.selectionNotes.weaknesses && (
-                    <div>
-                      <span className="text-gray-450 block font-bold text-[9px] uppercase">Kelemahan Usulan</span>
-                      <p className="text-gray-650 dark:text-gray-400 text-[11px] leading-relaxed mt-0.5">{proposal.selectionNotes.weaknesses}</p>
-                    </div>
-                  )}
-
-                  {proposal.selectionNotes.risks && (
-                    <div>
-                      <span className="text-gray-450 block font-bold text-[9px] uppercase">Identifikasi Risiko</span>
-                      <p className="text-gray-650 dark:text-gray-400 text-[11px] leading-relaxed mt-0.5 text-amber-600">{proposal.selectionNotes.risks}</p>
+                      <span className="text-gray-450 block font-bold text-[9px] uppercase">Catatan Seleksi</span>
+                      <p className="italic text-gray-600 dark:text-gray-400 text-[11px] leading-relaxed mt-0.5">
+                        &quot;{proposal.selection?.selectionNote || proposal.selectionNotes?.summary}&quot;
+                      </p>
                     </div>
                   )}
                 </div>

@@ -1,11 +1,12 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import { useIdentificationStore } from '@/store/useIdentificationStore';
 import { useAuthStore } from '@/store/useAuthStore';
 import { masterService, MasterOPD } from '@/services/master.service';
 import { externalSourceService, ExternalSource } from '@/services/externalSource.service';
+import { problemIdentificationService, ProblemIdentification } from '@/services/problemIdentification.service';
 import { useToast } from '@/components/ui/toast';
 import { PageHeader } from '@/components/ui/page-header';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -18,8 +19,6 @@ import {
   Layers,
   FileText,
   AlertTriangle,
-  HelpCircle,
-  CheckCircle2,
   Info
 } from 'lucide-react';
 
@@ -35,14 +34,17 @@ const STANDARD_FIELDS = [
   'Perencanaan Pembangunan & Keuangan Daerah'
 ];
 
-export default function NewIdentificationPage() {
+export default function EditIdentificationPage() {
+  const params = useParams<{ id: string }>();
   const router = useRouter();
   const { toast } = useToast();
   const { user } = useAuthStore();
-  const { createIdentification } = useIdentificationStore();
+  const { updateIdentification } = useIdentificationStore();
 
+  const id = params?.id;
   const [opds, setOpds] = useState<MasterOPD[]>([]);
   const [baselineSources, setBaselineSources] = useState<ExternalSource[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Form Fields
@@ -70,7 +72,7 @@ export default function NewIdentificationPage() {
     }
   }, [user, router]);
 
-  // Load master data & baseline sources
+  // Load master data, baseline sources, & existing identification
   useEffect(() => {
     masterService.getOpds().then((data) => {
       if (data) setOpds(data);
@@ -79,9 +81,41 @@ export default function NewIdentificationPage() {
     externalSourceService.getAll().then((data) => {
       if (data) setBaselineSources(data);
     }).catch(console.error);
-  }, []);
 
-  const handleSubmit = async (submitStatus: 'DRAFT' | 'UNDER_REVIEW') => {
+    if (id) {
+      setIsLoading(true);
+      problemIdentificationService.getById(id).then((data) => {
+        if (data) {
+          setOpdId(data.opdId || data.relatedOpds?.[0]?.opdId || '');
+          setYear(data.year || 2026);
+          if (STANDARD_FIELDS.includes(data.field)) {
+            setField(data.field);
+          } else {
+            setField('OTHER');
+            setCustomField(data.field || '');
+          }
+          setTitle(data.title || '');
+          setPriority(data.priority || 'MEDIUM');
+          setSourceVersionId(data.sourceVersionId || '');
+          setBaselineRelationship(data.baselineRelationship || '');
+          setBridaFindings(data.bridaFindings || data.description || '');
+          setCurrentCondition(data.currentCondition || '');
+          setProblemStatement(data.problemStatement || data.title || '');
+          setImpact(data.impact || '');
+          setPotentialNeed(data.potentialNeed || '');
+          setAnalysisNotes(data.analysisNotes || '');
+        }
+      }).catch((err) => {
+        console.error('Error fetching identification to edit:', err);
+        toast('Gagal memuat data identifikasi.', 'error');
+      }).finally(() => {
+        setIsLoading(false);
+      });
+    }
+  }, [id]);
+
+  const handleSubmit = async (submitStatus?: 'DRAFT' | 'UNDER_REVIEW') => {
+    if (!id) return;
     if (!opdId) {
       toast('Silakan pilih Perangkat Daerah (OPD) target.', 'warning');
       return;
@@ -104,68 +138,64 @@ export default function NewIdentificationPage() {
 
     setIsSubmitting(true);
     try {
-      const created = await createIdentification({
+      const payload: any = {
         opdId,
         opdName: selectedOpd?.name,
         year,
         field: selectedField,
         title: title.trim(),
         priority,
-        status: submitStatus,
-        sourceVersionId: sourceVersionId || undefined,
-        baselineRelationship: baselineRelationship.trim() || undefined,
-        bridaFindings: bridaFindings.trim() || 'Temuan pemantauan dan koordinasi awal dengan perangkat daerah.',
-        currentCondition: currentCondition.trim() || 'Kondisi operasional eksisting pada perangkat daerah terkait.',
+        sourceVersionId: sourceVersionId || null,
+        baselineRelationship: baselineRelationship.trim() || null,
+        bridaFindings: bridaFindings.trim(),
+        currentCondition: currentCondition.trim(),
         problemStatement: problemStatement.trim(),
-        impact: impact.trim() || 'Dampak terhadap optimalisasi capaian target kinerja daerah.',
+        impact: impact.trim(),
         potentialNeed: potentialNeed.trim(),
-        analysisNotes: analysisNotes.trim() || undefined,
-      });
+        analysisNotes: analysisNotes.trim() || null,
+      };
 
-      toast(
-        submitStatus === 'UNDER_REVIEW'
-          ? 'Identifikasi kebutuhan berhasil diajukan untuk telaah.'
-          : 'Draf identifikasi kebutuhan berhasil disimpan.',
-        'success'
-      );
-      router.push(`/identification/${created.id}`);
+      if (submitStatus) {
+        payload.status = submitStatus;
+      }
+
+      await updateIdentification(id, payload);
+      toast('Perubahan identifikasi kebutuhan berhasil disimpan.', 'success');
+      router.push(`/identification/${id}`);
     } catch (err: any) {
-      console.error('Error creating identification:', err);
-      toast(err.response?.data?.message || 'Gagal menyimpan identifikasi kebutuhan.', 'error');
+      console.error('Error updating identification:', err);
+      toast(err.response?.data?.message || 'Gagal menyimpan perubahan identifikasi.', 'error');
     } finally {
       setIsSubmitting(false);
     }
   };
+
+  if (isLoading) {
+    return (
+      <div className="space-y-6 font-sans max-w-5xl mx-auto py-12 text-center text-xs text-gray-400">
+        Memuat formulir edit...
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6 font-sans max-w-5xl mx-auto pb-12">
       {/* Back button */}
       <div>
         <button
-          onClick={() => router.push('/identification')}
+          onClick={() => router.push(`/identification/${id}`)}
           className="flex items-center gap-1.5 text-xs text-gray-500 hover:text-gray-700 font-semibold"
         >
           <ArrowLeft className="h-4 w-4" />
-          <span>Kembali ke Daftar Identifikasi</span>
+          <span>Kembali ke Detail Identifikasi</span>
         </button>
       </div>
 
       {/* Page Header */}
       <PageHeader
-        title="Tambah Identifikasi Kebutuhan OPD"
-        description="Formulir pencatatan hasil telaah observasi pemantauan BRIDA dan penyelarasan dengan dokumen baseline daerah."
+        title={`Edit Identifikasi Kebutuhan #${id}`}
+        description="Perbarui informasi klasifikasi, catatan observasi pemantauan BRIDA, dan arah kebutuhan intervensi."
       />
-
-      {/* Info Banner */}
-      <div className="p-4 bg-blue-50/60 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-900/40 rounded-lg flex items-start gap-3 text-xs text-blue-900 dark:text-blue-200">
-        <Info className="h-4.5 w-4.5 text-blue-600 shrink-0 mt-0.5" />
-        <div className="leading-relaxed space-y-1">
-          <p className="font-bold">Alur Penyusunan Identifikasi Kebutuhan (Litbang BRIDA):</p>
-          <p className="text-gray-600 dark:text-gray-300 text-2xs">
-            Isi telaah pemantauan, kondisi faktual, akar masalah, dampak, dan arah kebutuhan intervensi/riset. Setelah disetujui, identifikasi ini dapat langsung dikonversi menjadi Usulan Riset (Research Proposal).
-          </p>
-        </div>
-      </div>
 
       {/* Form Container */}
       <div className="space-y-6">
@@ -273,9 +303,6 @@ export default function NewIdentificationPage() {
                 placeholder="Contoh: Kebutuhan Penguatan Monitoring Kinerja Internal dan SPM Dinas Kesehatan"
                 className="block w-full px-3 py-2 text-xs border border-gray-300 dark:border-gray-750 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-blue-500 font-semibold"
               />
-              <p className="text-[10px] text-gray-400">
-                Gunakan rumusan kebutuhan masalah nyata, bukan penentuan judul aplikasi terlebih dahulu.
-              </p>
             </div>
           </CardContent>
         </Card>
@@ -299,7 +326,6 @@ export default function NewIdentificationPage() {
                 rows={3}
                 value={bridaFindings}
                 onChange={(e) => setBridaFindings(e.target.value)}
-                placeholder="Catatan observasi lapangan, temuan rapat evaluasi, atau kendala yang ditemukan tim BRIDA pada OPD terkait..."
                 className="block w-full px-3 py-2 text-xs border border-gray-300 dark:border-gray-750 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-blue-500"
               />
             </div>
@@ -314,7 +340,6 @@ export default function NewIdentificationPage() {
                 rows={3}
                 value={currentCondition}
                 onChange={(e) => setCurrentCondition(e.target.value)}
-                placeholder="Bagaimana kondisi operasional dan pelaksanaan pelayanan di OPD saat ini secara faktual..."
                 className="block w-full px-3 py-2 text-xs border border-gray-300 dark:border-gray-750 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-blue-500"
               />
             </div>
@@ -329,7 +354,6 @@ export default function NewIdentificationPage() {
                 rows={3}
                 value={problemStatement}
                 onChange={(e) => setProblemStatement(e.target.value)}
-                placeholder="Akar masalah utama yang menghambat tercapainya target kinerja atau mutu layanan..."
                 className="block w-full px-3 py-2 text-xs border border-gray-300 dark:border-gray-750 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-blue-500"
               />
             </div>
@@ -344,7 +368,6 @@ export default function NewIdentificationPage() {
                 rows={3}
                 value={impact}
                 onChange={(e) => setImpact(e.target.value)}
-                placeholder="Dampak negatif terhadap SPM, akuntabilitas kinerja, atau kepuasan publik apabila permasalahan ini dibiarkan..."
                 className="block w-full px-3 py-2 text-xs border border-gray-300 dark:border-gray-750 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-blue-500"
               />
             </div>
@@ -359,7 +382,6 @@ export default function NewIdentificationPage() {
                 rows={3}
                 value={potentialNeed}
                 onChange={(e) => setPotentialNeed(e.target.value)}
-                placeholder="Arah solusi, metodologi kajian, perancangan model, atau intervensi kebijakan yang dibutuhkan..."
                 className="block w-full px-3 py-2 text-xs border border-gray-300 dark:border-gray-750 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-blue-500"
               />
             </div>
@@ -411,7 +433,7 @@ export default function NewIdentificationPage() {
               />
             </div>
 
-            <div className="space-y-1.5 pt-2 border-t border-gray-100 dark:border-gray-800">
+            <div className="space-y-1.5 pt-2 border-t border-gray-100 dark:border-gray-850">
               <label className="block text-xs font-bold text-gray-800 dark:text-gray-200">
                 Catatan Analisis BRIDA (Internal Litbang)
               </label>
@@ -419,7 +441,7 @@ export default function NewIdentificationPage() {
                 rows={2}
                 value={analysisNotes}
                 onChange={(e) => setAnalysisNotes(e.target.value)}
-                placeholder="Catatan tambahan dari analis litbang untuk tim reviewer/kepala badan..."
+                placeholder="Catatan tambahan dari analis litbang..."
                 className="block w-full px-3 py-2 text-xs border border-gray-300 dark:border-gray-750 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-blue-500"
               />
             </div>
@@ -430,7 +452,7 @@ export default function NewIdentificationPage() {
         <div className="flex flex-wrap justify-between items-center gap-3 pt-4 border-t border-gray-200 dark:border-gray-800">
           <button
             type="button"
-            onClick={() => router.push('/identification')}
+            onClick={() => router.push(`/identification/${id}`)}
             className="px-4 py-2 border border-gray-300 hover:bg-gray-50 text-gray-700 dark:border-gray-750 dark:text-gray-300 rounded-lg text-xs font-semibold transition-all bg-white dark:bg-gray-950"
           >
             Batal
@@ -440,21 +462,11 @@ export default function NewIdentificationPage() {
             <button
               type="button"
               disabled={isSubmitting}
-              onClick={() => handleSubmit('DRAFT')}
-              className="px-4 py-2 border border-gray-300 hover:bg-gray-50 dark:border-gray-750 dark:hover:bg-gray-900 text-gray-800 dark:text-gray-200 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 bg-white dark:bg-gray-900"
-            >
-              <Save className="h-4 w-4 text-gray-500" />
-              <span>Simpan sebagai Draft</span>
-            </button>
-
-            <button
-              type="button"
-              disabled={isSubmitting}
-              onClick={() => handleSubmit('UNDER_REVIEW')}
+              onClick={() => handleSubmit()}
               className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 shadow-sm"
             >
-              <Send className="h-4 w-4" />
-              <span>{isSubmitting ? 'Menyimpan...' : 'Ajukan untuk Telaah (Submit)'}</span>
+              <Save className="h-4 w-4" />
+              <span>{isSubmitting ? 'Menyimpan...' : 'Simpan Perubahan'}</span>
             </button>
           </div>
         </div>
@@ -462,4 +474,3 @@ export default function NewIdentificationPage() {
     </div>
   );
 }
-

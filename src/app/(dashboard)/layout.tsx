@@ -75,7 +75,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       const allowed = ALLOWED_ROUTES[currentUser.role] || [];
       // Normalize pathname by removing trailing slashes or subpaths if any
       const baseRoute = pathname.split('/').slice(0, 2).join('/');
-      
+
       if (!allowed.includes(baseRoute)) {
         router.replace('/unauthorized');
       }
@@ -120,9 +120,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       case 'ADMIN_BRIDA':
         return [
           { name: 'Dashboard', path: '/dashboard', icon: <LayoutDashboard className="h-4 w-4" /> },
-          { 
-            name: 'Knowledge Base', 
-            path: '/knowledge-base', 
+          {
+            name: 'Knowledge Base',
+            path: '/knowledge-base',
             icon: <BookOpen className="h-4 w-4" />,
             sublinks: [
               { name: 'Daftar Dokumen', path: '/knowledge-base' },
@@ -146,7 +146,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           { name: 'Usulan Penelitian', path: '/research-proposals', icon: <FileText className="h-4 w-4" /> },
           { name: 'Penelitian', path: '/research', icon: <FileStack className="h-4 w-4" /> },
           { name: 'Pelaksanaan', path: '/implementation', icon: <ClipboardList className="h-4 w-4" /> },
-          { name: 'Monitoring', path: '/monitoring', icon: <Activity className="h-4 w-4" /> },
+          // { name: 'Monitoring', path: '/monitoring', icon: <Activity className="h-4 w-4" /> },
           { name: 'Laporan', path: '/reports', icon: <FileText className="h-4 w-4" /> },
           { name: 'Policy Brief', path: '/policy-brief', icon: <ShieldCheck className="h-4 w-4" /> },
           { name: 'Rekomendasi', path: '/recommendations', icon: <Award className="h-4 w-4" /> },
@@ -189,7 +189,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   return (
     <div className="min-h-screen flex bg-gray-50 dark:bg-gray-900 font-sans text-gray-800 dark:text-gray-250">
-      
+
       {/* ================= SIDEBAR (DESKTOP) ================= */}
       <aside
         className={cn(
@@ -217,7 +217,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           {navLinks.map((link) => {
             const isActive = pathname === link.path || pathname.startsWith(link.path + '/');
             const hasSublinks = !!link.sublinks;
-            
+
             return (
               <div key={link.name} className="space-y-1">
                 {hasSublinks ? (
@@ -334,7 +334,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               {navLinks.map((link) => {
                 const isActive = pathname === link.path || pathname.startsWith(link.path + '/');
                 const hasSublinks = !!link.sublinks;
-                
+
                 return (
                   <div key={link.name} className="space-y-1">
                     {hasSublinks ? (
@@ -413,10 +413,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
       {/* ================= MAIN COLUMN ================= */}
       <div className="flex-1 flex flex-col min-w-0">
-        
+
         {/* ================= TOPBAR ================= */}
         <header className="h-16 border-b border-gray-200 dark:border-gray-850 bg-white dark:bg-gray-950 flex items-center justify-between px-4 sticky top-0 z-40">
-          
+
           {/* Left Section: Mobile Menu & Breadcrumbs */}
           <div className="flex items-center gap-3">
             <button
@@ -451,7 +451,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
           {/* Right Section: Notif Bell & User Profile Dropdown */}
           <div className="flex items-center gap-3">
-            
+
             {/* Notification Dropdown Trigger */}
             <div className="relative">
               <button
@@ -542,7 +542,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                       <p className="font-bold text-gray-900 dark:text-white truncate">{currentUser.name}</p>
                       <p className="text-[10px] text-gray-400 truncate mt-0.5">{currentUser.email}</p>
                     </div>
-                    
+
                     <button
                       onClick={() => {
                         setIsProfileOpen(false);
@@ -553,7 +553,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                       <UserIcon className="h-4 w-4 text-gray-400" />
                       <span>Profil Pengguna</span>
                     </button>
-                    
+
                     <button
                       onClick={() => {
                         setIsProfileOpen(false);

@@ -17,6 +17,8 @@ export interface ResearchKak {
   startDate?: string;
   endDate?: string;
   returnReason?: string;
+  budgetEstimate?: number;
+  budgetEstimates?: number;
   rab?: any;
   createdAt: string;
   updatedAt: string;

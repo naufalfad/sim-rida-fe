@@ -238,26 +238,32 @@ export default function PlanningReviewPage() {
               </button>
             </CardHeader>
             <CardContent className="pt-4 space-y-4 text-xs font-semibold leading-normal select-none">
-              <div className="grid gap-4 sm:grid-cols-3 text-center p-3 bg-gray-50 dark:bg-gray-900 border rounded">
+              <div className="grid gap-4 sm:grid-cols-4 text-center p-3 bg-gray-50 dark:bg-gray-900 border rounded">
                 <div>
                   <span className="text-[10px] text-gray-400 block font-bold uppercase mb-0.5">Total Belanja RAB</span>
                   <span className="text-sm font-extrabold text-purple-750 dark:text-purple-400">{formatIDR(rabTotal)}</span>
                 </div>
                 <div>
-                  <span className="text-[10px] text-gray-400 block font-bold uppercase mb-0.5">Jumlah Item</span>
-                  <span className="text-sm font-bold text-gray-800 dark:text-gray-250">{rab.items.length} Komponen</span>
+                  <span className="text-[10px] text-gray-400 block font-bold uppercase mb-0.5">Pagu KAK</span>
+                  <span className="text-sm font-bold text-gray-800 dark:text-gray-250">{formatIDR(kak.budgetEstimates)}</span>
+                </div>
+                <div>
+                  <span className="text-[10px] text-gray-400 block font-bold uppercase mb-0.5">Sisa Pagu</span>
+                  <span className={`text-sm font-bold ${kak.budgetEstimates > 0 && rabTotal > kak.budgetEstimates ? 'text-rose-600' : 'text-emerald-600 dark:text-emerald-400'}`}>
+                    {kak.budgetEstimates > 0 ? formatIDR(kak.budgetEstimates - rabTotal) : '-'}
+                  </span>
                 </div>
                 <div>
                   <span className="text-[10px] text-gray-400 block font-bold uppercase mb-0.5">Kesesuaian Pagu</span>
-                  {kak.budgetEstimates === rabTotal ? (
+                  {kak.budgetEstimates <= 0 || rabTotal <= kak.budgetEstimates ? (
                     <span className="inline-flex items-center gap-1 text-2xs font-bold text-emerald-600 dark:text-emerald-450 mt-1">
                       <Check className="h-3.5 w-3.5" />
-                      <span>Consistent</span>
+                      <span>Memenuhi Pagu</span>
                     </span>
                   ) : (
                     <span className="inline-flex items-center gap-1 text-2xs font-bold text-rose-600 dark:text-rose-450 mt-1">
                       <X className="h-3.5 w-3.5" />
-                      <span>Mismatch</span>
+                      <span>Melebihi Pagu</span>
                     </span>
                   )}
                 </div>
