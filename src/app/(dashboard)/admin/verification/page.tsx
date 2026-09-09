@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useOpdStore } from '@/store/useOpdStore';
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table';
@@ -14,13 +14,27 @@ import {
   Building,
   ArrowRight,
   ShieldCheck,
+  RefreshCw,
+  Loader2,
 } from 'lucide-react';
 
 export default function AdminVerificationPage() {
   const router = useRouter();
-  const { proposals } = useOpdStore();
+  const { proposals, fetchVerificationInbox, fetchProposals, isLoadingProposals } = useOpdStore();
 
   const [search, setSearch] = useState('');
+
+  useEffect(() => {
+    // Fetch inbox usulan menunggu verifikasi dari backend
+    fetchVerificationInbox();
+    // Also fetch all proposals to show total history
+    fetchProposals();
+  }, [fetchVerificationInbox, fetchProposals]);
+
+  const handleRefresh = () => {
+    fetchVerificationInbox();
+    fetchProposals();
+  };
 
   // Proposals waiting for verification (PENDING) or already verified
   const pendingProposals = useMemo(() => {
@@ -51,11 +65,20 @@ export default function AdminVerificationPage() {
             Inbox Verifikasi Berkas Administrasi OPD
           </h1>
           <p className="text-slate-600 text-xs max-w-3xl leading-relaxed">
-            Pintu gerbang penelaahan awal berkas usulan riset dari seluruh Perangkat Daerah Kabupaten Sleman. Periksa kelengkapan 4 kriteria administrasi, telaah dokumen KAK/TOR, dan tentukan apakah usulan diloloskan ke tahap scoring atau dikembalikan untuk revisi.
+            Pintu gerbang penelaahan awal berkas usulan riset dari seluruh Perangkat Daerah Kabupaten Mimika. Periksa kelengkapan 4 kriteria administrasi, telaah dokumen KAK/TOR, dan tentukan apakah usulan diloloskan ke tahap scoring atau dikembalikan untuk revisi.
           </p>
         </div>
 
-        <div className="flex items-center gap-2 shrink-0">
+        <div className="flex items-center gap-3 shrink-0">
+          <button
+            onClick={handleRefresh}
+            disabled={isLoadingProposals}
+            className="p-2 border border-slate-300 bg-slate-50 hover:bg-slate-100 text-slate-700 text-xs font-semibold flex items-center gap-1.5 transition disabled:opacity-50"
+            title="Segarkan data inbox"
+          >
+            <RefreshCw className={`w-3.5 h-3.5 ${isLoadingProposals ? 'animate-spin' : ''}`} />
+            <span className="hidden sm:inline">Refresh</span>
+          </button>
           <span className="px-3.5 py-1.5 bg-amber-50 text-amber-900 font-mono font-bold text-xs border border-amber-300">
             {pendingProposals.length} Menunggu Verifikasi
           </span>

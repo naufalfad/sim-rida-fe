@@ -174,7 +174,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                   SIM-RIDA
                 </span>
                 <span className="text-[10px] text-slate-300 font-medium tracking-wide mt-1 uppercase">
-                  Kabupaten Sleman
+                  Kabupaten Mimika
                 </span>
               </div>
             )}
@@ -356,22 +356,17 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           {/* Right Section: Role Switcher & Notif Bell & User Profile Dropdown */}
           <div className="flex items-center gap-3">
 
-            {/* Quick Role Switcher */}
-            <div className="flex items-center border border-slate-300 bg-slate-50 px-2 py-1">
-              <span className="text-xs font-semibold uppercase tracking-wider text-slate-500 mr-2 hidden sm:inline">Role:</span>
-              <select
-                value={currentUser.role}
-                onChange={(e) => {
-                  const role = e.target.value as 'OPD' | 'ADMIN_BRIDA' | 'KEPALA_BRIDA';
-                  useAuthStore.getState().loginAsMock(role);
-                  router.push('/dashboard');
-                }}
-                className="bg-white text-xs font-bold text-[#0f2c59] border border-slate-300 px-2 py-0.5 focus:border-[#0f2c59] focus:outline-none cursor-pointer"
-              >
-                <option value="OPD">OPD (User Pengusul)</option>
-                <option value="ADMIN_BRIDA">Admin Litbang BRIDA</option>
-                <option value="KEPALA_BRIDA">Kepala BRIDA</option>
-              </select>
+            {/* Authenticated User Role Badge */}
+            <div className="flex items-center gap-1.5 border border-slate-300 bg-slate-50 px-2.5 py-1">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 hidden sm:inline">Role:</span>
+              <span className="text-xs font-bold text-[#0f2c59]">
+                {ROLE_LABELS[currentUser.role] || currentUser.role}
+              </span>
+              {currentUser.opd?.code && (
+                <span className="text-[10px] px-1.5 py-0.2 bg-[#0f2c59] text-white font-mono uppercase font-bold rounded-sm ml-1 hidden md:inline">
+                  {currentUser.opd.code}
+                </span>
+              )}
             </div>
 
             {/* Notification Dropdown Trigger */}

@@ -1,8 +1,9 @@
 'use client';
 
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useOpdStore, ProposalUrgency, ExpectedOutput } from '@/store/useOpdStore';
+import { useAuthStore } from '@/store/useAuthStore';
 import { useToast } from '@/components/ui/toast';
 import { PageHeader } from '@/components/ui/page-header';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -17,18 +18,11 @@ import {
   HelpCircle,
   CheckCircle2,
   Sparkles,
-  ArrowLeft
+  ArrowLeft,
+  Building2,
+  FileCheck
 } from 'lucide-react';
-
-const CATEGORIES = [
-  'Pendidikan',
-  'Kesehatan',
-  'Infrastruktur & Teknologi',
-  'Ekonomi & Pariwisata',
-  'Tata Kelola & Reformasi Birokrasi',
-  'Lingkungan Hidup & Bencana',
-  'Sosial & Kesejahteraan Masyarakat'
-];
+import { uploadAndCacheFile } from '@/lib/file-storage';
 
 const OUTPUT_OPTIONS: ExpectedOutput[] = [
   'Rekomendasi Teknis',
@@ -41,34 +35,87 @@ const OUTPUT_OPTIONS: ExpectedOutput[] = [
 export default function NewProposalPage() {
   const router = useRouter();
   const { toast } = useToast();
-  const { addProposal } = useOpdStore();
+  const { user, token } = useAuthStore();
+  const { 
+    addProposal, 
+    activeOpdName, 
+    opds, 
+    categories: storeCategories, 
+    fetchOpds, 
+    fetchCategories,
+    isLoadingMaster 
+  } = useOpdStore();
 
+  const [selectedOpdName, setSelectedOpdName] = useState(activeOpdName || '');
   const [title, setTitle] = useState('');
-  const [category, setCategory] = useState(CATEGORIES[0]);
+  const [category, setCategory] = useState(storeCategories[0] || 'Pendidikan');
   const [problemStatement, setProblemStatement] = useState('');
   const [urgencyReason, setUrgencyReason] = useState('');
   const [urgencyLevel, setUrgencyLevel] = useState<ProposalUrgency>('TINGGI');
   const [expectedOutput, setExpectedOutput] = useState<ExpectedOutput>('Rekomendasi Teknis');
   const [estimatedBudget, setEstimatedBudget] = useState<number | ''>('');
 
+  // Dokumen TOR / KAK
+  const [torDocument, setTorDocument] = useState<{ name: string; size: string; uploadDate: string; url?: string; dataUrl?: string } | null>(null);
+  const torInputRef = useRef<HTMLInputElement | null>(null);
+
   // Dokumen Pendukung Lainnya
-  const [documents, setDocuments] = useState<Array<{ name: string; size: string; uploadDate: string }>>([]);
+  const [documents, setDocuments] = useState<Array<{ name: string; size: string; uploadDate: string; url?: string; dataUrl?: string }>>([]);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  useEffect(() => {
+    fetchOpds();
+    fetchCategories();
+  }, [fetchOpds, fetchCategories]);
+
+  useEffect(() => {
+    if (storeCategories.length > 0 && !category) {
+      setCategory(storeCategories[0]);
+    }
+  }, [storeCategories, category]);
+
+  useEffect(() => {
+    const userOpdName = user?.opd?.name || user?.name;
+    if (userOpdName && (!selectedOpdName || selectedOpdName === 'BAPPEDA & Perangkat Daerah Kab. Mimika')) {
+      setSelectedOpdName(userOpdName);
+    }
+  }, [user, selectedOpdName]);
+
+  const handleTorUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (files && files.length > 0) {
       const file = files[0];
-      if (file.size > 15 * 1024 * 1024) {
-        toast('Ukuran file maksimal adalah 15MB', 'warning');
+      if (file.size > 25 * 1024 * 1024) {
+        toast('Ukuran file KAK/TOR maksimal adalah 25MB', 'warning');
         return;
       }
-      const sizeStr = (file.size / (1024 * 1024)).toFixed(1) + ' MB';
-      const today = new Date().toLocaleDateString('id-ID');
-      setDocuments([...documents, { name: file.name, size: sizeStr, uploadDate: today }]);
-      toast(`Berkas "${file.name}" berhasil ditambahkan.`, 'success');
+      try {
+        const storedDoc = await uploadAndCacheFile(file, token);
+        setTorDocument(storedDoc);
+        toast(`Dokumen KAK/TOR "${file.name}" berhasil diunggah & disimpan.`, 'success');
+      } catch (err: any) {
+        toast(`Gagal mengunggah dokumen KAK: ${err.message}`, 'error');
+      }
+    }
+  };
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (files && files.length > 0) {
+      const file = files[0];
+      if (file.size > 20 * 1024 * 1024) {
+        toast('Ukuran file maksimal adalah 20MB', 'warning');
+        return;
+      }
+      try {
+        const storedDoc = await uploadAndCacheFile(file, token);
+        setDocuments([...documents, storedDoc]);
+        toast(`Berkas "${file.name}" berhasil diunggah & disimpan.`, 'success');
+      } catch (err: any) {
+        toast(`Gagal mengunggah berkas: ${err.message}`, 'error');
+      }
     }
   };
 
@@ -81,19 +128,36 @@ export default function NewProposalPage() {
       toast('Judul usulan penelitian wajib diisi.', 'warning');
       return;
     }
+    if (title.trim().length < 5) {
+      toast('Judul usulan minimal 5 karakter.', 'warning');
+      return;
+    }
     if (!problemStatement.trim()) {
       toast('Identifikasi masalah / latar belakang wajib diisi.', 'warning');
+      return;
+    }
+    if (problemStatement.trim().length < 10) {
+      toast('Identifikasi masalah minimal 10 karakter.', 'warning');
       return;
     }
     if (!urgencyReason.trim()) {
       toast('Alasan urgensi penelitian wajib diisi.', 'warning');
       return;
     }
+    if (urgencyReason.trim().length < 10) {
+      toast('Alasan urgensi minimal 10 karakter.', 'warning');
+      return;
+    }
 
     try {
       setIsSubmitting(true);
-      const newId = addProposal(
+      const targetOpd = opds.find((o) => o.name === selectedOpdName || o.id === user?.opdId);
+      const targetOpdId = targetOpd?.id || user?.opdId || undefined;
+
+      const newId = await addProposal(
         {
+          opdId: targetOpdId,
+          opdName: selectedOpdName || activeOpdName,
           title,
           category,
           problemStatement,
@@ -101,6 +165,7 @@ export default function NewProposalPage() {
           urgencyLevel,
           expectedOutput,
           estimatedBudget: estimatedBudget === '' ? undefined : Number(estimatedBudget),
+          torDocument: torDocument || undefined,
           supportingDocuments: documents,
           status: isDraft ? 'DRAFT' : 'PENDING',
         },
@@ -115,7 +180,7 @@ export default function NewProposalPage() {
 
       router.push('/opd/tracking');
     } catch (err: any) {
-      toast('Gagal menyimpan usulan: ' + err.message, 'error');
+      toast('Gagal menyimpan usulan: ' + (err.message || 'Terjadi kesalahan sistem'), 'error');
     } finally {
       setIsSubmitting(false);
     }
@@ -153,6 +218,34 @@ export default function NewProposalPage() {
             </CardHeader>
             <CardContent className="pt-5 space-y-5 text-xs">
               
+              {/* 0. Instansi Pemohon */}
+              <div className="space-y-1.5">
+                <label className="font-bold text-gray-800 dark:text-gray-200 flex items-center justify-between">
+                  <div className="flex items-center gap-1.5">
+                    <Building2 className="w-3.5 h-3.5 text-emerald-600" />
+                    <span>Instansi Pengusul (OPD / Perangkat Daerah)</span>
+                    <span className="text-rose-500">*</span>
+                  </div>
+                  {isLoadingMaster && <span className="text-3xs text-emerald-600 animate-pulse">Memuat master OPD...</span>}
+                </label>
+                <select
+                  value={selectedOpdName}
+                  onChange={(e) => setSelectedOpdName(e.target.value)}
+                  className="w-full p-2.5 text-xs border border-gray-300 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-emerald-500 bg-white dark:bg-gray-950 font-medium"
+                >
+                  {opds && opds.length > 0 ? (
+                    opds.map((o) => (
+                      <option key={o.id} value={o.name}>
+                        {o.name} ({o.code || o.category || 'OPD'})
+                      </option>
+                    ))
+                  ) : (
+                    <option value={activeOpdName}>{activeOpdName}</option>
+                  )}
+                </select>
+                <p className="text-3xs text-gray-400">Pilih instansi pemerintah daerah yang mengajukan kebutuhan riset ini.</p>
+              </div>
+
               {/* 1. Judul Usulan */}
               <div className="space-y-1.5">
                 <label className="font-bold text-gray-800 dark:text-gray-200 flex items-center gap-1">
@@ -169,7 +262,7 @@ export default function NewProposalPage() {
                 <p className="text-3xs text-gray-400">Tuliskan rumusan judul yang spesifik, jelas, dan menggambarkan ruang lingkup masalah yang dihadapi.</p>
               </div>
 
-              {/* 2. Kategori Urusan */}
+              {/* 2. Kategori Urusan & Output */}
               <div className="grid gap-4 sm:grid-cols-2">
                 <div className="space-y-1.5">
                   <label className="font-bold text-gray-800 dark:text-gray-200 flex items-center gap-1">
@@ -181,7 +274,7 @@ export default function NewProposalPage() {
                     onChange={(e) => setCategory(e.target.value)}
                     className="w-full p-2.5 text-xs border border-gray-300 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-emerald-500 bg-white dark:bg-gray-950 font-medium"
                   >
-                    {CATEGORIES.map((cat) => (
+                    {storeCategories.map((cat) => (
                       <option key={cat} value={cat}>
                         {cat}
                       </option>
@@ -289,20 +382,67 @@ export default function NewProposalPage() {
                 />
               </div>
 
+              {/* 6. Upload Kerangka Acuan Kerja (KAK / TOR) */}
+              <div className="space-y-2 pt-2 border-t dark:border-gray-850">
+                <div className="flex items-center justify-between">
+                  <label className="font-bold text-gray-800 dark:text-gray-200 flex items-center gap-1.5">
+                    <FileCheck className="w-4 h-4 text-emerald-600" />
+                    <span>7. Kerangka Acuan Kerja (KAK / TOR) Awal</span>
+                    <span className="text-3xs text-slate-400 font-normal">(Disarankan jika sudah memiliki draft)</span>
+                  </label>
+                  <span className="text-3xs text-gray-400">PDF / DOCX (Maks 20MB)</span>
+                </div>
+
+                {torDocument ? (
+                  <div className="flex items-center justify-between p-3 bg-emerald-50/70 dark:bg-emerald-950/40 border border-emerald-300 dark:border-emerald-800 rounded-xl text-xs">
+                    <div className="flex items-center gap-2.5">
+                      <div className="p-2 bg-emerald-600 text-white rounded-lg">
+                        <FileCheck className="h-4 w-4" />
+                      </div>
+                      <div>
+                        <span className="font-bold text-emerald-950 dark:text-emerald-200 block truncate max-w-sm">{torDocument.name}</span>
+                        <span className="text-3xs text-emerald-700 dark:text-emerald-400">{torDocument.size} • Diunggah {torDocument.uploadDate}</span>
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setTorDocument(null)}
+                      className="p-1.5 text-rose-500 hover:bg-rose-100 dark:hover:bg-rose-950/60 rounded-lg transition-colors"
+                      title="Hapus KAK/TOR"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </button>
+                  </div>
+                ) : (
+                  <div className="border-2 border-dashed border-emerald-300 dark:border-emerald-800/60 hover:border-emerald-500 rounded-xl p-3 text-center bg-emerald-50/30 dark:bg-emerald-950/20 transition-colors">
+                    <input
+                      ref={torInputRef}
+                      type="file"
+                      accept=".pdf,.docx,.doc"
+                      onChange={handleTorUpload}
+                      className="hidden"
+                      id="tor-file-upload"
+                    />
+                    <label htmlFor="tor-file-upload" className="cursor-pointer space-y-1 block">
+                      <UploadCloud className="h-6 w-6 text-emerald-600 mx-auto" />
+                      <span className="text-xs font-bold text-emerald-900 dark:text-emerald-200 block">
+                        Unggah Dokumen KAK / TOR (Opsional)
+                      </span>
+                      <span className="text-3xs text-gray-400 block">
+                        Format PDF atau Word Dokumen KAK dari OPD
+                      </span>
+                    </label>
+                  </div>
+                )}
+              </div>
+
               {/* 7. Upload Dokumen Pendukung Lainnya */}
               <div className="space-y-2 pt-2 border-t dark:border-gray-850">
                 <div className="flex items-center justify-between">
                   <label className="font-bold text-gray-800 dark:text-gray-200 flex items-center gap-1">
-                    <span>7. Berkas Data Dukung Tambahan (Statistik, Data Awal, atau Surat Pengantar)</span>
+                    <span>8. Berkas Data Dukung Tambahan (Statistik, Data Awal, atau Surat Pengantar)</span>
                   </label>
                   <span className="text-3xs text-gray-400">Opsional (Maksimal 15MB)</span>
-                </div>
-
-                <div className="p-3 bg-blue-50/60 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-900 rounded-xl text-xs text-blue-900 dark:text-blue-300 flex items-start gap-2">
-                  <FileText className="w-4 h-4 text-blue-600 shrink-0 mt-0.5" />
-                  <p className="leading-relaxed text-[11px]">
-                    <strong>Informasi KAK & RKA:</strong> Penyusunan Kerangka Acuan Kerja (KAK) dan Rencana Kerja & Anggaran (RKA) pelaksanaan kajian akan disusun dan difokuskan langsung oleh tim fungsional BRIDA setelah usulan disetujui. OPD cukup melampirkan data dukung/surat pengantar jika ada.
-                  </p>
                 </div>
                 
                 <div className="border-2 border-dashed border-gray-300 dark:border-gray-700 hover:border-emerald-500 rounded-lg p-3 text-center bg-gray-50/50 dark:bg-gray-900/50 transition-colors">

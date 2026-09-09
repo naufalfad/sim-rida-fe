@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, use } from 'react';
+import React, { useState, use, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useOpdStore } from '@/store/useOpdStore';
@@ -16,9 +16,16 @@ import {
   Calendar, 
   ShieldCheck, 
   RotateCcw, 
-  CheckSquare, 
   Paperclip,
+  Loader2,
+  Download,
+  ExternalLink,
+  Eye,
+  CheckSquare,
 } from 'lucide-react';
+import { DocumentViewerModal, DocumentReviewItem } from '@/components/ui/document-viewer-modal';
+import { openOrDownloadUploadedFile, downloadDocumentFile } from '@/lib/file-storage';
+import { isPdfDocument } from '@/lib/file-viewer';
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -29,10 +36,16 @@ export default function AdminVerificationDetailPage({ params }: PageProps) {
   const router = useRouter();
   const { toast } = useToast();
   const { user } = useAuthStore();
-  const { proposals, verifyProposal, returnToOpd } = useOpdStore();
+  const { proposals, verifyProposal, returnToOpd, fetchProposals, isLoadingProposals } = useOpdStore();
 
   const proposalId = resolvedParams.id;
   const proposal = proposals.find((p) => p.id === proposalId);
+
+  useEffect(() => {
+    if (!proposal) {
+      fetchProposals();
+    }
+  }, [proposal, fetchProposals]);
 
   // Form states for verification
   const [isReturnMode, setIsReturnMode] = useState(false);
@@ -47,6 +60,36 @@ export default function AdminVerificationDetailPage({ params }: PageProps) {
   const [checkProblem, setCheckProblem] = useState(true);
   const [checkBudget, setCheckBudget] = useState(true);
   const [checkSupportingDocs, setCheckSupportingDocs] = useState((proposal?.supportingDocuments?.length || 0) > 0);
+
+  // Document review modal state
+  const [previewDoc, setPreviewDoc] = useState<DocumentReviewItem | null>(null);
+  const [isDocModalOpen, setIsDocModalOpen] = useState(false);
+
+  const openDocumentReview = (docItem: Partial<DocumentReviewItem>) => {
+    setPreviewDoc({
+      name: docItem.name || 'Dokumen_SIMRIDA.pdf',
+      size: docItem.size || '1.4 MB',
+      uploadDate: docItem.uploadDate || proposal?.submittedAt || '01 Jan 2026',
+      type: docItem.type || 'DATA_DUKUNG',
+      proposalCode: proposal?.code,
+      proposalTitle: proposal?.title,
+      opdName: proposal?.opdName,
+      problemStatement: proposal?.problemStatement,
+      urgencyReason: proposal?.urgencyReason,
+      estimatedBudget: proposal?.estimatedBudget,
+      expectedOutput: proposal?.expectedOutput,
+    });
+    setIsDocModalOpen(true);
+  };
+
+  if (isLoadingProposals && !proposal) {
+    return (
+      <div className="max-w-4xl mx-auto py-20 text-center space-y-4 font-sans">
+        <Loader2 className="w-10 h-10 text-[#0f2c59] animate-spin mx-auto" />
+        <p className="text-xs text-slate-600 font-semibold">Memuat rincian berkas usulan riset...</p>
+      </div>
+    );
+  }
 
   if (!proposal) {
     return (
@@ -64,31 +107,65 @@ export default function AdminVerificationDetailPage({ params }: PageProps) {
     );
   }
 
-  const handleApprove = () => {
+  const handleApprove = async () => {
+    if (verificationNotes.trim().length < 5) {
+      toast('Catatan verifikator wajib diisi minimal 5 karakter.', 'warning');
+      return;
+    }
+
     setIsSubmitting(true);
     try {
-      verifyProposal(proposal.id, true, verificationNotes, user?.name || 'Admin BRIDA');
-      toast(`Usulan ${proposal.code} berhasil diverifikasi dan diloloskan ke tahap Penelaahan & Scoring.`, 'success');
+      await verifyProposal(
+        proposal.id,
+        {
+          decision: 'PASS',
+          verificationNotes: verificationNotes.trim(),
+          isProblemClear: checkProblem,
+          isUrgencyRelevant: checkProblem,
+          isBudgetFeasible: checkBudget,
+          isDataAdequate: checkSupportingDocs,
+        },
+        verificationNotes.trim(),
+        user?.name || 'Admin BRIDA'
+      );
+      toast(`Usulan ${proposal.code} berhasil disahkan dan diloloskan ke tahap Penelaahan & Scoring.`, 'success');
       router.push('/admin/verification');
     } catch (err: any) {
-      toast('Gagal memproses verifikasi: ' + err.message, 'error');
+      toast('Gagal memproses verifikasi: ' + (err.message || 'Terjadi kesalahan sistem'), 'error');
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  const handleReturn = () => {
+  const handleReturn = async () => {
     if (!returnReason.trim()) {
-      toast('Catatan perbaikan / revisi wajib diisi untuk mengembalikan usulan ke OPD.', 'warning');
+      toast('Catatan perbaikan / instruksi revisi wajib diisi untuk mengembalikan usulan ke OPD.', 'warning');
       return;
     }
+    if (returnReason.trim().length < 5) {
+      toast('Catatan revisi wajib diisi minimal 5 karakter.', 'warning');
+      return;
+    }
+
     setIsSubmitting(true);
     try {
-      returnToOpd(proposal.id, returnReason.trim(), user?.name || 'Admin BRIDA');
-      toast(`Usulan ${proposal.code} telah dikembalikan ke ${proposal.opdName} untuk perbaikan data.`, 'info');
+      await verifyProposal(
+        proposal.id,
+        {
+          decision: 'RETURN',
+          verificationNotes: returnReason.trim(),
+          isProblemClear: false,
+          isUrgencyRelevant: false,
+          isBudgetFeasible: false,
+          isDataAdequate: false,
+        },
+        returnReason.trim(),
+        user?.name || 'Admin BRIDA'
+      );
+      toast(`Usulan ${proposal.code} telah dikembalikan ke ${proposal.opdName} untuk revisi.`, 'info');
       router.push('/admin/verification');
     } catch (err: any) {
-      toast('Gagal mengembalikan usulan: ' + err.message, 'error');
+      toast('Gagal mengembalikan usulan: ' + (err.message || 'Terjadi kesalahan sistem'), 'error');
     } finally {
       setIsSubmitting(false);
     }
@@ -229,25 +306,57 @@ export default function AdminVerificationDetailPage({ params }: PageProps) {
             </div>
 
             {proposal.torDocument ? (
-              <div className="p-4 border border-slate-200 bg-slate-50 flex items-center justify-between text-xs">
+              <div className="p-4 border border-slate-200 bg-slate-50 flex flex-col sm:flex-row sm:items-center justify-between gap-4 text-xs">
                 <div className="flex items-center gap-3">
-                  <div className="p-2 bg-[#0f2c59] text-white">
-                    <FileText className="h-4 w-4" />
+                  <div className="p-2.5 bg-[#0f2c59] text-white">
+                    <FileText className="h-5 w-5" />
                   </div>
                   <div>
-                    <span className="font-bold text-slate-900 block">{proposal.torDocument.name}</span>
+                    <span className="font-bold text-slate-900 block text-xs">{proposal.torDocument.name}</span>
                     <span className="text-2xs text-slate-500">
-                      {proposal.torDocument.size} • Diunggah {proposal.torDocument.uploadDate}
+                      {proposal.torDocument.size} • Diunggah pada {proposal.torDocument.uploadDate}
                     </span>
                   </div>
                 </div>
-                <button
-                  type="button"
-                  onClick={() => alert(`Mengunduh TOR: ${proposal.torDocument?.name}`)}
-                  className="px-3 py-1.5 bg-white border border-slate-300 hover:bg-slate-100 text-slate-800 text-xs font-semibold uppercase tracking-wider transition"
-                >
-                  Pratinjau / Unduh
-                </button>
+                <div className="flex items-center gap-2 shrink-0">
+                  <button
+                    type="button"
+                    onClick={() => openOrDownloadUploadedFile({
+                      name: proposal.torDocument!.name,
+                      size: proposal.torDocument!.size,
+                      uploadDate: proposal.torDocument!.uploadDate,
+                      url: proposal.torDocument!.url,
+                      proposalCode: proposal.code,
+                      proposalTitle: proposal.title,
+                      opdName: proposal.opdName,
+                    }, toast)}
+                    className="px-3 py-1.5 bg-[#0f2c59] hover:bg-[#0a1e3f] text-white text-xs font-semibold uppercase tracking-wider transition flex items-center gap-1.5 shadow-xs"
+                  >
+                    {isPdfDocument(proposal.torDocument.name) ? (
+                      <>
+                        <ExternalLink className="w-3.5 h-3.5 text-sky-300" />
+                        <span>Buka PDF di Tab Baru</span>
+                      </>
+                    ) : (
+                      <>
+                        <Download className="w-3.5 h-3.5 text-sky-300" />
+                        <span>Unduh File ({proposal.torDocument.name.split('.').pop()?.toUpperCase()})</span>
+                      </>
+                    )}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => downloadDocumentFile({
+                      name: proposal.torDocument!.name,
+                      url: proposal.torDocument!.url,
+                    })}
+                    className="px-3 py-1.5 bg-white border border-slate-300 hover:bg-slate-100 text-slate-800 text-xs font-semibold uppercase tracking-wider transition flex items-center gap-1.5"
+                    title="Unduh Berkas Langsung"
+                  >
+                    <Download className="w-3.5 h-3.5 text-[#0f2c59]" />
+                    <span>Unduh</span>
+                  </button>
+                </div>
               </div>
             ) : (
               <div className="p-3 border border-amber-300 bg-amber-50 text-amber-900 text-xs flex items-center gap-2">
@@ -281,13 +390,33 @@ export default function AdminVerificationDetailPage({ params }: PageProps) {
                         <span className="text-2xs text-slate-500">{doc.size}</span>
                       </div>
                     </div>
-                    <button
-                      type="button"
-                      onClick={() => alert(`Mengunduh dokumen: ${doc.name}`)}
-                      className="px-2.5 py-1 bg-white hover:bg-slate-100 text-slate-800 font-semibold text-2xs border border-slate-300 uppercase shrink-0"
-                    >
-                      Unduh
-                    </button>
+                    <div className="flex items-center gap-1.5 shrink-0">
+                      <button
+                        type="button"
+                        onClick={() => openOrDownloadUploadedFile({
+                          name: doc.name,
+                          size: doc.size,
+                          uploadDate: doc.uploadDate,
+                          url: doc.url,
+                          proposalCode: proposal.code,
+                          proposalTitle: proposal.title,
+                          opdName: proposal.opdName,
+                        }, toast)}
+                        className="px-2.5 py-1 bg-white hover:bg-slate-100 text-slate-800 font-semibold text-2xs border border-slate-300 uppercase flex items-center gap-1"
+                      >
+                        {isPdfDocument(doc.name) ? (
+                          <>
+                            <ExternalLink className="w-3 h-3 text-[#0f2c59]" />
+                            <span>Buka PDF</span>
+                          </>
+                        ) : (
+                          <>
+                            <Download className="w-3 h-3 text-[#0f2c59]" />
+                            <span>Unduh File</span>
+                          </>
+                        )}
+                      </button>
+                    </div>
                   </div>
                 ))}
               </div>
@@ -426,7 +555,7 @@ export default function AdminVerificationDetailPage({ params }: PageProps) {
                   required
                   value={returnReason}
                   onChange={(e) => setReturnReason(e.target.value)}
-                  placeholder="Contoh: Mohon lengkapi rincian data prevalensi per wilayah kapanewon..."
+                  placeholder="Contoh: Mohon lengkapi rincian data prevalensi per wilayah distrik dan kampung..."
                   className="w-full p-2.5 bg-white border border-rose-300 text-xs focus:outline-none focus:ring-1 focus:ring-rose-500 text-slate-800"
                 />
               </div>
@@ -471,6 +600,13 @@ export default function AdminVerificationDetailPage({ params }: PageProps) {
         </div>
 
       </div>
+
+      {/* Document Review & Downloader Modal */}
+      <DocumentViewerModal
+        isOpen={isDocModalOpen}
+        onClose={() => setIsDocModalOpen(false)}
+        document={previewDoc}
+      />
     </div>
   );
 }

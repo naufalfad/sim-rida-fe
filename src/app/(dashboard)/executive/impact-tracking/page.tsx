@@ -36,10 +36,10 @@ export default function ExecutiveImpactTrackingPage() {
 
   // OPD Performance Rankings
   const opdRanking = [
-    { name: 'Dinas Kesehatan Kab. Sleman', totalProposals: 3, adoptedCount: 3, score: 98, status: 'Sangat Aktif (Top Performer)' },
+    { name: 'Dinas Kesehatan Kab. Mimika', totalProposals: 3, adoptedCount: 3, score: 98, status: 'Sangat Aktif (Top Performer)' },
     { name: 'Dinas Komunikasi & Informatika', totalProposals: 2, adoptedCount: 2, score: 94, status: 'Sangat Aktif' },
     { name: 'Dinas Pertanian, Pangan & Perikanan', totalProposals: 2, adoptedCount: 1, score: 85, status: 'Aktif' },
-    { name: 'Dinas Pariwisata Kab. Sleman', totalProposals: 2, adoptedCount: 1, score: 80, status: 'Aktif' },
+    { name: 'Dinas Pariwisata Kab. Mimika', totalProposals: 2, adoptedCount: 1, score: 80, status: 'Aktif' },
     { name: 'Dinas Perindustrian & Perdagangan', totalProposals: 1, adoptedCount: 0, score: 65, status: 'Perlu Pendampingan' },
     { name: 'Dinas Pekerjaan Umum & PKP', totalProposals: 1, adoptedCount: 0, score: 60, status: 'Pasif' },
   ];
@@ -47,10 +47,10 @@ export default function ExecutiveImpactTrackingPage() {
   // RPJMD Strategic Alignment Indicators
   const rpjmdGoals = [
     {
-      misi: 'Misi 1: Mewujudkan Kesejahteraan Sosial & Sleman Sehat',
+      misi: 'Misi 1: Mewujudkan Kesejahteraan Sosial & Mimika Sehat',
       indicator: 'Penurunan Stunting Balita (< 12%) & Indeks Pembangunan Manusia',
       researchCount: 3,
-      policyImpact: 'Diadopsi menjadi SK Bupati Intervensi Pangan Lokal Terpadu 17 Kapanewon.',
+      policyImpact: 'Diadopsi menjadi SK Bupati Intervensi Pangan Lokal Terpadu 18 Distrik Kabupaten Mimika.',
       status: 'TERCAPAI (Optimal)'
     },
     {
@@ -326,7 +326,7 @@ export default function ExecutiveImpactTrackingPage() {
               Laporan Akumulasi Capaian Kinerja Kelitbangan
             </h2>
             <h3 className="text-sm font-extrabold text-emerald-900 uppercase">
-              Kontribusi Riset & Inovasi Daerah Terhadap Indikator Kinerja Utama (IKU) RPJMD Kab. Sleman
+              Kontribusi Riset & Inovasi Daerah Terhadap Indikator Kinerja Utama (IKU) RPJMD Kab. Mimika
             </h3>
             <p className="text-[11px] text-slate-500 font-mono">Tahun Anggaran 2026</p>
           </div>
@@ -365,7 +365,7 @@ export default function ExecutiveImpactTrackingPage() {
           <div className="space-y-2 pt-2">
             <h4 className="font-black text-sm text-slate-900 uppercase">B. Kesimpulan & Rekomendasi Eksekutif</h4>
             <p className="text-slate-700 leading-relaxed text-justify">
-              Secara keseluruhan, pelaksanaan riset kelitbangan tahun anggaran 2026 telah memberikan kontribusi nyata terhadap akselerasi target prioritas daerah dengan tingkat utilisasi rekomendasi mencapai {utilizationRate}%. Disarankan kepada Bupati Sleman untuk terus mendorong keterikatan anggaran OPD dengan hasil kajian kelitbangan BRIDA pada penyusunan RKPD tahun anggaran berikutnya.
+              Secara keseluruhan, pelaksanaan riset kelitbangan tahun anggaran 2026 telah memberikan kontribusi nyata terhadap akselerasi target prioritas daerah dengan tingkat utilisasi rekomendasi mencapai {utilizationRate}%. Disarankan kepada Bupati Mimika untuk terus mendorong keterikatan anggaran OPD dengan hasil kajian kelitbangan BRIDA pada penyusunan RKPD tahun anggaran berikutnya.
             </p>
           </div>
 
@@ -373,9 +373,9 @@ export default function ExecutiveImpactTrackingPage() {
           <div className="pt-8 border-t border-slate-200 flex justify-end">
             <div className="text-center w-64 space-y-4">
               <p className="text-xs font-bold text-slate-800">
-                Sleman, {new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}
+                Mimika, {new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}
                 <br />
-                Kepala BRIDA Kabupaten Sleman
+                Kepala BRIDA Kabupaten Mimika
               </p>
               <div className="p-2 bg-emerald-50 border border-emerald-300 rounded-xl text-emerald-800">
                 <ShieldCheck className="w-8 h-8 mx-auto" />

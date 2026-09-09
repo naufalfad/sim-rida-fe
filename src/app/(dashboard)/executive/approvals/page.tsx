@@ -1,11 +1,12 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { 
   useOpdStore, 
   OpdProposal 
 } from '@/store/useOpdStore';
+import { useToast } from '@/components/ui/toast';
 import { 
   ClipboardCheck, 
   CheckCircle2, 
@@ -24,15 +25,20 @@ import {
   Clock,
   ThumbsUp,
   ThumbsDown,
-  CornerUpLeft
+  CornerUpLeft,
+  DollarSign,
+  Calendar,
+  Loader2,
+  RefreshCw
 } from 'lucide-react';
 
 export default function ExecutiveApprovalsPage() {
+  const { toast } = useToast();
   const { 
     proposals, 
-    executiveApproveProposal, 
-    executiveRejectProposal, 
-    executiveReturnProposal 
+    fetchApprovalInbox,
+    submitExecutiveApproval,
+    isLoadingProposals
   } = useOpdStore();
 
   const [searchQuery, setSearchQuery] = useState('');
@@ -42,18 +48,26 @@ export default function ExecutiveApprovalsPage() {
   // Decision Modals
   const [decisionType, setDecisionType] = useState<'APPROVE' | 'REJECT' | 'RETURN' | null>(null);
   const [decisionNotes, setDecisionNotes] = useState('');
+  const [approvedBudget, setApprovedBudget] = useState<number>(0);
+  const [fiscalYear, setFiscalYear] = useState<number>(new Date().getFullYear());
+  const [finalExecutionScheme, setFinalExecutionScheme] = useState<'SWAKELOLA' | 'PENUNJUKAN_LANGSUNG' | 'E_KATALOG' | 'TENDER'>('SWAKELOLA');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  useEffect(() => {
+    fetchApprovalInbox({ status: 'ALL' });
+  }, [fetchApprovalInbox]);
 
   // Proposals that have scoring data or are in review/pending decision
-  const scoredProposals = proposals.filter(p => !!p.scoringData || p.status === 'IN_REVIEW' || p.status === 'APPROVED' || p.status === 'IN_PROGRESS');
+  const scoredProposals = proposals.filter(p => !!p.scoringData || p.status === 'IN_REVIEW' || p.status === 'SCORED' || p.status === 'APPROVED' || p.status === 'IN_PROGRESS' || p.status === 'REJECTED');
 
   const filteredProposals = scoredProposals.filter((p) => {
     const matchesSearch = p.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
                           p.opdName.toLowerCase().includes(searchQuery.toLowerCase()) ||
                           p.code.toLowerCase().includes(searchQuery.toLowerCase());
 
-    const isPending = !p.executiveDecision && (p.status === 'IN_REVIEW' || (!!p.scoringData && p.status !== 'COMPLETED'));
-    const isApproved = p.executiveDecision?.decision === 'APPROVED' || p.status === 'IN_PROGRESS' || p.status === 'COMPLETED';
-    const isRejectedOrReturned = p.executiveDecision?.decision === 'REJECTED' || p.executiveDecision?.decision === 'RETURNED' || p.status === 'REVISION_REQUIRED';
+    const isPending = (p.status === 'SCORED' || p.status === 'IN_REVIEW') && !p.executiveDecision;
+    const isApproved = p.status === 'APPROVED' || p.status === 'IN_PROGRESS' || p.status === 'COMPLETED' || p.executiveDecision?.decision === 'APPROVED';
+    const isRejectedOrReturned = p.status === 'REJECTED' || p.status === 'REVISION_REQUIRED' || p.executiveDecision?.decision === 'REJECTED' || p.executiveDecision?.decision === 'RETURNED' || p.executiveDecision?.decision === 'REVISION_REQUIRED';
 
     if (activeFilter === 'PENDING_APPROVAL') return isPending && matchesSearch;
     if (activeFilter === 'APPROVED') return isApproved && matchesSearch;
@@ -64,30 +78,67 @@ export default function ExecutiveApprovalsPage() {
   const handleOpenDecisionModal = (type: 'APPROVE' | 'REJECT' | 'RETURN', prop: OpdProposal) => {
     setSelectedProposal(prop);
     setDecisionType(type);
+    setApprovedBudget(prop.estimatedBudget || 75000000);
+    setFiscalYear(new Date().getFullYear());
+
+    const defaultScheme = (prop.scoringData?.executionMethod || 
+      (prop.scoringData?.researchScheme === 'INTERNAL_BRIDA' ? 'SWAKELOLA' : 'KERJASAMA')) as any;
+    setFinalExecutionScheme(
+      ['SWAKELOLA', 'PENUNJUKAN_LANGSUNG', 'E_KATALOG', 'TENDER'].includes(defaultScheme)
+        ? defaultScheme
+        : 'SWAKELOLA'
+    );
+
     if (type === 'APPROVE') {
       setDecisionNotes('Disetujui untuk dilaksanakan sebagai agenda riset prioritas daerah tahun anggaran berjalan.');
     } else if (type === 'REJECT') {
       setDecisionNotes('Usulan belum memenuhi kriteria prioritas daerah mendesak pada tahun anggaran ini.');
     } else {
-      setDecisionNotes('Mohon tim peneliti BRIDA melakukan pendalaman studi kelayakan dan koordinasi ulang dengan OPD terkait.');
+      setDecisionNotes('Mohon tim penelaah BRIDA melakukan pendalaman studi kelayakan dan koordinasi ulang dengan OPD pengusul.');
     }
   };
 
-  const handleExecuteDecision = (e: React.FormEvent) => {
+  const handleExecuteDecision = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedProposal || !decisionType) return;
 
-    if (decisionType === 'APPROVE') {
-      executiveApproveProposal(selectedProposal.id, decisionNotes);
-    } else if (decisionType === 'REJECT') {
-      executiveRejectProposal(selectedProposal.id, decisionNotes);
-    } else if (decisionType === 'RETURN') {
-      executiveReturnProposal(selectedProposal.id, decisionNotes);
-    }
+    setIsSubmitting(true);
+    try {
+      const backendDecision = decisionType === 'APPROVE' 
+        ? 'APPROVED' 
+        : decisionType === 'REJECT' 
+        ? 'REJECTED' 
+        : 'REVISION_REQUIRED';
 
-    setDecisionType(null);
-    setSelectedProposal(null);
+      await submitExecutiveApproval(selectedProposal.id, {
+        decision: backendDecision,
+        approvedBudget: decisionType === 'APPROVE' ? Number(approvedBudget) : null,
+        fiscalYear: decisionType === 'APPROVE' ? Number(fiscalYear) : null,
+        finalExecutionScheme: decisionType === 'APPROVE' ? finalExecutionScheme : null,
+        notes: decisionNotes.trim(),
+      });
+
+      toast(
+        decisionType === 'APPROVE'
+          ? 'Usulan riset berhasil disetujui dan dialokasikan pagu definitif.'
+          : decisionType === 'REJECT'
+          ? 'Usulan riset telah ditolak oleh Kepala BRIDA.'
+          : 'Usulan riset dikembalikan ke tim penelaah BRIDA untuk revisi.',
+        'success'
+      );
+
+      setDecisionType(null);
+      setSelectedProposal(null);
+    } catch (err: any) {
+      toast(err.message || 'Gagal memproses keputusan Kepala BRIDA', 'error');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
+
+  const pendingCount = scoredProposals.filter(p => (p.status === 'SCORED' || p.status === 'IN_REVIEW') && !p.executiveDecision).length;
+  const approvedCount = scoredProposals.filter(p => p.status === 'APPROVED' || p.status === 'IN_PROGRESS' || p.status === 'COMPLETED' || p.executiveDecision?.decision === 'APPROVED').length;
+  const rejectedCount = scoredProposals.filter(p => p.status === 'REJECTED' || p.status === 'REVISION_REQUIRED' || p.executiveDecision?.decision === 'REJECTED' || p.executiveDecision?.decision === 'RETURNED' || p.executiveDecision?.decision === 'REVISION_REQUIRED').length;
 
   return (
     <div className="space-y-8 max-w-7xl mx-auto pb-12 font-sans">
@@ -107,6 +158,14 @@ export default function ExecutiveApprovalsPage() {
         </div>
 
         <div className="flex items-center gap-3">
+          <button
+            onClick={() => fetchApprovalInbox({ status: 'ALL' })}
+            className="flex items-center gap-2 bg-slate-800 hover:bg-slate-700 text-slate-200 font-semibold px-3.5 py-2.5 rounded-xl transition text-xs border border-slate-700"
+            title="Muat Ulang Antrean"
+          >
+            <RefreshCw className={`w-3.5 h-3.5 ${isLoadingProposals ? 'animate-spin' : ''}`} />
+            <span>Refresh</span>
+          </button>
           <Link
             href="/executive/monitoring"
             className="flex items-center gap-2 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold px-4 py-2.5 rounded-xl transition shadow text-xs"
@@ -128,7 +187,7 @@ export default function ExecutiveApprovalsPage() {
                 : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
             }`}
           >
-            Menunggu Keputusan ({scoredProposals.filter(p => !p.executiveDecision && (p.status === 'IN_REVIEW' || (!!p.scoringData && p.status !== 'COMPLETED'))).length})
+            Menunggu Keputusan ({pendingCount})
           </button>
           <button
             onClick={() => setActiveFilter('APPROVED')}
@@ -138,7 +197,7 @@ export default function ExecutiveApprovalsPage() {
                 : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
             }`}
           >
-            Disetujui ({scoredProposals.filter(p => p.executiveDecision?.decision === 'APPROVED' || p.status === 'IN_PROGRESS' || p.status === 'COMPLETED').length})
+            Disetujui ({approvedCount})
           </button>
           <button
             onClick={() => setActiveFilter('REJECTED_RETURNED')}
@@ -148,7 +207,7 @@ export default function ExecutiveApprovalsPage() {
                 : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
             }`}
           >
-            Ditolak / Dikembalikan ({scoredProposals.filter(p => p.executiveDecision?.decision === 'REJECTED' || p.executiveDecision?.decision === 'RETURNED' || p.status === 'REVISION_REQUIRED').length})
+            Ditolak / Dikembalikan ({rejectedCount})
           </button>
           <button
             onClick={() => setActiveFilter('ALL')}
@@ -176,7 +235,12 @@ export default function ExecutiveApprovalsPage() {
 
       {/* Grid of Proposals with Quick Review Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {filteredProposals.length === 0 ? (
+        {isLoadingProposals && filteredProposals.length === 0 ? (
+          <div className="col-span-full bg-white p-12 rounded-2xl border border-slate-200 text-center text-slate-400">
+            <Loader2 className="w-8 h-8 mx-auto text-emerald-600 animate-spin mb-3" />
+            <p className="font-bold text-slate-700 text-sm">Memuat antrean persetujuan usulan...</p>
+          </div>
+        ) : filteredProposals.length === 0 ? (
           <div className="col-span-full bg-white p-12 rounded-2xl border border-slate-200 text-center text-slate-400">
             <ClipboardCheck className="w-12 h-12 mx-auto text-slate-300 mb-3" />
             <p className="font-bold text-slate-700 text-sm">Tidak ada usulan dalam kategori ini</p>
@@ -185,8 +249,9 @@ export default function ExecutiveApprovalsPage() {
         ) : (
           filteredProposals.map((prop) => {
             const score = prop.scoringData?.totalScore || 85;
-            const isApproved = prop.executiveDecision?.decision === 'APPROVED' || prop.status === 'IN_PROGRESS' || prop.status === 'COMPLETED';
-            const isRejected = prop.executiveDecision?.decision === 'REJECTED' || prop.status === 'REVISION_REQUIRED';
+            const isApproved = prop.executiveDecision?.decision === 'APPROVED' || prop.status === 'APPROVED' || prop.status === 'IN_PROGRESS' || prop.status === 'COMPLETED';
+            const isRejected = prop.executiveDecision?.decision === 'REJECTED' || prop.status === 'REJECTED';
+            const isReturned = prop.executiveDecision?.decision === 'RETURNED' || prop.executiveDecision?.decision === 'REVISION_REQUIRED' || prop.status === 'REVISION_REQUIRED';
 
             return (
               <div 
@@ -267,10 +332,16 @@ export default function ExecutiveApprovalsPage() {
                     <div className={`p-2.5 rounded-lg text-xs font-bold ${
                       prop.executiveDecision.decision === 'APPROVED' 
                         ? 'bg-emerald-50 text-emerald-800 border border-emerald-200' 
-                        : 'bg-rose-50 text-rose-800 border border-rose-200'
+                        : prop.executiveDecision.decision === 'REJECTED'
+                        ? 'bg-rose-50 text-rose-800 border border-rose-200'
+                        : 'bg-amber-50 text-amber-800 border border-amber-200'
                     }`}>
                       <span className="block text-[10px] uppercase text-slate-400">Keputusan Kepala BRIDA:</span>
-                      {prop.executiveDecision.decision === 'APPROVED' ? 'Disetujui Resmi' : 'Ditolak / Dikembalikan'}
+                      {prop.executiveDecision.decision === 'APPROVED' 
+                        ? `Disetujui Resmi ${prop.executiveDecision.approvedBudget ? `(Pagu: Rp ${prop.executiveDecision.approvedBudget.toLocaleString('id-ID')})` : ''}` 
+                        : prop.executiveDecision.decision === 'REJECTED'
+                        ? 'Ditolak'
+                        : 'Dikembalikan ke Penelaah'}
                       {prop.executiveDecision.notes && (
                         <p className="font-normal text-[11px] mt-0.5">{prop.executiveDecision.notes}</p>
                       )}
@@ -290,7 +361,7 @@ export default function ExecutiveApprovalsPage() {
                   <button
                     onClick={() => handleOpenDecisionModal('RETURN', prop)}
                     className="py-2 px-3 bg-amber-500 hover:bg-amber-600 text-white rounded-lg text-xs font-bold transition flex items-center justify-center gap-1"
-                    title="Kembalikan ke staff peneliti"
+                    title="Kembalikan ke tim penelaah"
                   >
                     <CornerUpLeft className="w-3.5 h-3.5" />
                     Return
@@ -327,10 +398,60 @@ export default function ExecutiveApprovalsPage() {
                  decisionType === 'REJECT' ? 'Tolak Usulan Penelitian' :
                  'Kembalikan Usulan ke Tim Staff Penelaah'}
               </h3>
-              <p className="text-xs text-white/80 mt-1">{selectedProposal.title}</p>
+              <p className="text-xs text-white/80 mt-1 line-clamp-1">{selectedProposal.title}</p>
             </div>
 
             <form onSubmit={handleExecuteDecision} className="p-6 space-y-4">
+              {decisionType === 'APPROVE' && (
+                <div className="space-y-3 bg-emerald-50/70 p-4 rounded-xl border border-emerald-200">
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-[11px] font-bold text-emerald-950 uppercase mb-1">
+                        Pagu Definitif (Rp):
+                      </label>
+                      <input
+                        type="number"
+                        required
+                        min={0}
+                        value={approvedBudget}
+                        onChange={(e) => setApprovedBudget(Number(e.target.value))}
+                        className="w-full p-2 bg-white border border-emerald-300 rounded-lg text-xs font-mono font-bold text-emerald-900 focus:ring-2 focus:ring-emerald-500 focus:outline-none"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[11px] font-bold text-emerald-950 uppercase mb-1">
+                        Tahun Anggaran:
+                      </label>
+                      <input
+                        type="number"
+                        required
+                        min={2025}
+                        max={2035}
+                        value={fiscalYear}
+                        onChange={(e) => setFiscalYear(Number(e.target.value))}
+                        className="w-full p-2 bg-white border border-emerald-300 rounded-lg text-xs font-mono font-bold text-emerald-900 focus:ring-2 focus:ring-emerald-500 focus:outline-none"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-[11px] font-bold text-emerald-950 uppercase mb-1">
+                      Skema Pelaksanaan Definitif:
+                    </label>
+                    <select
+                      value={finalExecutionScheme}
+                      onChange={(e) => setFinalExecutionScheme(e.target.value as any)}
+                      className="w-full p-2 bg-white border border-emerald-300 rounded-lg text-xs font-bold text-emerald-900 focus:ring-2 focus:ring-emerald-500 focus:outline-none"
+                    >
+                      <option value="SWAKELOLA">Swakelola (Tim Litbang Internal BRIDA)</option>
+                      <option value="PENUNJUKAN_LANGSUNG">Penunjukan Langsung (Pakar / Lembaga Khusus)</option>
+                      <option value="E_KATALOG">E-Katalog Sektoral / Riset</option>
+                      <option value="TENDER">Tender / Seleksi Terbuka</option>
+                    </select>
+                  </div>
+                </div>
+              )}
+
               <div>
                 <label className="block text-xs font-bold text-slate-700 uppercase mb-1">
                   Catatan / Disposisi Resmi Kepala BRIDA:
@@ -347,20 +468,23 @@ export default function ExecutiveApprovalsPage() {
               <div className="flex items-center justify-end gap-3 pt-2">
                 <button
                   type="button"
+                  disabled={isSubmitting}
                   onClick={() => { setDecisionType(null); setSelectedProposal(null); }}
-                  className="px-4 py-2 text-xs font-bold text-slate-600 hover:bg-slate-100 rounded-lg transition"
+                  className="px-4 py-2 text-xs font-bold text-slate-600 hover:bg-slate-100 rounded-lg transition disabled:opacity-50"
                 >
                   Batal
                 </button>
                 <button
                   type="submit"
-                  className={`px-5 py-2 text-xs font-bold text-white rounded-lg transition shadow ${
+                  disabled={isSubmitting}
+                  className={`px-5 py-2 text-xs font-bold text-white rounded-lg transition shadow flex items-center gap-1.5 disabled:opacity-50 ${
                     decisionType === 'APPROVE' ? 'bg-emerald-600 hover:bg-emerald-700' :
                     decisionType === 'REJECT' ? 'bg-rose-600 hover:bg-rose-700' :
                     'bg-amber-600 hover:bg-amber-700'
                   }`}
                 >
-                  Konfirmasi Keputusan
+                  {isSubmitting && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
+                  <span>Konfirmasi Keputusan</span>
                 </button>
               </div>
             </form>
@@ -370,3 +494,4 @@ export default function ExecutiveApprovalsPage() {
     </div>
   );
 }
+

@@ -2,57 +2,21 @@ import { create } from 'zustand';
 import { User, LoginPayload } from '../types/auth.types';
 import { authService } from '../services/auth.service';
 
-export const MOCK_USERS: Record<string, User> = {
-  OPD: {
-    id: 'user-opd-001',
-    name: 'BAPPEDA & Perangkat Daerah Kab. Sleman',
-    email: 'opd.bappeda@slemankab.go.id',
-    role: 'OPD',
-    opd: {
-      id: 'opd-001',
-      name: 'Badan Perencanaan Pembangunan Daerah (BAPPEDA)',
-      code: 'BAPPEDA',
-    }
-  },
-  ADMIN_BRIDA: {
-    id: 'user-admin-001',
-    name: 'Admin Litbang BRIDA Kab. Sleman',
-    email: 'admin@simrida.local',
-    role: 'ADMIN_BRIDA',
-    opd: {
-      id: 'opd-brida',
-      name: 'Badan Riset dan Inovasi Daerah (BRIDA)',
-      code: 'BRIDA',
-    }
-  },
-  KEPALA_BRIDA: {
-    id: 'user-kepala-001',
-    name: 'Dr. H. Bambang Priyanto, M.Si (Kepala BRIDA)',
-    email: 'kepala@simrida.local',
-    role: 'KEPALA_BRIDA',
-    opd: {
-      id: 'opd-brida',
-      name: 'Badan Riset dan Inovasi Daerah (BRIDA)',
-      code: 'BRIDA',
-    }
-  }
-};
-
 interface AuthState {
   user: User | null;
   token: string | null;
   isAuthenticated: boolean;
   isLoading: boolean;
   error: string | null;
-  
+
   // Actions
-  login: (payload: LoginPayload) => Promise<void>;
-  loginAsMock: (role: 'OPD' | 'ADMIN_BRIDA' | 'KEPALA_BRIDA') => void;
-  fetchMe: () => Promise<void>;
+  login: (payload: LoginPayload) => Promise<User>;
+  fetchMe: () => Promise<User | null>;
   logout: () => void;
+  clearError: () => void;
 }
 
-export const useAuthStore = create<AuthState>((set, get) => {
+export const useAuthStore = create<AuthState>((set) => {
   const getStoredItem = (key: string): string | null => {
     if (typeof window !== 'undefined') {
       return localStorage.getItem(key);
@@ -78,50 +42,30 @@ export const useAuthStore = create<AuthState>((set, get) => {
       try {
         return JSON.parse(userJson);
       } catch {
-        return MOCK_USERS.OPD;
+        return null;
       }
     }
-    return MOCK_USERS.OPD;
+    return null;
   };
 
-  const initialUser = getInitialUser() || MOCK_USERS.OPD;
-  const initialToken = getStoredItem('token') || 'token-mock-opd';
+  const initialToken = getStoredItem('token');
+  const initialUser = getInitialUser();
 
   return {
     user: initialUser,
     token: initialToken,
-    isAuthenticated: true,
+    isAuthenticated: !!initialToken && !!initialUser,
     isLoading: false,
     error: null,
 
-    loginAsMock: (role) => {
-      const mockUser = MOCK_USERS[role] || MOCK_USERS.OPD;
-      const mockToken = `mock-token-${role.toLowerCase()}`;
-      setStoredItem('token', mockToken);
-      setStoredItem('user', JSON.stringify(mockUser));
-      set({
-        user: mockUser,
-        token: mockToken,
-        isAuthenticated: true,
-        isLoading: false,
-        error: null,
-      });
-    },
+    clearError: () => set({ error: null }),
 
     login: async (payload: LoginPayload) => {
       set({ isLoading: true, error: null });
-      const { email, password } = payload;
-
-      const lowerEmail = (email || '').toLowerCase();
-      let matchedRole: 'OPD' | 'ADMIN_BRIDA' | 'KEPALA_BRIDA' = 'OPD';
-      if (lowerEmail.includes('admin') || lowerEmail.includes('brida')) matchedRole = 'ADMIN_BRIDA';
-      else if (lowerEmail.includes('kepala')) matchedRole = 'KEPALA_BRIDA';
-      else if (lowerEmail.includes('opd') || lowerEmail.includes('bappeda')) matchedRole = 'OPD';
 
       try {
         const res = await authService.login(payload);
-        const token = res.data.token;
-        const user = res.data.user;
+        const { token, user } = res.data;
 
         setStoredItem('token', token);
         setStoredItem('user', JSON.stringify(user));
@@ -133,59 +77,87 @@ export const useAuthStore = create<AuthState>((set, get) => {
           isLoading: false,
           error: null,
         });
+
+        return user;
       } catch (err: any) {
-        const mockUser = MOCK_USERS[matchedRole];
-        const mockToken = `token-mock-${matchedRole.toLowerCase()}`;
-        setStoredItem('token', mockToken);
-        setStoredItem('user', JSON.stringify(mockUser));
+        const message =
+          err.response?.data?.message ||
+          err.response?.data?.errors?.[0]?.message ||
+          err.message ||
+          'Login gagal. Periksa kembali email/NIP dan password Anda.';
+
+        removeStoredItem('token');
+        removeStoredItem('user');
+
         set({
-          user: mockUser,
-          token: mockToken,
-          isAuthenticated: true,
+          user: null,
+          token: null,
+          isAuthenticated: false,
           isLoading: false,
-          error: null,
+          error: message,
         });
+
+        throw new Error(message);
       }
     },
 
     fetchMe: async () => {
       const token = getStoredItem('token');
       if (!token) {
-        const defaultUser = MOCK_USERS.OPD;
         set({
-          user: defaultUser,
-          token: 'token-mock-opd',
-          isAuthenticated: true,
+          user: null,
+          token: null,
+          isAuthenticated: false,
           isLoading: false,
           error: null,
         });
-        return;
+        return null;
       }
+
+      set({ isLoading: true });
 
       try {
         const res = await authService.getMe();
         const user = res.data;
+
         setStoredItem('user', JSON.stringify(user));
+
         set({
           user,
+          token,
           isAuthenticated: true,
           isLoading: false,
           error: null,
         });
-      } catch (err) {
-        // Keep active mock user
+
+        return user;
+      } catch (err: any) {
+        removeStoredItem('token');
+        removeStoredItem('user');
+
+        set({
+          user: null,
+          token: null,
+          isAuthenticated: false,
+          isLoading: false,
+          error: null,
+        });
+
+        return null;
       }
     },
 
     logout: () => {
       removeStoredItem('token');
       removeStoredItem('user');
-      set({ 
-        user: MOCK_USERS.OPD, 
-        token: 'token-mock-opd', 
-        isAuthenticated: true, 
-        error: null 
+
+      set({
+        user: null,
+        token: null,
+        isAuthenticated: false,
+        isLoading: false,
+        error: null,
       });
-    }
+    },
   };
 });

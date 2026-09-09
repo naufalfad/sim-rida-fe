@@ -1,7 +1,12 @@
 import axios from 'axios';
 
-// Default to localhost:5000/api if not provided in env
-const baseURL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
+// Resolve base URL for SIM-RIDA Backend API (default to /api/v1)
+const rawBaseURL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api/v1';
+const baseURL = rawBaseURL.endsWith('/v1')
+  ? rawBaseURL
+  : rawBaseURL.endsWith('/api')
+  ? `${rawBaseURL}/v1`
+  : rawBaseURL;
 
 const axiosInstance = axios.create({
   baseURL,
@@ -10,10 +15,9 @@ const axiosInstance = axios.create({
   },
 });
 
-// Interceptor to add token to requests
+// Interceptor to add Bearer token to every request header
 axiosInstance.interceptors.request.use(
   (config) => {
-    // We can only access localStorage in browser environment
     if (typeof window !== 'undefined') {
       const token = localStorage.getItem('token');
       if (token) {
@@ -27,7 +31,7 @@ axiosInstance.interceptors.request.use(
   }
 );
 
-// Interceptor for responses (optional: handle 401 unauthenticated globally)
+// Interceptor for responses (handle 401 unauthenticated globally)
 axiosInstance.interceptors.response.use(
   (response) => {
     return response;
@@ -36,7 +40,7 @@ axiosInstance.interceptors.response.use(
     if (error.response?.status === 401) {
       if (typeof window !== 'undefined') {
         localStorage.removeItem('token');
-        // You might want to redirect to login or let the store handle it
+        localStorage.removeItem('user');
       }
     }
     return Promise.reject(error);

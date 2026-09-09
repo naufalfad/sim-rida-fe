@@ -6,6 +6,7 @@ import { useOpdStore, OpdProposal } from '@/store/useOpdStore';
 import { PageHeader } from '@/components/ui/page-header';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/components/ui/toast';
+import { DocumentViewerModal, DocumentReviewState } from '@/components/ui/document-viewer-modal';
 import {
   Award,
   Download,
@@ -20,14 +21,18 @@ import {
   FileSpreadsheet,
   FileCheck,
   Sparkles,
-  Layers
+  Layers,
+  Eye,
+  ExternalLink
 } from 'lucide-react';
+import { openOrDownloadFile, downloadFileDirectly, isPdfDocument } from '@/lib/file-viewer';
 
 export default function OpdRecommendationsPage() {
   const router = useRouter();
   const { toast } = useToast();
   const { proposals, selectProposal } = useOpdStore();
 
+  const [documentReview, setDocumentReview] = useState<DocumentReviewState | null>(null);
   const [search, setSearch] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('ALL');
 
@@ -201,11 +206,24 @@ export default function OpdRecommendationsPage() {
                   {/* Download Center & Action Buttons */}
                   <div className="pt-2 flex flex-wrap items-center gap-2">
                     <button
-                      onClick={() => handleDownload(doc?.title || item.title, doc?.type || 'Policy Brief')}
+                      type="button"
+                      onClick={() => {
+                        const fileName = doc?.title ? `${doc.title}.pdf` : `Naskah_Rekomendasi_${item.code}.pdf`;
+                        openOrDownloadFile({
+                          name: fileName,
+                          type: 'POLICY_BRIEF',
+                          proposalCode: item.code,
+                          proposalTitle: item.title,
+                          opdName: item.opdName,
+                          uploadDate: doc?.date || '01 Mar 2026',
+                          size: doc?.fileSize || '4.8 MB',
+                          content: `NASKAH REKOMENDASI KEBIJAKAN RESMI (POLICY BRIEF)\nBADAN RISET DAN INOVASI DAERAH KABUPATEN MIMIKA\n\nNomor Berkas: ${item.code}/PB-BRIDA/2026\nPerihal: Rekomendasi Hasil Riset ${item.title}\nTujuan: Kepala Perangkat Daerah / Bupati Mimika\nStatus Verifikasi: TTE TERSERTIFIKASI OLEH KEPALA BRIDA MIMIKA (BSrE BSSN)\n\nRINGKASAN EKSEKUTIF:\nBerdasarkan hasil olah data lapangan dan telaah regulasi, direkomendasikan perbaikan tata kelola serta integrasi layanan teknis lintas sektor sebagai rujukan penyusunan Renja dan Perbup Mimika.`
+                        }, toast);
+                      }}
                       className="flex-1 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold transition-all shadow flex items-center justify-center gap-1.5"
                     >
-                      <Download className="h-4 w-4" />
-                      <span>Unduh Dokumen Resmi ({doc?.fileSize || '4.8 MB'})</span>
+                      <ExternalLink className="h-4 w-4" />
+                      <span>Buka & Unduh Naskah ({doc?.fileSize || '4.8 MB'})</span>
                     </button>
                     <button
                       onClick={() => {
@@ -224,6 +242,15 @@ export default function OpdRecommendationsPage() {
             );
           })}
         </div>
+      )}
+
+      {/* Document Review & Viewer Modal */}
+      {documentReview && (
+        <DocumentViewerModal
+          isOpen={!!documentReview}
+          onClose={() => setDocumentReview(null)}
+          document={documentReview}
+        />
       )}
 
     </div>

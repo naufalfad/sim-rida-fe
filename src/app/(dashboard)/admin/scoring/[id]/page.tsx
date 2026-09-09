@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useMemo, use } from 'react';
+import React, { useState, useMemo, use, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { 
@@ -33,8 +33,13 @@ import {
   DollarSign,
   Sliders,
   BookOpen,
-  Briefcase
+  Briefcase,
+  Loader2,
+  Eye,
+  ExternalLink,
 } from 'lucide-react';
+import { DocumentViewerModal, DocumentReviewItem } from '@/components/ui/document-viewer-modal';
+import { openOrDownloadFile, downloadFileDirectly, isPdfDocument } from '@/lib/file-viewer';
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -45,10 +50,17 @@ export default function AdminScoringDetailPage({ params }: PageProps) {
   const router = useRouter();
   const { toast } = useToast();
   const { user } = useAuthStore();
-  const { proposals, saveScoring, approveToResearch } = useOpdStore();
+  const { proposals, saveScoring, approveToResearch, fetchScoringQueue, fetchProposals, isLoadingProposals } = useOpdStore();
 
   const proposalId = resolvedParams.id;
   const proposal = proposals.find((p) => p.id === proposalId);
+
+  useEffect(() => {
+    if (!proposal) {
+      fetchScoringQueue();
+      fetchProposals();
+    }
+  }, [proposal, fetchScoringQueue, fetchProposals]);
 
   // Scoring form states initialized from existing scoringData or smart defaults
   const [visionAlignmentScore, setVisionAlignmentScore] = useState<number>(
@@ -59,6 +71,9 @@ export default function AdminScoringDetailPage({ params }: PageProps) {
   );
   const [budgetFeasibilityScore, setBudgetFeasibilityScore] = useState<number>(
     proposal?.scoringData?.budgetFeasibilityScore ?? 80
+  );
+  const [dataReadinessScore, setDataReadinessScore] = useState<number>(
+    proposal?.scoringData?.dataReadinessScore ?? 80
   );
   const [fieldClassification, setFieldClassification] = useState<AdminScoringData['fieldClassification']>(
     proposal?.scoringData?.fieldClassification ?? 'Sosial Budaya & Kesejahteraan'
@@ -77,12 +92,42 @@ export default function AdminScoringDetailPage({ params }: PageProps) {
   );
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // Document review modal state
+  const [previewDoc, setPreviewDoc] = useState<DocumentReviewItem | null>(null);
+  const [isDocModalOpen, setIsDocModalOpen] = useState(false);
+
+  const openDocumentReview = (docItem: Partial<DocumentReviewItem>) => {
+    setPreviewDoc({
+      name: docItem.name || 'Dokumen_Usulan_SIMRIDA.pdf',
+      size: docItem.size || '1.4 MB',
+      uploadDate: docItem.uploadDate || proposal?.submittedAt || '01 Jan 2026',
+      type: docItem.type || 'DATA_DUKUNG',
+      proposalCode: proposal?.code,
+      proposalTitle: proposal?.title,
+      opdName: proposal?.opdName,
+      problemStatement: proposal?.problemStatement,
+      urgencyReason: proposal?.urgencyReason,
+      estimatedBudget: proposal?.estimatedBudget,
+      expectedOutput: proposal?.expectedOutput,
+    });
+    setIsDocModalOpen(true);
+  };
+
   // Weighted total score calculation
-  // 40% Visi Misi + 35% Urgensi + 25% Anggaran / Kelayakan Teknis
+  // 30% Visi Misi + 30% Urgensi + 20% Anggaran + 20% Kesiapan Data & Kapasitas
   const totalScore = useMemo(() => {
-    const total = (visionAlignmentScore * 0.4) + (urgencyScore * 0.35) + (budgetFeasibilityScore * 0.25);
+    const total = (visionAlignmentScore * 0.3) + (urgencyScore * 0.3) + (budgetFeasibilityScore * 0.2) + (dataReadinessScore * 0.2);
     return Math.round(total);
-  }, [visionAlignmentScore, urgencyScore, budgetFeasibilityScore]);
+  }, [visionAlignmentScore, urgencyScore, budgetFeasibilityScore, dataReadinessScore]);
+
+  if (isLoadingProposals && !proposal) {
+    return (
+      <div className="max-w-4xl mx-auto py-20 text-center space-y-4 font-sans">
+        <Loader2 className="w-10 h-10 text-[#0f2c59] animate-spin mx-auto" />
+        <p className="text-xs text-slate-600 font-semibold">Memuat data instrumen scoring usulan riset...</p>
+      </div>
+    );
+  }
 
   if (!proposal) {
     return (
@@ -100,13 +145,14 @@ export default function AdminScoringDetailPage({ params }: PageProps) {
     );
   }
 
-  const handleSaveOnly = () => {
+  const handleSaveOnly = async () => {
     setIsSubmitting(true);
     try {
-      saveScoring(proposal.id, {
+      await saveScoring(proposal.id, {
         visionAlignmentScore,
         urgencyScore,
         budgetFeasibilityScore,
+        dataReadinessScore,
         totalScore,
         fieldClassification,
         executionMethod,
@@ -117,19 +163,20 @@ export default function AdminScoringDetailPage({ params }: PageProps) {
       });
       toast(`Penilaian usulan ${proposal.code} berhasil disimpan dengan skor ${totalScore}/100.`, 'success');
     } catch (err: any) {
-      toast('Gagal menyimpan penilaian: ' + err.message, 'error');
+      toast('Gagal menyimpan penilaian: ' + (err.message || 'Terjadi kesalahan sistem'), 'error');
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  const handleFinalizeAndApprove = () => {
+  const handleFinalizeAndApprove = async () => {
     setIsSubmitting(true);
     try {
-      saveScoring(proposal.id, {
+      await saveScoring(proposal.id, {
         visionAlignmentScore,
         urgencyScore,
         budgetFeasibilityScore,
+        dataReadinessScore,
         totalScore,
         fieldClassification,
         executionMethod,
@@ -142,7 +189,7 @@ export default function AdminScoringDetailPage({ params }: PageProps) {
       toast(`Skor difinalisasi (${totalScore}/100). Usulan ${proposal.code} berhasil diteruskan ke tahap Eksekutif & Manajemen Riset!`, 'success');
       router.push('/admin/scoring');
     } catch (err: any) {
-      toast('Gagal memfinalisasi penilaian: ' + err.message, 'error');
+      toast('Gagal memfinalisasi penilaian: ' + (err.message || 'Terjadi kesalahan sistem'), 'error');
     } finally {
       setIsSubmitting(false);
     }
@@ -300,13 +347,35 @@ export default function AdminScoringDetailPage({ params }: PageProps) {
                         <span className="text-[10px] text-slate-400">{doc.size}</span>
                       </div>
                     </div>
-                    <button
-                      type="button"
-                      onClick={() => alert(`Mengunduh dokumen: ${doc.name}`)}
-                      className="px-3 py-1 bg-white hover:bg-slate-200 text-slate-700 font-bold text-2xs rounded-lg border transition shadow-sm shrink-0"
-                    >
-                      Unduh
-                    </button>
+                    <div className="flex items-center gap-1.5 shrink-0">
+                      <button
+                        type="button"
+                        onClick={() => openOrDownloadFile({
+                          name: doc.name,
+                          size: doc.size,
+                          uploadDate: doc.uploadDate,
+                          url: doc.url,
+                          type: 'DATA_DUKUNG',
+                          proposalCode: proposal.code,
+                          proposalTitle: proposal.title,
+                          opdName: proposal.opdName,
+                          content: `LAMPIRAN DATA DUKUNG: ${doc.name}\nUsulan: ${proposal.title} (${proposal.code})\nPengunggah: ${proposal.opdName}`
+                        }, toast)}
+                        className="px-2.5 py-1 bg-white hover:bg-slate-200 text-slate-700 font-bold text-2xs rounded-lg border transition shadow-xs flex items-center gap-1"
+                      >
+                        {isPdfDocument(doc.name) ? (
+                          <>
+                            <ExternalLink className="w-3 h-3 text-blue-600" />
+                            <span>Buka PDF</span>
+                          </>
+                        ) : (
+                          <>
+                            <Download className="w-3 h-3 text-blue-600" />
+                            <span>Unduh File</span>
+                          </>
+                        )}
+                      </button>
+                    </div>
                   </div>
                 ))}
               </div>
@@ -364,10 +433,10 @@ export default function AdminScoringDetailPage({ params }: PageProps) {
                       ? 'bg-amber-300 text-amber-950' 
                       : 'bg-rose-300 text-rose-950'
                   }`}>
-                    {totalScore >= 80 ? 'Prioritas Utama' : totalScore >= 65 ? 'Prioritas Menengah' : 'Prioritas Rendah'}
+                    {totalScore >= 80 ? 'Prioritas Utama' : totalScore >= 65 ? 'Prioritas Kedua' : 'Tidak Prioritas'}
                   </span>
                   <span className="block text-[10px] text-blue-100 font-medium mt-1">
-                    {totalScore >= 80 ? 'Rekomendasi Lolos Agenda' : 'Perlu Penelaahan Lanjut'}
+                    {totalScore >= 80 ? 'Rekomendasi Lolos Agenda Riset' : totalScore >= 65 ? 'Dapat Dipertimbangkan' : 'Perlu Penelaahan Lanjut'}
                   </span>
                 </div>
               </div>
@@ -383,13 +452,13 @@ export default function AdminScoringDetailPage({ params }: PageProps) {
               </div>
             </div>
 
-            {/* 3 Digital Criteria Sliders */}
+            {/* 4 Digital Criteria Sliders */}
             <div className="space-y-4 bg-slate-50 p-4 rounded-xl border border-slate-200">
               
-              {/* Kriteria 1: Kesesuaian Visi-Misi (Bobot 40%) */}
+              {/* Kriteria 1: Kesesuaian Visi-Misi (Bobot 30%) */}
               <div className="space-y-1.5">
                 <div className="flex justify-between items-center text-xs">
-                  <span className="font-bold text-slate-800">1. Keselarasan Visi-Misi Daerah (40%)</span>
+                  <span className="font-bold text-slate-800">1. Keselarasan Visi-Misi Daerah & RPJMD (30%)</span>
                   <span className="font-mono font-black text-blue-700 bg-blue-100 px-2 py-0.5 rounded text-xs">
                     {visionAlignmentScore}
                   </span>
@@ -410,10 +479,10 @@ export default function AdminScoringDetailPage({ params }: PageProps) {
                 </div>
               </div>
 
-              {/* Kriteria 2: Urgensi Masalah Lapangan (Bobot 35%) */}
+              {/* Kriteria 2: Urgensi Masalah Lapangan (Bobot 30%) */}
               <div className="space-y-1.5 pt-2 border-t border-slate-200">
                 <div className="flex justify-between items-center text-xs">
-                  <span className="font-bold text-slate-800">2. Tingkat Urgensi Masalah (35%)</span>
+                  <span className="font-bold text-slate-800">2. Tingkat Urgensi Masalah (30%)</span>
                   <span className="font-mono font-black text-blue-700 bg-blue-100 px-2 py-0.5 rounded text-xs">
                     {urgencyScore}
                   </span>
@@ -434,10 +503,10 @@ export default function AdminScoringDetailPage({ params }: PageProps) {
                 </div>
               </div>
 
-              {/* Kriteria 3: Kelayakan Anggaran & Kesiapan Teknis (Bobot 25%) */}
+              {/* Kriteria 3: Kelayakan Anggaran & Kesiapan Teknis (Bobot 20%) */}
               <div className="space-y-1.5 pt-2 border-t border-slate-200">
                 <div className="flex justify-between items-center text-xs">
-                  <span className="font-bold text-slate-800">3. Kelayakan Pagu & Teknis (25%)</span>
+                  <span className="font-bold text-slate-800">3. Kelayakan Pagu Anggaran & Teknis (20%)</span>
                   <span className="font-mono font-black text-blue-700 bg-blue-100 px-2 py-0.5 rounded text-xs">
                     {budgetFeasibilityScore}
                   </span>
@@ -455,6 +524,30 @@ export default function AdminScoringDetailPage({ params }: PageProps) {
                   <span>0 (Biaya/Metode Berat)</span>
                   <span>50</span>
                   <span>100 (Sangat Layak)</span>
+                </div>
+              </div>
+
+              {/* Kriteria 4: Kesiapan Data & Kapasitas Pelaksanaan Riset (Bobot 20%) */}
+              <div className="space-y-1.5 pt-2 border-t border-slate-200">
+                <div className="flex justify-between items-center text-xs">
+                  <span className="font-bold text-slate-800">4. Kesiapan Data Dukung & Kapasitas Riset (20%)</span>
+                  <span className="font-mono font-black text-blue-700 bg-blue-100 px-2 py-0.5 rounded text-xs">
+                    {dataReadinessScore}
+                  </span>
+                </div>
+                <input
+                  type="range"
+                  min="0"
+                  max="100"
+                  step="1"
+                  value={dataReadinessScore}
+                  onChange={(e) => setDataReadinessScore(Number(e.target.value))}
+                  className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-blue-600"
+                />
+                <div className="flex justify-between text-[10px] text-slate-400 font-semibold">
+                  <span>0 (Data Minim)</span>
+                  <span>50</span>
+                  <span>100 (Data Lengkap & Matang)</span>
                 </div>
               </div>
 
@@ -621,6 +714,13 @@ export default function AdminScoringDetailPage({ params }: PageProps) {
         </div>
 
       </div>
+
+      {/* Document Review & Downloader Modal */}
+      <DocumentViewerModal
+        isOpen={isDocModalOpen}
+        onClose={() => setIsDocModalOpen(false)}
+        document={previewDoc}
+      />
     </div>
   );
 }

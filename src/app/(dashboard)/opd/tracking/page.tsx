@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useOpdStore, OpdProposal, TrackingStep } from '@/store/useOpdStore';
 import { PageHeader } from '@/components/ui/page-header';
@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table';
 import { Dialog } from '@/components/ui/dialog';
 import { useToast } from '@/components/ui/toast';
+import { DocumentViewerModal, DocumentReviewState } from '@/components/ui/document-viewer-modal';
 import {
   Activity,
   Search,
@@ -30,13 +31,21 @@ import {
   Layers,
   Sparkles,
   Download,
+  ExternalLink,
   X
 } from 'lucide-react';
+import { openOrDownloadFile, downloadFileDirectly, isPdfDocument } from '@/lib/file-viewer';
 
 export default function OpdTrackingPage() {
   const router = useRouter();
   const { toast } = useToast();
-  const { proposals, submitDraft, getTrackingSteps } = useOpdStore();
+  const { proposals, submitDraft, getTrackingSteps, fetchProposals } = useOpdStore();
+
+  const [documentReview, setDocumentReview] = useState<DocumentReviewState | null>(null);
+
+  useEffect(() => {
+    fetchProposals();
+  }, [fetchProposals]);
 
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('ALL');
@@ -561,13 +570,39 @@ export default function OpdTrackingPage() {
                           </span>
                         </div>
                       </div>
-                      <button
-                        type="button"
-                        onClick={() => alert(`Mengunduh dokumen TOR: ${selectedProposal.torDocument?.name}`)}
-                        className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-2xs font-bold rounded-lg shadow transition"
-                      >
-                        Unduh TOR
-                      </button>
+                      <div className="flex items-center gap-2">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            if (selectedProposal.torDocument) {
+                              openOrDownloadFile({
+                                name: selectedProposal.torDocument.name,
+                                type: 'KAK_TOR',
+                                proposalCode: selectedProposal.code,
+                                proposalTitle: selectedProposal.title,
+                                opdName: selectedProposal.opdName,
+                                uploadDate: selectedProposal.torDocument.uploadDate || selectedProposal.createdAt,
+                                size: selectedProposal.torDocument.size,
+                                url: selectedProposal.torDocument.url,
+                                content: `DOKUMEN KERANGKA ACUAN KERJA (KAK/TOR)\nUSULAN KELITBANGAN KABUPATEN MIMIKA\n\nNomor Registrasi: ${selectedProposal.code}\nJudul Usulan: ${selectedProposal.title}\nPerangkat Daerah Pemrakarsa: ${selectedProposal.opdName}\nKategori Urusan: ${selectedProposal.category}\nTarget Output: ${selectedProposal.expectedOutput}\n\n1. LATAR BELAKANG & IDENTIFIKASI MASALAH:\n${selectedProposal.problemStatement}\n\n2. URGENSI KAJIAN:\n${selectedProposal.urgencyReason}`
+                              }, toast);
+                            }
+                          }}
+                          className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-2xs font-bold rounded-lg shadow transition flex items-center gap-1"
+                        >
+                          {isPdfDocument(selectedProposal.torDocument.name) ? (
+                            <>
+                              <ExternalLink className="h-3.5 w-3.5" />
+                              <span>Buka PDF di Tab Baru</span>
+                            </>
+                          ) : (
+                            <>
+                              <Download className="h-3.5 w-3.5" />
+                              <span>Unduh File</span>
+                            </>
+                          )}
+                        </button>
+                      </div>
                     </div>
                   ) : (
                     <p className="text-3xs text-gray-400 italic p-3 bg-gray-50 dark:bg-gray-900 rounded-lg border">
@@ -609,9 +644,37 @@ export default function OpdTrackingPage() {
                         <div key={i} className="flex items-center justify-between p-2.5 bg-gray-50 dark:bg-gray-900 border rounded text-3xs">
                           <div className="flex items-center gap-2">
                             <FileText className="h-4 w-4 text-emerald-600 shrink-0" />
-                            <span className="font-bold text-gray-700 dark:text-gray-300 truncate max-w-44 block">{doc.name}</span>
+                            <span className="font-bold text-gray-700 dark:text-gray-300 truncate max-w-36 block">{doc.name}</span>
                           </div>
-                          <span className="text-gray-400">{doc.size}</span>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              openOrDownloadFile({
+                                name: doc.name,
+                                type: 'DATA_DUKUNG',
+                                proposalCode: selectedProposal.code,
+                                proposalTitle: selectedProposal.title,
+                                opdName: selectedProposal.opdName,
+                                uploadDate: selectedProposal.createdAt,
+                                size: doc.size,
+                                url: doc.url,
+                                content: `BERKAS LAMPIRAN DATA DUKUNG\nJudul: ${doc.name}\nUsulan Terkait: ${selectedProposal.title} (${selectedProposal.code})\nPengunggah: ${selectedProposal.opdName}`
+                              }, toast);
+                            }}
+                            className="px-2 py-1 bg-gray-200 dark:bg-gray-800 hover:bg-emerald-600 hover:text-white rounded text-3xs font-bold transition flex items-center gap-1"
+                          >
+                            {isPdfDocument(doc.name) ? (
+                              <>
+                                <ExternalLink className="h-3 w-3" />
+                                <span>Buka PDF</span>
+                              </>
+                            ) : (
+                              <>
+                                <Download className="h-3 w-3" />
+                                <span>Unduh</span>
+                              </>
+                            )}
+                          </button>
                         </div>
                       ))}
                     </div>
@@ -646,6 +709,15 @@ export default function OpdTrackingPage() {
           </div>
         )}
       </Dialog>
+
+      {/* Document Review & Viewer Modal */}
+      {documentReview && (
+        <DocumentViewerModal
+          isOpen={!!documentReview}
+          onClose={() => setDocumentReview(null)}
+          document={documentReview}
+        />
+      )}
 
     </div>
   );

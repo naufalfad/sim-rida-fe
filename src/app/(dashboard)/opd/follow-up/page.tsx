@@ -24,11 +24,15 @@ import {
 export default function OpdFollowUpPage() {
   const router = useRouter();
   const { toast } = useToast();
-  const { proposals, selectedProposalId, selectProposal, submitFollowUp } = useOpdStore();
+  const { proposals, selectedProposalId, selectProposal, submitFollowUp, fetchProposals } = useOpdStore();
+
+  React.useEffect(() => {
+    fetchProposals();
+  }, [fetchProposals]);
 
   // Completed proposals that have recommendations
   const completedProposals = useMemo(() => {
-    return proposals.filter((p) => p.status === 'COMPLETED' || p.recommendationDoc);
+    return proposals.filter((p) => p.status === 'COMPLETED' || p.recommendationDoc || p.followUpReport);
   }, [proposals]);
 
   const activeProposal = useMemo(() => {
@@ -60,7 +64,7 @@ export default function OpdFollowUpPage() {
     }
   }, [activeProposal]);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!activeProposal) return;
     if (!utilizationSummary.trim()) {
@@ -71,7 +75,7 @@ export default function OpdFollowUpPage() {
     try {
       setIsSubmitting(true);
       const today = new Date().toLocaleDateString('id-ID');
-      submitFollowUp(activeProposal.id, {
+      await submitFollowUp(activeProposal.id, {
         utilizationType,
         utilizationSummary,
         satisfactionRating,
@@ -79,7 +83,8 @@ export default function OpdFollowUpPage() {
         submittedAt: today,
       });
 
-      toast('Laporan pemanfaatan & rating kepuasan berhasil dikirimkan ke BRIDA.', 'success');
+      toast('Laporan pemanfaatan & rating kepuasan berhasil disimpan dan dikirimkan ke BRIDA.', 'success');
+      await fetchProposals();
     } catch (err: any) {
       toast('Gagal mengirimkan laporan: ' + err.message, 'error');
     } finally {

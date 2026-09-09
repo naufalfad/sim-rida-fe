@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { 
   useOpdStore, 
@@ -31,8 +31,16 @@ import {
   FileSpreadsheet,
   Check,
   AlertTriangle,
-  FolderLock
+  FolderLock,
+  Loader2,
+  RefreshCw,
+  ExternalLink,
+  Download,
+  Trash2,
+  Edit3
 } from 'lucide-react';
+import { isPdfDocument } from '@/lib/file-viewer';
+import { openOrDownloadUploadedFile } from '@/lib/file-storage';
 
 const MILESTONES: Array<{
   id: StudyManagementData['currentMilestone'];
@@ -49,11 +57,26 @@ const MILESTONES: Array<{
 
 export default function AdminResearchPage() {
   const { toast } = useToast();
-  const { proposals, updateStudyMilestone, updateStudyKakRka, addWorkingDocument } = useOpdStore();
+  const { 
+    proposals, 
+    updateStudyMilestone, 
+    updateStudyKakRka, 
+    addWorkingDocument,
+    fetchStudies,
+    fetchApprovedProposals,
+    initializeStudy,
+    approvedProposals,
+    studies,
+    isLoadingStudies
+  } = useOpdStore();
 
   const [searchQuery, setSearchQuery] = useState('');
   const [filterScheme, setFilterScheme] = useState<'ALL' | 'SWAKELOLA' | 'PENUNJUKAN_LANGSUNG' | 'E_KATALOG' | 'TENDER'>('ALL');
   const [selectedProposal, setSelectedProposal] = useState<OpdProposal | null>(null);
+
+  // Inisiasi Riset Modal
+  const [isInitModalOpen, setIsInitModalOpen] = useState(false);
+  const [isInitializing, setIsInitializing] = useState<string | null>(null);
 
   // Form update milestone modal
   const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
@@ -74,6 +97,11 @@ export default function AdminResearchPage() {
   const [docTitle, setDocTitle] = useState('');
   const [docType, setDocType] = useState<StudyManagementData['internalWorkingDocuments'][0]['type']>('Laporan Antara');
   const [docFileSize, setDocFileSize] = useState('2.5 MB');
+
+  useEffect(() => {
+    fetchStudies();
+    fetchApprovedProposals();
+  }, [fetchStudies, fetchApprovedProposals]);
 
   // Filter proposals that are approved into research (status IN_PROGRESS or COMPLETED or has studyData)
   const researchProposals = proposals.filter((p) => {
@@ -190,12 +218,27 @@ export default function AdminResearchPage() {
           </p>
         </div>
         <div className="flex items-center gap-3">
+          <button
+            onClick={() => { fetchStudies(); fetchApprovedProposals(); }}
+            className="flex items-center gap-2 bg-slate-800 hover:bg-slate-700 text-slate-200 font-semibold px-3.5 py-2.5 rounded-xl transition text-xs border border-slate-700"
+            title="Muat Ulang Kajian"
+          >
+            <RefreshCw className={`w-3.5 h-3.5 ${isLoadingStudies ? 'animate-spin' : ''}`} />
+            <span>Refresh</span>
+          </button>
+          <button
+            onClick={() => setIsInitModalOpen(true)}
+            className="flex items-center gap-2 bg-white hover:bg-slate-100 text-slate-900 font-bold px-4 py-2.5 rounded-xl transition shadow text-xs"
+          >
+            <Plus className="w-4 h-4 text-emerald-600" />
+            <span>Inisiasi Riset ({approvedProposals.length})</span>
+          </button>
           <Link
             href="/admin/recommendation-builder"
-            className="flex items-center gap-2 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold px-5 py-3 rounded-xl transition shadow-lg hover:shadow-emerald-500/20 text-sm"
+            className="flex items-center gap-2 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold px-4 py-2.5 rounded-xl transition shadow-lg hover:shadow-emerald-500/20 text-xs"
           >
             <BookOpen className="w-4 h-4" />
-            Susun Policy Brief
+            <span>Susun Policy Brief</span>
             <ArrowRight className="w-4 h-4" />
           </Link>
         </div>
@@ -480,10 +523,33 @@ export default function AdminResearchPage() {
                           </div>
                           <button
                             type="button"
-                            onClick={() => alert(`Mengunduh KAK: ${selectedProposal.studyData?.kakDocument?.name}`)}
-                            className="w-full py-1.5 bg-blue-50 hover:bg-blue-100 text-blue-700 font-bold text-2xs rounded-lg transition border border-blue-200"
+                            onClick={() => {
+                              if (selectedProposal.studyData?.kakDocument) {
+                                openOrDownloadUploadedFile({
+                                  name: selectedProposal.studyData.kakDocument.name,
+                                  url: selectedProposal.studyData.kakDocument.url,
+                                  dataUrl: selectedProposal.studyData.kakDocument.dataUrl,
+                                  proposalCode: selectedProposal.code,
+                                  proposalTitle: selectedProposal.title,
+                                  opdName: selectedProposal.opdName,
+                                  uploadDate: selectedProposal.studyData.kakDocument.uploadDate,
+                                  size: selectedProposal.studyData.kakDocument.size,
+                                }, toast);
+                              }
+                            }}
+                            className="w-full py-1.5 bg-blue-50 hover:bg-blue-100 text-blue-700 font-bold text-2xs rounded-lg transition border border-blue-200 flex items-center justify-center gap-1.5"
                           >
-                            Unduh Dokumen KAK
+                            {isPdfDocument(selectedProposal.studyData.kakDocument.name) ? (
+                              <>
+                                <ExternalLink className="w-3 h-3" />
+                                <span>Buka PDF di Tab Baru</span>
+                              </>
+                            ) : (
+                              <>
+                                <Download className="w-3 h-3" />
+                                <span>Unduh Dokumen KAK</span>
+                              </>
+                            )}
                           </button>
                         </div>
                       ) : (
@@ -533,10 +599,33 @@ export default function AdminResearchPage() {
                           </div>
                           <button
                             type="button"
-                            onClick={() => alert(`Mengunduh RKA: ${selectedProposal.studyData?.rkaDocument?.name}`)}
-                            className="w-full py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 font-bold text-2xs rounded-lg transition border border-emerald-200"
+                            onClick={() => {
+                              if (selectedProposal.studyData?.rkaDocument) {
+                                openOrDownloadUploadedFile({
+                                  name: selectedProposal.studyData.rkaDocument.name,
+                                  url: selectedProposal.studyData.rkaDocument.url,
+                                  dataUrl: selectedProposal.studyData.rkaDocument.dataUrl,
+                                  proposalCode: selectedProposal.code,
+                                  proposalTitle: selectedProposal.title,
+                                  opdName: selectedProposal.opdName,
+                                  uploadDate: selectedProposal.studyData.rkaDocument.uploadDate,
+                                  size: selectedProposal.studyData.rkaDocument.size,
+                                }, toast);
+                              }
+                            }}
+                            className="w-full py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 font-bold text-2xs rounded-lg transition border border-emerald-200 flex items-center justify-center gap-1.5"
                           >
-                            Unduh Dokumen RKA
+                            {isPdfDocument(selectedProposal.studyData.rkaDocument.name) ? (
+                              <>
+                                <ExternalLink className="w-3 h-3" />
+                                <span>Buka PDF di Tab Baru</span>
+                              </>
+                            ) : (
+                              <>
+                                <Download className="w-3 h-3" />
+                                <span>Unduh Berkas RKA</span>
+                              </>
+                            )}
                           </button>
                         </div>
                       ) : (
@@ -950,6 +1039,100 @@ export default function AdminResearchPage() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL 4: Inisiasi Usulan Approved Menjadi Kajian Riset */}
+      {isInitModalOpen && (
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-white w-full max-w-2xl rounded-2xl shadow-2xl border border-slate-200 overflow-hidden animate-in fade-in zoom-in-95 duration-150 max-h-[90vh] flex flex-col">
+            <div className="bg-gradient-to-r from-emerald-900 to-teal-950 text-white p-6 shrink-0">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="font-black text-lg flex items-center gap-2">
+                    <Plus className="w-5 h-5 text-emerald-400" />
+                    Inisiasi Kajian Riset dari Usulan Disetujui
+                  </h3>
+                  <p className="text-xs text-emerald-200 mt-1">
+                    Pilih usulan penelitian yang telah disetujui Kepala BRIDA untuk dijadikan agenda riset aktif dan dibuatkan draf KAK awal.
+                  </p>
+                </div>
+                <button
+                  onClick={() => setIsInitModalOpen(false)}
+                  className="text-white/70 hover:text-white text-lg font-bold px-2 py-1"
+                >
+                  ✕
+                </button>
+              </div>
+            </div>
+
+            <div className="p-6 overflow-y-auto space-y-4 flex-1">
+              {approvedProposals.length === 0 ? (
+                <div className="p-8 text-center bg-slate-50 rounded-xl border border-slate-200 text-slate-500">
+                  <CheckCircle2 className="w-10 h-10 mx-auto text-slate-300 mb-2" />
+                  <p className="font-bold text-slate-700 text-sm">Tidak ada usulan berstatus APPROVED yang belum diinisiasi</p>
+                  <p className="text-xs text-slate-400 mt-1">Seluruh usulan yang telah disetujui Kepala BRIDA sudah diinisiasi menjadi kajian riset aktif.</p>
+                </div>
+              ) : (
+                approvedProposals.map((prop) => (
+                  <div
+                    key={prop.id}
+                    className="p-4 bg-slate-50 hover:bg-emerald-50/40 rounded-xl border border-slate-200 hover:border-emerald-300 transition flex flex-col sm:flex-row sm:items-center justify-between gap-4"
+                  >
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-2">
+                        <span className="font-mono text-xs font-bold text-emerald-800 bg-emerald-100/70 px-2 py-0.5 rounded">
+                          {prop.code}
+                        </span>
+                        <span className="text-xs font-bold text-slate-600">
+                          {prop.opdName}
+                        </span>
+                      </div>
+                      <h4 className="font-bold text-slate-900 text-sm">{prop.title}</h4>
+                      <p className="text-xs text-slate-500">
+                        Pagu Disetujui: <strong className="text-emerald-700 font-mono font-bold">
+                          {prop.estimatedBudget ? `Rp ${prop.estimatedBudget.toLocaleString('id-ID')}` : 'Sesuai Standar'}
+                        </strong>
+                      </p>
+                    </div>
+
+                    <button
+                      disabled={isInitializing === prop.id}
+                      onClick={async () => {
+                        setIsInitializing(prop.id);
+                        try {
+                          await initializeStudy(prop.id);
+                          toast(`Kajian riset untuk usulan ${prop.code} berhasil diinisiasi.`, 'success');
+                          fetchStudies();
+                        } catch (err: any) {
+                          toast(err.message || 'Gagal menginisiasi kajian', 'error');
+                        } finally {
+                          setIsInitializing(null);
+                        }
+                      }}
+                      className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold transition shadow flex items-center justify-center gap-1.5 shrink-0 disabled:opacity-50"
+                    >
+                      {isInitializing === prop.id ? (
+                        <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                      ) : (
+                        <Plus className="w-3.5 h-3.5" />
+                      )}
+                      <span>Inisiasi Riset</span>
+                    </button>
+                  </div>
+                ))
+              )}
+            </div>
+
+            <div className="p-4 bg-slate-50 border-t border-slate-200 flex justify-end shrink-0">
+              <button
+                onClick={() => setIsInitModalOpen(false)}
+                className="px-4 py-2 text-xs font-bold text-slate-600 hover:bg-slate-200 rounded-lg transition"
+              >
+                Tutup
+              </button>
+            </div>
           </div>
         </div>
       )}

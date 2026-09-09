@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useOpdStore, OpdProposal, AdminScoringData, ExecutionMethod } from '@/store/useOpdStore';
 import { useAuthStore } from '@/store/useAuthStore';
@@ -15,32 +15,46 @@ import {
   Building,
   ArrowRight,
   Save,
-  FileText
+  FileText,
+  RefreshCw,
+  Loader2,
 } from 'lucide-react';
 
 export default function AdminScoringPage() {
   const router = useRouter();
   const { toast } = useToast();
   const { user } = useAuthStore();
-  const { proposals, saveScoring, approveToResearch } = useOpdStore();
+  const { proposals, saveScoring, approveToResearch, fetchScoringQueue, fetchProposals, isLoadingProposals } = useOpdStore();
 
   const [search, setSearch] = useState('');
   const [selectedProposal, setSelectedProposal] = useState<OpdProposal | null>(null);
   const [isScoringModalOpen, setIsScoringModalOpen] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+
+  useEffect(() => {
+    fetchScoringQueue();
+    fetchProposals();
+  }, [fetchScoringQueue, fetchProposals]);
+
+  const handleRefresh = () => {
+    fetchScoringQueue();
+    fetchProposals();
+  };
 
   // Scoring form states
   const [visionAlignmentScore, setVisionAlignmentScore] = useState(85);
   const [urgencyScore, setUrgencyScore] = useState(85);
   const [budgetFeasibilityScore, setBudgetFeasibilityScore] = useState(80);
+  const [dataReadinessScore, setDataReadinessScore] = useState(80);
   const [fieldClassification, setFieldClassification] = useState<AdminScoringData['fieldClassification']>('Sosial Budaya & Kesejahteraan');
   const [executionMethod, setExecutionMethod] = useState<ExecutionMethod>('SWAKELOLA');
   const [researchScheme, setResearchScheme] = useState<AdminScoringData['researchScheme']>('INTERNAL_BRIDA');
   const [evaluatorNotes, setEvaluatorNotes] = useState('');
   const [targetCompletionDate, setTargetCompletionDate] = useState('2026-06-30');
 
-  // Proposals ready for scoring (IN_REVIEW or already scored / approved)
+  // Proposals ready for scoring (IN_REVIEW, SCORED, APPROVED, IN_PROGRESS, COMPLETED)
   const scorableProposals = useMemo(() => {
-    return proposals.filter((p) => ['IN_REVIEW', 'APPROVED', 'IN_PROGRESS', 'COMPLETED'].includes(p.status)).filter((p) => {
+    return proposals.filter((p) => ['IN_REVIEW', 'SCORED', 'APPROVED', 'IN_PROGRESS', 'COMPLETED'].includes(p.status)).filter((p) => {
       const matchSearch =
         p.title.toLowerCase().includes(search.toLowerCase()) ||
         p.code.toLowerCase().includes(search.toLowerCase()) ||
@@ -50,9 +64,9 @@ export default function AdminScoringPage() {
   }, [proposals, search]);
 
   const totalScore = useMemo(() => {
-    const total = (visionAlignmentScore * 0.4) + (urgencyScore * 0.35) + (budgetFeasibilityScore * 0.25);
+    const total = (visionAlignmentScore * 0.3) + (urgencyScore * 0.3) + (budgetFeasibilityScore * 0.2) + (dataReadinessScore * 0.2);
     return Math.round(total);
-  }, [visionAlignmentScore, urgencyScore, budgetFeasibilityScore]);
+  }, [visionAlignmentScore, urgencyScore, budgetFeasibilityScore, dataReadinessScore]);
 
   const handleOpenScoring = (proposal: OpdProposal) => {
     setSelectedProposal(proposal);
@@ -60,6 +74,7 @@ export default function AdminScoringPage() {
       setVisionAlignmentScore(proposal.scoringData.visionAlignmentScore);
       setUrgencyScore(proposal.scoringData.urgencyScore);
       setBudgetFeasibilityScore(proposal.scoringData.budgetFeasibilityScore);
+      setDataReadinessScore(proposal.scoringData.dataReadinessScore ?? 80);
       setFieldClassification(proposal.scoringData.fieldClassification);
       setExecutionMethod(proposal.scoringData.executionMethod || 'SWAKELOLA');
       setResearchScheme(proposal.scoringData.researchScheme);
@@ -68,49 +83,66 @@ export default function AdminScoringPage() {
       setVisionAlignmentScore(85);
       setUrgencyScore(proposal.urgencyLevel === 'TINGGI' ? 90 : proposal.urgencyLevel === 'SEDANG' ? 80 : 70);
       setBudgetFeasibilityScore(80);
+      setDataReadinessScore(80);
       setFieldClassification('Sosial Budaya & Kesejahteraan');
       setExecutionMethod('SWAKELOLA');
       setResearchScheme('INTERNAL_BRIDA');
-      setEvaluatorNotes('');
+      setEvaluatorNotes('Usulan dinilai memenuhi kriteria keselarasan prioritas daerah dan siap ditindaklanjuti.');
     }
     setIsScoringModalOpen(true);
   };
 
-  const handleSaveScoringOnly = () => {
+  const handleSaveScoringOnly = async () => {
     if (!selectedProposal) return;
-    saveScoring(selectedProposal.id, {
-      visionAlignmentScore,
-      urgencyScore,
-      budgetFeasibilityScore,
-      totalScore,
-      fieldClassification,
-      executionMethod,
-      researchScheme: executionMethod === 'SWAKELOLA' ? 'INTERNAL_BRIDA' : 'KERJASAMA',
-      evaluatorNotes,
-      scoredAt: new Date().toISOString().split('T')[0],
-      scoredBy: user?.name || 'Admin Litbang BRIDA',
-    });
-    toast(`Penilaian instrumen usulan ${selectedProposal.code} berhasil disimpan (Skor: ${totalScore}).`, 'success');
-    setIsScoringModalOpen(false);
+    setIsSaving(true);
+    try {
+      await saveScoring(selectedProposal.id, {
+        visionAlignmentScore,
+        urgencyScore,
+        budgetFeasibilityScore,
+        dataReadinessScore,
+        totalScore,
+        fieldClassification,
+        executionMethod,
+        researchScheme: executionMethod === 'SWAKELOLA' ? 'INTERNAL_BRIDA' : 'KERJASAMA',
+        evaluatorNotes,
+        scoredAt: new Date().toISOString().split('T')[0],
+        scoredBy: user?.name || 'Admin Litbang BRIDA',
+      });
+      toast(`Penilaian instrumen usulan ${selectedProposal.code} berhasil disimpan (Skor: ${totalScore}).`, 'success');
+      setIsScoringModalOpen(false);
+    } catch (err: any) {
+      toast('Gagal menyimpan scoring: ' + (err.message || 'Terjadi kesalahan sistem'), 'error');
+    } finally {
+      setIsSaving(false);
+    }
   };
 
-  const handleApproveResearch = () => {
+  const handleApproveResearch = async () => {
     if (!selectedProposal) return;
-    saveScoring(selectedProposal.id, {
-      visionAlignmentScore,
-      urgencyScore,
-      budgetFeasibilityScore,
-      totalScore,
-      fieldClassification,
-      executionMethod,
-      researchScheme: executionMethod === 'SWAKELOLA' ? 'INTERNAL_BRIDA' : 'KERJASAMA',
-      evaluatorNotes,
-      scoredAt: new Date().toISOString().split('T')[0],
-      scoredBy: user?.name || 'Admin Litbang BRIDA',
-    });
-    approveToResearch(selectedProposal.id, targetCompletionDate);
-    toast(`Usulan ${selectedProposal.code} disetujui untuk masuk ke agenda riset daerah (Status: APPROVED).`, 'success');
-    setIsScoringModalOpen(false);
+    setIsSaving(true);
+    try {
+      await saveScoring(selectedProposal.id, {
+        visionAlignmentScore,
+        urgencyScore,
+        budgetFeasibilityScore,
+        dataReadinessScore,
+        totalScore,
+        fieldClassification,
+        executionMethod,
+        researchScheme: executionMethod === 'SWAKELOLA' ? 'INTERNAL_BRIDA' : 'KERJASAMA',
+        evaluatorNotes,
+        scoredAt: new Date().toISOString().split('T')[0],
+        scoredBy: user?.name || 'Admin Litbang BRIDA',
+      });
+      approveToResearch(selectedProposal.id, targetCompletionDate);
+      toast(`Usulan ${selectedProposal.code} disetujui untuk masuk ke agenda riset daerah (Status: APPROVED).`, 'success');
+      setIsScoringModalOpen(false);
+    } catch (err: any) {
+      toast('Gagal memproses persetujuan riset: ' + (err.message || 'Terjadi kesalahan sistem'), 'error');
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   return (
@@ -127,11 +159,20 @@ export default function AdminScoringPage() {
             Penelaahan Teknis & Pembobotan Usulan Riset
           </h1>
           <p className="text-slate-600 text-xs max-w-3xl leading-relaxed">
-            Instrumen penilaian digital untuk mengukur keselarasan visi-misi daerah (40%), tingkat urgensi masalah (35%), dan kelayakan anggaran riset (25%), serta penetapan klasifikasi bidang dan metode pengadaan kajian.
+            Instrumen penilaian digital untuk mengukur keselarasan visi-misi daerah (30%), tingkat urgensi masalah (30%), ketersediaan anggaran (20%), dan kesiapan data & kapasitas riset (20%), serta penetapan klasifikasi bidang dan metode pengadaan kajian.
           </p>
         </div>
 
-        <div className="flex items-center gap-2 shrink-0">
+        <div className="flex items-center gap-3 shrink-0">
+          <button
+            onClick={handleRefresh}
+            disabled={isLoadingProposals}
+            className="p-2 border border-slate-300 bg-slate-50 hover:bg-slate-100 text-slate-700 text-xs font-semibold flex items-center gap-1.5 transition disabled:opacity-50"
+            title="Segarkan data antrean scoring"
+          >
+            <RefreshCw className={`w-3.5 h-3.5 ${isLoadingProposals ? 'animate-spin' : ''}`} />
+            <span className="hidden sm:inline">Refresh</span>
+          </button>
           <span className="px-3.5 py-1.5 bg-[#dde6f2] text-[#0f2c59] font-mono font-bold text-xs border border-[#bfd2e6]">
             {scorableProposals.filter((p) => p.status === 'IN_REVIEW').length} Menunggu Penilaian
           </span>
@@ -325,17 +366,17 @@ export default function AdminScoringPage() {
               <span className={`px-2.5 py-1 text-2xs font-bold uppercase tracking-wider border ${
                 totalScore >= 80 ? 'bg-emerald-50 text-emerald-900 border-emerald-300' : totalScore >= 65 ? 'bg-amber-50 text-amber-900 border-amber-300' : 'bg-rose-50 text-rose-900 border-rose-300'
               }`}>
-                {totalScore >= 80 ? 'Prioritas Tinggi' : totalScore >= 65 ? 'Prioritas Sedang' : 'Prioritas Rendah'}
+                {totalScore >= 80 ? 'Prioritas Utama' : totalScore >= 65 ? 'Prioritas Kedua' : 'Tidak Prioritas'}
               </span>
             </div>
 
-            {/* 3 Criteria Sliders */}
+            {/* 4 Criteria Sliders */}
             <div className="space-y-3 p-3 bg-slate-50 border border-slate-200">
               
-              {/* Kriteria 1: Kesesuaian Visi-Misi (Bobot 40%) */}
+              {/* Kriteria 1: Kesesuaian Visi-Misi (Bobot 30%) */}
               <div className="space-y-1">
                 <div className="flex justify-between items-center text-2xs font-bold">
-                  <span>1. Kesesuaian dengan Visi-Misi Daerah & RPJMD (Bobot 40%)</span>
+                  <span>1. Kesesuaian dengan Visi-Misi Daerah & RPJMD (Bobot 30%)</span>
                   <span className="text-[#0f2c59] font-mono">{visionAlignmentScore} Poin</span>
                 </div>
                 <input
@@ -348,10 +389,10 @@ export default function AdminScoringPage() {
                 />
               </div>
 
-              {/* Kriteria 2: Urgensi Masalah (Bobot 35%) */}
+              {/* Kriteria 2: Urgensi Masalah (Bobot 30%) */}
               <div className="space-y-1">
                 <div className="flex justify-between items-center text-2xs font-bold">
-                  <span>2. Tingkat Urgensi & Dampak Masalah Lapangan (Bobot 35%)</span>
+                  <span>2. Tingkat Urgensi Masalah Lapangan (Bobot 30%)</span>
                   <span className="text-[#0f2c59] font-mono">{urgencyScore} Poin</span>
                 </div>
                 <input
@@ -364,10 +405,10 @@ export default function AdminScoringPage() {
                 />
               </div>
 
-              {/* Kriteria 3: Ketersediaan Anggaran / Kelayakan (Bobot 25%) */}
+              {/* Kriteria 3: Ketersediaan Anggaran / Kelayakan (Bobot 20%) */}
               <div className="space-y-1">
                 <div className="flex justify-between items-center text-2xs font-bold">
-                  <span>3. Kelayakan Teknis & Ketersediaan Anggaran Riset (Bobot 25%)</span>
+                  <span>3. Kelayakan Teknis & Ketersediaan Anggaran Riset (Bobot 20%)</span>
                   <span className="text-[#0f2c59] font-mono">{budgetFeasibilityScore} Poin</span>
                 </div>
                 <input
@@ -376,6 +417,22 @@ export default function AdminScoringPage() {
                   max="100"
                   value={budgetFeasibilityScore}
                   onChange={(e) => setBudgetFeasibilityScore(Number(e.target.value))}
+                  className="w-full accent-[#0f2c59] cursor-pointer"
+                />
+              </div>
+
+              {/* Kriteria 4: Kesiapan Data & Kapasitas (Bobot 20%) */}
+              <div className="space-y-1">
+                <div className="flex justify-between items-center text-2xs font-bold">
+                  <span>4. Kesiapan Data & Kapasitas Pelaksanaan Riset (Bobot 20%)</span>
+                  <span className="text-[#0f2c59] font-mono">{dataReadinessScore} Poin</span>
+                </div>
+                <input
+                  type="range"
+                  min="0"
+                  max="100"
+                  value={dataReadinessScore}
+                  onChange={(e) => setDataReadinessScore(Number(e.target.value))}
                   className="w-full accent-[#0f2c59] cursor-pointer"
                 />
               </div>
