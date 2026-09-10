@@ -143,16 +143,16 @@ export default function ExecutiveApprovalsPage() {
   return (
     <div className="space-y-8 max-w-7xl mx-auto pb-12 font-sans">
       {/* Header Banner */}
-      <div className="bg-gradient-to-r from-slate-950 via-emerald-950 to-slate-900 p-8 rounded-2xl text-white shadow-xl flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="bg-[#0f2c59] p-8 rounded-2xl text-white shadow-xl flex flex-col md:flex-row md:items-center justify-between gap-4 border border-black">
         <div>
-          <div className="flex items-center gap-2 text-emerald-400 text-xs font-black tracking-widest uppercase mb-2">
+          <div className="flex items-center gap-2 text-sky-300 text-xs font-black tracking-widest uppercase mb-2">
             <ClipboardCheck className="w-4 h-4" />
             Modul 2: Kepala BRIDA
           </div>
           <h1 className="text-2xl md:text-3xl font-black tracking-tight">
             Approval Usulan & Penentuan Prioritas Riset
           </h1>
-          <p className="text-slate-300 text-xs mt-1.5 max-w-2xl leading-relaxed">
+          <p className="text-slate-200 text-xs mt-1.5 max-w-2xl leading-relaxed">
             Keputusan final pimpinan untuk menyetujui, menolak, atau mengembalikan usulan penelitian yang telah melalui tahap verifikasi administrasi dan scoring teknis oleh tim penelaah BRIDA.
           </p>
         </div>
@@ -160,7 +160,7 @@ export default function ExecutiveApprovalsPage() {
         <div className="flex items-center gap-3">
           <button
             onClick={() => fetchApprovalInbox({ status: 'ALL' })}
-            className="flex items-center gap-2 bg-slate-800 hover:bg-slate-700 text-slate-200 font-semibold px-3.5 py-2.5 rounded-xl transition text-xs border border-slate-700"
+            className="flex items-center gap-2 bg-[#1b3b6f] hover:bg-blue-800 text-white font-semibold px-3.5 py-2.5 rounded-xl transition text-xs border border-blue-400"
             title="Muat Ulang Antrean"
           >
             <RefreshCw className={`w-3.5 h-3.5 ${isLoadingProposals ? 'animate-spin' : ''}`} />
@@ -168,7 +168,7 @@ export default function ExecutiveApprovalsPage() {
           </button>
           <Link
             href="/executive/monitoring"
-            className="flex items-center gap-2 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold px-4 py-2.5 rounded-xl transition shadow text-xs"
+            className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-bold px-4 py-2.5 rounded-xl transition shadow text-xs border border-blue-400"
           >
             <span>Supervisi Riset Berjalan</span>
             <ArrowRight className="w-4 h-4" />
@@ -177,14 +177,14 @@ export default function ExecutiveApprovalsPage() {
       </div>
 
       {/* Filter Tabs & Search */}
-      <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-white p-4 rounded-xl border border-black shadow-sm">
         <div className="flex flex-wrap items-center gap-2">
           <button
             onClick={() => setActiveFilter('PENDING_APPROVAL')}
             className={`px-4 py-2 rounded-lg text-xs font-bold transition ${
               activeFilter === 'PENDING_APPROVAL'
-                ? 'bg-emerald-600 text-white shadow'
-                : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                ? 'bg-blue-600 text-white shadow'
+                : 'bg-slate-100 text-slate-700 hover:bg-slate-200 border border-slate-200'
             }`}
           >
             Menunggu Keputusan ({pendingCount})
@@ -193,8 +193,8 @@ export default function ExecutiveApprovalsPage() {
             onClick={() => setActiveFilter('APPROVED')}
             className={`px-4 py-2 rounded-lg text-xs font-bold transition ${
               activeFilter === 'APPROVED'
-                ? 'bg-emerald-600 text-white shadow'
-                : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                ? 'bg-blue-600 text-white shadow'
+                : 'bg-slate-100 text-slate-700 hover:bg-slate-200 border border-slate-200'
             }`}
           >
             Disetujui ({approvedCount})
@@ -203,8 +203,8 @@ export default function ExecutiveApprovalsPage() {
             onClick={() => setActiveFilter('REJECTED_RETURNED')}
             className={`px-4 py-2 rounded-lg text-xs font-bold transition ${
               activeFilter === 'REJECTED_RETURNED'
-                ? 'bg-emerald-600 text-white shadow'
-                : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                ? 'bg-blue-600 text-white shadow'
+                : 'bg-slate-100 text-slate-700 hover:bg-slate-200 border border-slate-200'
             }`}
           >
             Ditolak / Dikembalikan ({rejectedCount})
@@ -213,8 +213,8 @@ export default function ExecutiveApprovalsPage() {
             onClick={() => setActiveFilter('ALL')}
             className={`px-4 py-2 rounded-lg text-xs font-bold transition ${
               activeFilter === 'ALL'
-                ? 'bg-emerald-600 text-white shadow'
-                : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                ? 'bg-blue-600 text-white shadow'
+                : 'bg-slate-100 text-slate-700 hover:bg-slate-200 border border-slate-200'
             }`}
           >
             Semua
@@ -228,7 +228,7 @@ export default function ExecutiveApprovalsPage() {
             placeholder="Cari usulan / OPD..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs focus:ring-2 focus:ring-emerald-500 focus:bg-white focus:outline-none"
+            className="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-300 rounded-lg text-xs focus:ring-2 focus:ring-blue-600 focus:bg-white focus:outline-none text-slate-800"
           />
         </div>
       </div>
@@ -236,12 +236,12 @@ export default function ExecutiveApprovalsPage() {
       {/* Grid of Proposals with Quick Review Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {isLoadingProposals && filteredProposals.length === 0 ? (
-          <div className="col-span-full bg-white p-12 rounded-2xl border border-slate-200 text-center text-slate-400">
-            <Loader2 className="w-8 h-8 mx-auto text-emerald-600 animate-spin mb-3" />
+          <div className="col-span-full bg-white p-12 rounded-2xl border border-black text-center text-slate-400">
+            <Loader2 className="w-8 h-8 mx-auto text-blue-600 animate-spin mb-3" />
             <p className="font-bold text-slate-700 text-sm">Memuat antrean persetujuan usulan...</p>
           </div>
         ) : filteredProposals.length === 0 ? (
-          <div className="col-span-full bg-white p-12 rounded-2xl border border-slate-200 text-center text-slate-400">
+          <div className="col-span-full bg-white p-12 rounded-2xl border border-black text-center text-slate-400">
             <ClipboardCheck className="w-12 h-12 mx-auto text-slate-300 mb-3" />
             <p className="font-bold text-slate-700 text-sm">Tidak ada usulan dalam kategori ini</p>
             <p className="text-xs mt-1">Usulan yang telah diberi skor oleh tim penelaah akan otomatis masuk ke daftar tunggu persetujuan.</p>
@@ -256,17 +256,17 @@ export default function ExecutiveApprovalsPage() {
             return (
               <div 
                 key={prop.id}
-                className="bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition flex flex-col justify-between overflow-hidden"
+                className="bg-white rounded-2xl border border-black shadow-sm hover:shadow-md transition flex flex-col justify-between overflow-hidden"
               >
                 {/* Card Top */}
                 <div className="p-6 space-y-4">
                   <div className="flex items-center justify-between">
-                    <span className="font-mono text-xs font-bold text-emerald-800 bg-emerald-50 px-2.5 py-0.5 rounded">
+                    <span className="font-mono text-xs font-bold text-blue-900 bg-blue-50 px-2.5 py-0.5 rounded border border-blue-200">
                       {prop.code}
                     </span>
                     <div className="flex items-center gap-1.5">
-                      <span className="text-[11px] font-bold text-slate-400">Skor Staff:</span>
-                      <span className="text-sm font-black text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-md">
+                      <span className="text-[11px] font-bold text-slate-500">Skor Staff:</span>
+                      <span className="text-sm font-black text-blue-900 bg-blue-50 border border-blue-300 px-2 py-0.5 rounded-md">
                         {score} / 100
                       </span>
                     </div>
@@ -274,41 +274,41 @@ export default function ExecutiveApprovalsPage() {
 
                   <div>
                     <h3 className="font-bold text-slate-900 text-sm line-clamp-2">{prop.title}</h3>
-                    <p className="text-xs text-slate-500 mt-1 flex items-center gap-1">
-                      <Building2 className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                    <p className="text-xs text-slate-600 mt-1 flex items-center gap-1">
+                      <Building2 className="w-3.5 h-3.5 text-blue-600 shrink-0" />
                       {prop.opdName}
                     </p>
                   </div>
 
                   {/* Panel Review Cepat: Scoring Breakdown & Summary */}
-                  <div className="p-3.5 bg-slate-50 rounded-xl space-y-2 text-xs border border-slate-200/60">
-                    <div className="flex justify-between items-center text-slate-600">
+                  <div className="p-3.5 bg-slate-50 rounded-xl space-y-2 text-xs border border-slate-300">
+                    <div className="flex justify-between items-center text-slate-700">
                       <span>Usulan Pagu Anggaran:</span>
-                      <span className="font-black text-emerald-800 font-mono">
+                      <span className="font-black text-blue-900 font-mono">
                         {prop.estimatedBudget 
                           ? new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(prop.estimatedBudget)
                           : 'Sesuai Standar Biaya'}
                       </span>
                     </div>
-                    <div className="flex justify-between items-center text-slate-600">
+                    <div className="flex justify-between items-center text-slate-700">
                       <span>Data Dukung OPD:</span>
-                      <span className="font-bold text-slate-700">
+                      <span className="font-bold text-slate-800">
                         {prop.supportingDocuments && prop.supportingDocuments.length > 0 
                           ? `✓ ${prop.supportingDocuments.length} Dokumen` 
                           : '— Tanpa Lampiran'}
                       </span>
                     </div>
-                    <div className="flex justify-between items-center text-slate-600 pt-1 border-t border-slate-200">
+                    <div className="flex justify-between items-center text-slate-700 pt-1 border-t border-slate-300">
                       <span>Kesesuaian Visi-Misi:</span>
-                      <span className="font-bold text-slate-800">{prop.scoringData?.visionAlignmentScore || 90} Poin</span>
+                      <span className="font-bold text-slate-900">{prop.scoringData?.visionAlignmentScore || 90} Poin</span>
                     </div>
-                    <div className="flex justify-between items-center text-slate-600">
+                    <div className="flex justify-between items-center text-slate-700">
                       <span>Urgensi Masalah:</span>
-                      <span className="font-bold text-slate-800">{prop.scoringData?.urgencyScore || 85} Poin</span>
+                      <span className="font-bold text-slate-900">{prop.scoringData?.urgencyScore || 85} Poin</span>
                     </div>
-                    <div className="flex justify-between items-center text-slate-600">
+                    <div className="flex justify-between items-center text-slate-700">
                       <span>Rekomendasi Metode:</span>
-                      <span className="font-bold text-emerald-800">
+                      <span className="font-bold text-blue-900">
                         {prop.scoringData?.executionMethod === 'SWAKELOLA'
                           ? 'Swakelola'
                           : prop.scoringData?.executionMethod === 'PENUNJUKAN_LANGSUNG'
@@ -329,14 +329,12 @@ export default function ExecutiveApprovalsPage() {
 
                   {/* Decision Tag if already decided */}
                   {prop.executiveDecision && (
-                    <div className={`p-2.5 rounded-lg text-xs font-bold ${
+                    <div className={`p-2.5 rounded-lg text-xs font-bold border border-black ${
                       prop.executiveDecision.decision === 'APPROVED' 
-                        ? 'bg-emerald-50 text-emerald-800 border border-emerald-200' 
-                        : prop.executiveDecision.decision === 'REJECTED'
-                        ? 'bg-rose-50 text-rose-800 border border-rose-200'
-                        : 'bg-amber-50 text-amber-800 border border-amber-200'
+                        ? 'bg-blue-50 text-blue-900' 
+                        : 'bg-slate-100 text-slate-900'
                     }`}>
-                      <span className="block text-[10px] uppercase text-slate-400">Keputusan Kepala BRIDA:</span>
+                      <span className="block text-[10px] uppercase text-slate-500">Keputusan Kepala BRIDA:</span>
                       {prop.executiveDecision.decision === 'APPROVED' 
                         ? `Disetujui Resmi ${prop.executiveDecision.approvedBudget ? `(Pagu: Rp ${prop.executiveDecision.approvedBudget.toLocaleString('id-ID')})` : ''}` 
                         : prop.executiveDecision.decision === 'REJECTED'
@@ -350,25 +348,25 @@ export default function ExecutiveApprovalsPage() {
                 </div>
 
                 {/* Card Actions */}
-                <div className="p-4 bg-slate-50 border-t border-slate-100 flex items-center justify-between gap-2">
+                <div className="p-4 bg-slate-50 border-t border-black flex items-center justify-between gap-2">
                   <button
                     onClick={() => handleOpenDecisionModal('APPROVE', prop)}
-                    className="flex-1 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold transition shadow flex items-center justify-center gap-1"
+                    className="flex-1 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-bold transition shadow flex items-center justify-center gap-1 border border-blue-700"
                   >
                     <ThumbsUp className="w-3.5 h-3.5" />
                     Approve
                   </button>
                   <button
                     onClick={() => handleOpenDecisionModal('RETURN', prop)}
-                    className="py-2 px-3 bg-amber-500 hover:bg-amber-600 text-white rounded-lg text-xs font-bold transition flex items-center justify-center gap-1"
+                    className="py-2 px-3 bg-white hover:bg-slate-100 text-slate-800 rounded-lg text-xs font-bold transition flex items-center justify-center gap-1 border border-slate-300"
                     title="Kembalikan ke tim penelaah"
                   >
-                    <CornerUpLeft className="w-3.5 h-3.5" />
+                    <CornerUpLeft className="w-3.5 h-3.5 text-blue-600" />
                     Return
                   </button>
                   <button
                     onClick={() => handleOpenDecisionModal('REJECT', prop)}
-                    className="py-2 px-3 bg-rose-600 hover:bg-rose-700 text-white rounded-lg text-xs font-bold transition flex items-center justify-center gap-1"
+                    className="py-2 px-3 bg-slate-900 hover:bg-black text-white rounded-lg text-xs font-bold transition flex items-center justify-center gap-1 border border-black"
                     title="Tolak usulan"
                   >
                     <ThumbsDown className="w-3.5 h-3.5" />
@@ -384,16 +382,12 @@ export default function ExecutiveApprovalsPage() {
       {/* Decision Confirmation Modal */}
       {decisionType && selectedProposal && (
         <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white w-full max-w-lg rounded-2xl shadow-2xl border border-slate-200 overflow-hidden animate-in fade-in zoom-in-95 duration-150">
-            <div className={`p-6 text-white ${
-              decisionType === 'APPROVE' ? 'bg-gradient-to-r from-emerald-800 to-teal-800' :
-              decisionType === 'REJECT' ? 'bg-gradient-to-r from-rose-800 to-red-900' :
-              'bg-gradient-to-r from-amber-700 to-orange-800'
-            }`}>
+          <div className="bg-white w-full max-w-lg rounded-2xl shadow-2xl border border-black overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+            <div className="p-6 text-white bg-[#0f2c59] border-b border-black">
               <h3 className="font-black text-lg flex items-center gap-2">
-                {decisionType === 'APPROVE' && <CheckCircle2 className="w-5 h-5" />}
-                {decisionType === 'REJECT' && <XCircle className="w-5 h-5" />}
-                {decisionType === 'RETURN' && <RotateCcw className="w-5 h-5" />}
+                {decisionType === 'APPROVE' && <CheckCircle2 className="w-5 h-5 text-sky-300" />}
+                {decisionType === 'REJECT' && <XCircle className="w-5 h-5 text-slate-300" />}
+                {decisionType === 'RETURN' && <RotateCcw className="w-5 h-5 text-sky-300" />}
                 {decisionType === 'APPROVE' ? 'Setujui Usulan Penelitian' :
                  decisionType === 'REJECT' ? 'Tolak Usulan Penelitian' :
                  'Kembalikan Usulan ke Tim Staff Penelaah'}
@@ -403,10 +397,10 @@ export default function ExecutiveApprovalsPage() {
 
             <form onSubmit={handleExecuteDecision} className="p-6 space-y-4">
               {decisionType === 'APPROVE' && (
-                <div className="space-y-3 bg-emerald-50/70 p-4 rounded-xl border border-emerald-200">
+                <div className="space-y-3 bg-blue-50/70 p-4 rounded-xl border border-blue-200">
                   <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <label className="block text-[11px] font-bold text-emerald-950 uppercase mb-1">
+                      <label className="block text-[11px] font-bold text-blue-950 uppercase mb-1">
                         Pagu Definitif (Rp):
                       </label>
                       <input
@@ -415,11 +409,11 @@ export default function ExecutiveApprovalsPage() {
                         min={0}
                         value={approvedBudget}
                         onChange={(e) => setApprovedBudget(Number(e.target.value))}
-                        className="w-full p-2 bg-white border border-emerald-300 rounded-lg text-xs font-mono font-bold text-emerald-900 focus:ring-2 focus:ring-emerald-500 focus:outline-none"
+                        className="w-full p-2 bg-white border border-blue-300 rounded-lg text-xs font-mono font-bold text-blue-950 focus:ring-2 focus:ring-blue-600 focus:outline-none"
                       />
                     </div>
                     <div>
-                      <label className="block text-[11px] font-bold text-emerald-950 uppercase mb-1">
+                      <label className="block text-[11px] font-bold text-blue-950 uppercase mb-1">
                         Tahun Anggaran:
                       </label>
                       <input
@@ -429,19 +423,19 @@ export default function ExecutiveApprovalsPage() {
                         max={2035}
                         value={fiscalYear}
                         onChange={(e) => setFiscalYear(Number(e.target.value))}
-                        className="w-full p-2 bg-white border border-emerald-300 rounded-lg text-xs font-mono font-bold text-emerald-900 focus:ring-2 focus:ring-emerald-500 focus:outline-none"
+                        className="w-full p-2 bg-white border border-blue-300 rounded-lg text-xs font-mono font-bold text-blue-950 focus:ring-2 focus:ring-blue-600 focus:outline-none"
                       />
                     </div>
                   </div>
 
                   <div>
-                    <label className="block text-[11px] font-bold text-emerald-950 uppercase mb-1">
+                    <label className="block text-[11px] font-bold text-blue-950 uppercase mb-1">
                       Skema Pelaksanaan Definitif:
                     </label>
                     <select
                       value={finalExecutionScheme}
                       onChange={(e) => setFinalExecutionScheme(e.target.value as any)}
-                      className="w-full p-2 bg-white border border-emerald-300 rounded-lg text-xs font-bold text-emerald-900 focus:ring-2 focus:ring-emerald-500 focus:outline-none"
+                      className="w-full p-2 bg-white border border-blue-300 rounded-lg text-xs font-bold text-blue-950 focus:ring-2 focus:ring-blue-600 focus:outline-none"
                     >
                       <option value="SWAKELOLA">Swakelola (Tim Litbang Internal BRIDA)</option>
                       <option value="PENUNJUKAN_LANGSUNG">Penunjukan Langsung (Pakar / Lembaga Khusus)</option>
@@ -453,7 +447,7 @@ export default function ExecutiveApprovalsPage() {
               )}
 
               <div>
-                <label className="block text-xs font-bold text-slate-700 uppercase mb-1">
+                <label className="block text-xs font-bold text-slate-800 uppercase mb-1">
                   Catatan / Disposisi Resmi Kepala BRIDA:
                 </label>
                 <textarea
@@ -461,7 +455,7 @@ export default function ExecutiveApprovalsPage() {
                   required
                   value={decisionNotes}
                   onChange={(e) => setDecisionNotes(e.target.value)}
-                  className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:ring-2 focus:ring-emerald-500 focus:bg-white focus:outline-none leading-relaxed"
+                  className="w-full p-3 bg-slate-50 border border-slate-300 rounded-xl text-xs focus:ring-2 focus:ring-blue-600 focus:bg-white focus:outline-none leading-relaxed text-slate-800"
                 />
               </div>
 
@@ -470,17 +464,17 @@ export default function ExecutiveApprovalsPage() {
                   type="button"
                   disabled={isSubmitting}
                   onClick={() => { setDecisionType(null); setSelectedProposal(null); }}
-                  className="px-4 py-2 text-xs font-bold text-slate-600 hover:bg-slate-100 rounded-lg transition disabled:opacity-50"
+                  className="px-4 py-2 text-xs font-bold text-slate-700 hover:bg-slate-100 rounded-lg transition disabled:opacity-50 border border-slate-300"
                 >
                   Batal
                 </button>
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className={`px-5 py-2 text-xs font-bold text-white rounded-lg transition shadow flex items-center gap-1.5 disabled:opacity-50 ${
-                    decisionType === 'APPROVE' ? 'bg-emerald-600 hover:bg-emerald-700' :
-                    decisionType === 'REJECT' ? 'bg-rose-600 hover:bg-rose-700' :
-                    'bg-amber-600 hover:bg-amber-700'
+                  className={`px-5 py-2 text-xs font-bold text-white rounded-lg transition shadow flex items-center gap-1.5 disabled:opacity-50 border ${
+                    decisionType === 'APPROVE' ? 'bg-blue-600 hover:bg-blue-700 border-blue-800' :
+                    decisionType === 'REJECT' ? 'bg-slate-900 hover:bg-black border-black' :
+                    'bg-[#1b3b6f] hover:bg-blue-900 border-blue-950'
                   }`}
                 >
                   {isSubmitting && <Loader2 className="w-3.5 h-3.5 animate-spin" />}

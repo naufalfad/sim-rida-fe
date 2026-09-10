@@ -272,7 +272,7 @@ export default function AdminScoringPage() {
                     {/* Skor Prioritas (Centered) */}
                     <TableCell className="text-center align-middle py-3.5">
                       {item.scoringData ? (
-                        <div className="inline-block px-2.5 py-1 bg-emerald-50 text-emerald-900 border border-emerald-300 font-mono font-bold text-xs">
+                        <div className="inline-block px-2.5 py-1 bg-blue-50 text-blue-950 border border-blue-300 font-mono font-bold text-xs">
                           {item.scoringData.totalScore} / 100
                         </div>
                       ) : (
@@ -312,13 +312,13 @@ export default function AdminScoringPage() {
                           Siap Scoring
                         </span>
                       ) : item.status === 'APPROVED' ? (
-                        <span className="inline-flex items-center justify-center gap-1 px-2.5 py-0.5 text-2xs font-semibold uppercase tracking-wider bg-[#dde6f2] text-[#0f2c59] border-[#bfd2e6]">
-                          <CheckCircle2 className="h-3 w-3" />
+                        <span className="inline-flex items-center justify-center gap-1 px-2.5 py-0.5 text-2xs font-semibold uppercase tracking-wider bg-blue-600 text-white border border-blue-700">
+                          <CheckCircle2 className="h-3 w-3 text-white" />
                           Disetujui
                         </span>
                       ) : (
-                        <span className="inline-flex items-center justify-center gap-1 px-2.5 py-0.5 text-2xs font-semibold uppercase tracking-wider bg-emerald-50 text-emerald-900 border border-emerald-300">
-                          <CheckCircle2 className="h-3 w-3" />
+                        <span className="inline-flex items-center justify-center gap-1 px-2.5 py-0.5 text-2xs font-semibold uppercase tracking-wider bg-blue-50 text-blue-950 border border-blue-300">
+                          <CheckCircle2 className="h-3 w-3 text-blue-700" />
                           Selesai
                         </span>
                       )}
@@ -356,7 +356,7 @@ export default function AdminScoringPage() {
           <div className="space-y-4 text-xs font-sans">
             
             {/* Total Score Highlight */}
-            <div className="p-3 border border-[#bfd2e6] bg-[#f0f4f9] flex items-center justify-between">
+            <div className="p-3 border border-black bg-blue-50 flex items-center justify-between">
               <div>
                 <span className="text-2xs font-bold uppercase tracking-wider text-[#0f2c59] block">Total Skor Tertimbang</span>
                 <h3 className="text-xl font-black text-[#0f2c59] font-mono">
@@ -364,7 +364,7 @@ export default function AdminScoringPage() {
                 </h3>
               </div>
               <span className={`px-2.5 py-1 text-2xs font-bold uppercase tracking-wider border ${
-                totalScore >= 80 ? 'bg-emerald-50 text-emerald-900 border-emerald-300' : totalScore >= 65 ? 'bg-amber-50 text-amber-900 border-amber-300' : 'bg-rose-50 text-rose-900 border-rose-300'
+                totalScore >= 80 ? 'bg-blue-600 text-white border-blue-700' : totalScore >= 65 ? 'bg-blue-100 text-blue-950 border-blue-400' : 'bg-slate-100 text-slate-900 border-black'
               }`}>
                 {totalScore >= 80 ? 'Prioritas Utama' : totalScore >= 65 ? 'Prioritas Kedua' : 'Tidak Prioritas'}
               </span>

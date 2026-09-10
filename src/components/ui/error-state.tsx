@@ -19,17 +19,17 @@ export const ErrorState: React.FC<ErrorStateProps> = ({
   return (
     <div
       className={cn(
-        'flex flex-col items-center justify-center text-center p-8 rounded-xl border border-rose-200 bg-rose-50/30 dark:border-rose-900/50 dark:bg-rose-955/10',
+        'flex flex-col items-center justify-center text-center p-8 rounded-xl border border-black bg-slate-50 dark:border-white dark:bg-slate-900',
         className
       )}
     >
-      <div className="flex h-12 w-12 items-center justify-center rounded-full bg-rose-100 text-rose-600 dark:bg-rose-950 dark:text-rose-455 mb-4 shadow-sm">
+      <div className="flex h-12 w-12 items-center justify-center rounded-full bg-slate-900 text-white dark:bg-white dark:text-slate-900 mb-4 shadow-sm">
         <AlertCircle className="h-6 w-6" />
       </div>
-      <h3 className="text-base font-semibold text-rose-800 dark:text-rose-400 mb-1">
+      <h3 className="text-base font-semibold text-slate-900 dark:text-white mb-1">
         {title}
       </h3>
-      <p className="text-sm text-rose-700/80 dark:text-rose-400/80 max-w-sm mb-5 leading-relaxed">
+      <p className="text-sm text-slate-600 dark:text-slate-300 max-w-sm mb-5 leading-relaxed">
         {message}
       </p>
       {onRetry && (

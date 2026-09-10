@@ -66,8 +66,8 @@ export default function LoginPage() {
 
         {/* Error Alert */}
         {activeError && (
-          <div className="p-3 bg-rose-50 border border-rose-300 text-xs text-rose-800 flex items-start gap-2.5">
-            <AlertCircle className="h-4 w-4 shrink-0 mt-0.5 text-rose-600" />
+          <div className="p-3 bg-slate-100 border border-black text-xs text-slate-900 flex items-start gap-2.5">
+            <AlertCircle className="h-4 w-4 shrink-0 mt-0.5 text-blue-700" />
             <div className="flex-1 font-semibold">{activeError}</div>
           </div>
         )}

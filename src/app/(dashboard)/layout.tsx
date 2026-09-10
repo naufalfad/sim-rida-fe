@@ -21,6 +21,7 @@ import {
   User as UserIcon,
   FileCheck,
   TrendingUp,
+  Layers,
 } from 'lucide-react';
 import { useAuthStore } from '@/store/useAuthStore';
 import { cn } from '@/lib/utils/cn';
@@ -109,10 +110,11 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       case 'ADMIN_BRIDA':
         return [
           { name: 'Dashboard & Analitik', path: '/dashboard', icon: <LayoutDashboard className="h-4 w-4" /> },
-          { name: 'Verifikasi Gatekeeper', path: '/admin/verification', icon: <ClipboardList className="h-4 w-4" /> },
-          { name: 'Penelaahan & Scoring', path: '/admin/scoring', icon: <Award className="h-4 w-4" /> },
-          { name: 'Manajemen Kajian Riset', path: '/admin/research', icon: <Activity className="h-4 w-4" /> },
-          { name: 'Penyusunan Rekomendasi', path: '/admin/recommendation-builder', icon: <FileText className="h-4 w-4" /> },
+          { name: 'Identifikasi Masalah', path: '/admin/identification', icon: <Layers className="h-4 w-4" /> },
+          { name: 'Validasi BRIDA', path: '/admin/verification', icon: <ClipboardList className="h-4 w-4" /> },
+          { name: 'Penyusunan KAK', path: '/admin/kak-builder', icon: <FileText className="h-4 w-4" /> },
+          { name: 'Pelaksanaan Riset', path: '/admin/research', icon: <Activity className="h-4 w-4" /> },
+          { name: 'Rekomendasi OPD', path: '/admin/recommendation-builder', icon: <Award className="h-4 w-4" /> },
           { name: 'Master Data & Konfigurasi', path: '/admin/master-data', icon: <Settings className="h-4 w-4" /> },
         ];
       case 'KEPALA_BRIDA':
@@ -235,7 +237,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           {!isSidebarCollapsed && (
             <button
               onClick={handleLogout}
-              className="w-full mt-3 flex items-center justify-center gap-2 px-3 py-1.5 border border-[#264978] hover:bg-rose-950/40 text-slate-300 hover:text-rose-300 text-xs font-semibold tracking-wider uppercase transition-colors"
+              className="w-full mt-3 flex items-center justify-center gap-2 px-3 py-1.5 border border-[#264978] hover:bg-[#1b3b6f] text-slate-300 hover:text-white text-xs font-semibold tracking-wider uppercase transition-colors"
             >
               <LogOut className="h-3.5 w-3.5" />
               <span>Keluar</span>
@@ -305,7 +307,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               </div>
               <button
                 onClick={handleLogout}
-                className="w-full flex items-center justify-center gap-2 px-3 py-1.5 border border-[#264978] hover:bg-rose-950/40 text-slate-300 hover:text-rose-300 text-xs font-semibold tracking-wider uppercase transition-colors"
+                className="w-full flex items-center justify-center gap-2 px-3 py-1.5 border border-[#264978] hover:bg-[#1b3b6f] text-slate-300 hover:text-white text-xs font-semibold tracking-wider uppercase transition-colors"
               >
                 <LogOut className="h-4 w-4" />
                 <span>Keluar Aplikasi</span>
@@ -382,7 +384,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               >
                 <Bell className="h-4 w-4" />
                 {unreadCount > 0 && (
-                  <span className="absolute top-0 right-0 h-3.5 w-3.5 bg-rose-600 text-[8px] font-bold text-white flex items-center justify-center">
+                  <span className="absolute top-0 right-0 h-3.5 w-3.5 bg-blue-600 text-[8px] font-bold text-white flex items-center justify-center">
                     {unreadCount}
                   </span>
                 )}
@@ -482,9 +484,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                         setIsProfileOpen(false);
                         handleLogout();
                       }}
-                      className="w-full text-left px-4 py-2.5 text-rose-700 hover:bg-rose-50 flex items-center gap-2 font-semibold"
+                      className="w-full text-left px-4 py-2.5 text-slate-800 hover:bg-slate-100 flex items-center gap-2 font-semibold"
                     >
-                      <LogOut className="h-4 w-4 text-rose-600" />
+                      <LogOut className="h-4 w-4 text-slate-600" />
                       <span>Keluar Aplikasi</span>
                     </button>
                   </div>

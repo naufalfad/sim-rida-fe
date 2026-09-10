@@ -85,7 +85,13 @@ export const normalizeProposal = (p: any): OpdProposal => {
   let adminVerification = undefined;
   if (p.adminVerification) {
     adminVerification = {
+      isProblemClear: p.adminVerification.isProblemClear ?? true,
+      isNotDuplicated: p.adminVerification.isNotDuplicated ?? true,
+      isUrgencyRelevant: p.adminVerification.isUrgencyRelevant ?? true,
+      isStrategicAligned: p.adminVerification.isStrategicAligned ?? true,
+      isResearchFeasible: p.adminVerification.isResearchFeasible ?? true,
       isDocumentsComplete: p.adminVerification.decision === 'PASS',
+      decision: p.adminVerification.decision || 'PASS',
       verificationNotes: p.adminVerification.verificationNotes || '',
       verifiedAt: p.adminVerification.verifiedAt ? new Date(p.adminVerification.verifiedAt).toISOString().split('T')[0] : '',
       verifiedBy: p.adminVerification.verifiedBy?.name || 'Admin BRIDA',
@@ -112,15 +118,18 @@ export const normalizeProposal = (p: any): OpdProposal => {
   return {
     id: p.id,
     code: p.code,
+    source: p.source || (p.createdBy?.role === 'ADMIN_BRIDA' ? 'BRIDA_ANALYSIS' : 'OPD_PROPOSAL'),
     opdId: p.opdId || p.opd?.id,
     opdName: p.opd?.name || p.opdName || 'Instansi OPD Mimika',
     title: p.title,
     category: p.category,
     problemStatement: p.problemStatement,
     urgencyReason: p.urgencyReason,
+    strategicImpact: p.strategicImpact || undefined,
     urgencyLevel: p.urgencyLevel || 'TINGGI',
     expectedOutput: p.expectedOutput,
     estimatedBudget: p.estimatedBudget !== undefined && p.estimatedBudget !== null ? Number(p.estimatedBudget) : undefined,
+    estimatedDuration: p.estimatedDuration !== undefined && p.estimatedDuration !== null ? Number(p.estimatedDuration) : (p.durationMonths ? Number(p.durationMonths) : 3),
     torDocument: torDoc,
     supportingDocuments: supportingDocs,
     status: p.status,
@@ -153,6 +162,7 @@ export const normalizeProposal = (p: any): OpdProposal => {
       feedbackNotes: p.followUp.feedbackNotes || '',
       submittedAt: p.followUp.submittedAt ? new Date(p.followUp.submittedAt).toISOString().split('T')[0] : '',
     } : p.followUpReport,
+    researchStudy: p.researchStudy || undefined,
   };
 };
 
@@ -163,7 +173,6 @@ export interface KakDocumentData {
   objectives: string;
   scopeAndMethodology: string;
   targetOutput: string;
-  durationMonths: number;
   status: 'DRAFT' | 'FINAL';
   finalizedAt?: string | null;
   updatedAt?: string;
@@ -192,6 +201,16 @@ export interface TeamMemberData {
   createdAt?: string;
 }
 
+export interface ResearchWorkingDocItem {
+  id: string;
+  studyId: string;
+  title: string;
+  type: string;
+  fileUrl: string;
+  fileSize?: string | null;
+  uploadDate: string;
+}
+
 export interface ResearchStudyItem {
   id: string;
   proposalId: string;
@@ -209,6 +228,12 @@ export interface ResearchStudyItem {
   kakDocument?: KakDocumentData | null;
   rkaItems?: RkaItemData[];
   teamMembers?: TeamMemberData[];
+  workingDocuments?: ResearchWorkingDocItem[];
+  cooperationDocName?: string | null;
+  cooperationDocUrl?: string | null;
+  finalReportName?: string | null;
+  finalReportUrl?: string | null;
+  finalReportSummary?: string | null;
   totalRkaBudget?: number;
   remainingBudget?: number;
   isBudgetExceeded?: boolean;
@@ -422,15 +447,18 @@ export interface BudgetYearConfig {
 export interface OpdProposal {
   id: string;
   code: string;
+  source?: 'BRIDA_ANALYSIS' | 'OPD_PROPOSAL';
   opdId?: string;
   opdName: string;
   title: string;
   category: string;
   problemStatement: string;
   urgencyReason: string;
+  strategicImpact?: string;
   urgencyLevel: ProposalUrgency;
   expectedOutput: ExpectedOutput;
-  estimatedBudget?: number; // Kebutuhan anggaran dalam Rupiah
+  estimatedBudget?: number; // Kebutuhan anggaran dalam Rupiah (dari identifikasi masalah)
+  estimatedDuration?: number; // Estimasi durasi pelaksanaan dalam Bulan (dari identifikasi masalah)
   torDocument?: {
     name: string;
     size: string;
@@ -448,7 +476,13 @@ export interface OpdProposal {
   submittedAt?: string;
   lastUpdated: string;
   adminVerification?: {
-    isDocumentsComplete: boolean;
+    isProblemClear?: boolean;
+    isNotDuplicated?: boolean;
+    isUrgencyRelevant?: boolean;
+    isStrategicAligned?: boolean;
+    isResearchFeasible?: boolean;
+    isDocumentsComplete?: boolean;
+    decision?: 'PASS' | 'RETURN' | 'REJECT';
     verificationNotes: string;
     verifiedAt: string;
     verifiedBy: string;
@@ -489,6 +523,7 @@ export interface OpdProposal {
     satisfactionRating: number;
     feedbackNotes: string;
   };
+  researchStudy?: ResearchStudyItem | any;
 }
 
 export interface KepalaDashboardData {
@@ -646,6 +681,7 @@ interface OpdState {
   submitRecommendationToKepala: (id: string) => Promise<PolicyRecommendationItem>;
   finalizeRecommendation: (id: string, payload?: { notes?: string }) => Promise<PolicyRecommendationItem>;
   deleteRecommendation: (id: string) => Promise<boolean>;
+  generatePolicyBriefAi: (studyId: string, customPrompt?: string) => Promise<any>;
 
   // TTE API Actions
   fetchTteInbox: () => Promise<TteInboxItem[]>;
@@ -670,7 +706,7 @@ interface OpdState {
   fetchCategories: () => Promise<string[]>;
 
   // Proposal API Actions
-  fetchProposals: (params?: { search?: string; status?: string; category?: string; opdId?: string; page?: number; limit?: number }) => Promise<OpdProposal[]>;
+  fetchProposals: (params?: { search?: string; status?: string; category?: string; opdId?: string; source?: string; page?: number; limit?: number }) => Promise<OpdProposal[]>;
   fetchVerificationInbox: (params?: { search?: string; page?: number; limit?: number }) => Promise<OpdProposal[]>;
   fetchScoringQueue: (params?: { search?: string; status?: string; researchField?: string; opdId?: string; page?: number; limit?: number }) => Promise<OpdProposal[]>;
   fetchApprovalInbox: (params?: { search?: string; status?: string; researchField?: string; opdId?: string; page?: number; limit?: number }) => Promise<OpdProposal[]>;
@@ -689,11 +725,14 @@ interface OpdState {
   // Admin BRIDA Actions
   verifyProposal: (
     id: string,
-    decisionOrIsComplete: boolean | 'PASS' | 'RETURN' | {
-      decision: 'PASS' | 'RETURN';
+    decisionOrIsComplete: boolean | 'PASS' | 'RETURN' | 'REJECT' | {
+      decision: 'PASS' | 'RETURN' | 'REJECT';
       verificationNotes: string;
       isProblemClear?: boolean;
+      isNotDuplicated?: boolean;
       isUrgencyRelevant?: boolean;
+      isStrategicAligned?: boolean;
+      isResearchFeasible?: boolean;
       isBudgetFeasible?: boolean;
       isDataAdequate?: boolean;
     },
@@ -737,7 +776,6 @@ interface OpdState {
     objectives: string;
     scopeAndMethodology: string;
     targetOutput: string;
-    durationMonths?: number;
     status?: 'DRAFT' | 'FINAL';
   }) => Promise<KakDocumentData>;
   saveStudyRka: (id: string, data: {
@@ -758,7 +796,13 @@ interface OpdState {
       email?: string | null;
     }>;
   }) => Promise<TeamMemberData[]>;
+  generateKakAi: (proposalId: string, customPrompt?: string) => Promise<any>;
+  saveKakStudy: (proposalId: string, data: any) => Promise<any>;
   updateStudyStatus: (id: string, status: 'PLANNING' | 'IN_PROGRESS' | 'COMPLETED') => Promise<ResearchStudyItem>;
+  saveStudyCooperationDoc: (studyId: string, data: { cooperationDocName: string; cooperationDocUrl: string }) => Promise<ResearchStudyItem>;
+  addStudyWorkingDoc: (studyId: string, data: { title: string; type: string; fileUrl: string; fileSize?: string }) => Promise<ResearchWorkingDocItem>;
+  deleteStudyWorkingDoc: (studyId: string, docId: string) => Promise<boolean>;
+  submitStudyFinalReport: (studyId: string, data: { finalReportName: string; finalReportUrl: string; finalReportSummary: string }) => Promise<ResearchStudyItem>;
 
   // Kepala BRIDA (Executive) Actions
   submitExecutiveApproval: (proposalId: string, payload: {
@@ -1356,11 +1400,13 @@ export const useOpdStore = create<OpdState>((set, get) => ({
       const backendExpectedOutput = mapFrontendExpectedOutputToBackend(data.expectedOutput);
 
       const payload = {
+        source: data.source || 'OPD_PROPOSAL',
         opdId: data.opdId,
         title: data.title,
         category: data.category,
         problemStatement: data.problemStatement,
         urgencyReason: data.urgencyReason,
+        strategicImpact: data.strategicImpact || null,
         urgencyLevel: data.urgencyLevel || 'TINGGI',
         expectedOutput: backendExpectedOutput,
         estimatedBudget:
@@ -1369,6 +1415,12 @@ export const useOpdStore = create<OpdState>((set, get) => ({
           !isNaN(Number(data.estimatedBudget))
             ? Number(data.estimatedBudget)
             : null,
+        estimatedDuration:
+          data.estimatedDuration !== undefined &&
+          data.estimatedDuration !== null &&
+          !isNaN(Number(data.estimatedDuration))
+            ? Number(data.estimatedDuration)
+            : 3,
         isDraft: !!isDraft,
         supportingDocuments: docs,
       };
@@ -1481,8 +1533,8 @@ export const useOpdStore = create<OpdState>((set, get) => ({
         desc: 'Tim evaluator BRIDA sedang menilai relevansi, urgensi masalah, dan kesesuaian prioritas daerah.',
       },
       APPROVED: {
-        label: 'Disetujui (Approved)',
-        desc: 'Kepala BRIDA menyetujui usulan untuk dialokasikan anggaran dan ditetapkan menjadi agenda riset daerah.',
+        label: 'Lolos Validasi (Approved)',
+        desc: 'Usulan dinyatakan Lolos Validasi BRIDA (memenuhi 5 pilar kelayakan) dan diteruskan ke Tahap 3 (Penyusunan KAK).',
       },
       IN_PROGRESS: {
         label: 'Pelaksanaan Riset (In-Progress)',
@@ -1512,57 +1564,74 @@ export const useOpdStore = create<OpdState>((set, get) => ({
   },
 
   // Admin BRIDA Actions
-  verifyProposal: async (id, decisionOrIsComplete, verificationNotes, adminName) => {
+  verifyProposal: async (id, decisionOrPayload, verificationNotes, adminName) => {
     try {
       set({ isLoadingProposals: true, errorProposals: null });
 
       let payload: {
-        decision: 'PASS' | 'RETURN';
+        decision: 'PASS' | 'RETURN' | 'REJECT';
         verificationNotes: string;
         isProblemClear?: boolean;
+        isNotDuplicated?: boolean;
         isUrgencyRelevant?: boolean;
+        isStrategicAligned?: boolean;
+        isResearchFeasible?: boolean;
         isBudgetFeasible?: boolean;
         isDataAdequate?: boolean;
       };
 
-      if (typeof decisionOrIsComplete === 'object' && decisionOrIsComplete !== null) {
+      if (typeof decisionOrPayload === 'object' && decisionOrPayload !== null) {
         payload = {
-          decision: decisionOrIsComplete.decision,
+          decision: decisionOrPayload.decision || 'PASS',
           verificationNotes:
-            decisionOrIsComplete.verificationNotes ||
-            (decisionOrIsComplete.decision === 'PASS'
-              ? 'Berkas administrasi dan uraian masalah dinyatakan lengkap dan valid.'
-              : 'Mohon lengkapi berkas dan perjelas uraian masalah.'),
-          isProblemClear: decisionOrIsComplete.isProblemClear ?? true,
-          isUrgencyRelevant: decisionOrIsComplete.isUrgencyRelevant ?? true,
-          isBudgetFeasible: decisionOrIsComplete.isBudgetFeasible ?? true,
-          isDataAdequate: decisionOrIsComplete.isDataAdequate ?? true,
+            decisionOrPayload.verificationNotes ||
+            (decisionOrPayload.decision === 'PASS'
+              ? 'Usulan dinyatakan lolos validasi BRIDA dan siap disusun KAK.'
+              : decisionOrPayload.decision === 'RETURN'
+              ? 'Mohon lengkapi berkas dan perjelas uraian masalah.'
+              : 'Usulan tidak memenuhi kriteria riset daerah.'),
+          isProblemClear: decisionOrPayload.isProblemClear ?? true,
+          isNotDuplicated: decisionOrPayload.isNotDuplicated ?? true,
+          isUrgencyRelevant: decisionOrPayload.isUrgencyRelevant ?? true,
+          isStrategicAligned: decisionOrPayload.isStrategicAligned ?? true,
+          isResearchFeasible: decisionOrPayload.isResearchFeasible ?? true,
+          isBudgetFeasible: decisionOrPayload.isBudgetFeasible ?? true,
+          isDataAdequate: decisionOrPayload.isDataAdequate ?? true,
         };
-      } else if (typeof decisionOrIsComplete === 'boolean') {
+      } else if (typeof decisionOrPayload === 'boolean') {
         payload = {
-          decision: decisionOrIsComplete ? 'PASS' : 'RETURN',
+          decision: decisionOrPayload ? 'PASS' : 'RETURN',
           verificationNotes:
             verificationNotes ||
-            (decisionOrIsComplete
-              ? 'Berkas administrasi dan uraian masalah dinyatakan lengkap dan valid.'
+            (decisionOrPayload
+              ? 'Usulan dinyatakan lolos validasi BRIDA dan siap disusun KAK.'
               : 'Mohon lengkapi berkas dan perjelas uraian masalah.'),
-          isProblemClear: decisionOrIsComplete,
-          isUrgencyRelevant: decisionOrIsComplete,
-          isBudgetFeasible: decisionOrIsComplete,
-          isDataAdequate: decisionOrIsComplete,
+          isProblemClear: decisionOrPayload,
+          isNotDuplicated: decisionOrPayload,
+          isUrgencyRelevant: decisionOrPayload,
+          isStrategicAligned: decisionOrPayload,
+          isResearchFeasible: decisionOrPayload,
+          isBudgetFeasible: decisionOrPayload,
+          isDataAdequate: decisionOrPayload,
         };
       } else {
+        const dec = decisionOrPayload === 'PASS' ? 'PASS' : decisionOrPayload === 'REJECT' ? 'REJECT' : 'RETURN';
         payload = {
-          decision: decisionOrIsComplete === 'PASS' ? 'PASS' : 'RETURN',
+          decision: dec,
           verificationNotes:
             verificationNotes ||
-            (decisionOrIsComplete === 'PASS'
-              ? 'Berkas administrasi dan uraian masalah dinyatakan lengkap dan valid.'
-              : 'Mohon lengkapi berkas dan perjelas uraian masalah.'),
-          isProblemClear: decisionOrIsComplete === 'PASS',
-          isUrgencyRelevant: decisionOrIsComplete === 'PASS',
-          isBudgetFeasible: decisionOrIsComplete === 'PASS',
-          isDataAdequate: decisionOrIsComplete === 'PASS',
+            (dec === 'PASS'
+              ? 'Usulan dinyatakan lolos validasi BRIDA dan siap disusun KAK.'
+              : dec === 'RETURN'
+              ? 'Mohon lengkapi berkas dan perjelas uraian masalah.'
+              : 'Usulan tidak memenuhi kriteria riset daerah.'),
+          isProblemClear: dec === 'PASS',
+          isNotDuplicated: dec === 'PASS',
+          isUrgencyRelevant: dec === 'PASS',
+          isStrategicAligned: dec === 'PASS',
+          isResearchFeasible: dec === 'PASS',
+          isBudgetFeasible: dec === 'PASS',
+          isDataAdequate: dec === 'PASS',
         };
       }
 
@@ -1571,16 +1640,24 @@ export const useOpdStore = create<OpdState>((set, get) => ({
       const normalized = updatedData?.id ? normalizeProposal(updatedData) : null;
       const today = new Date().toISOString().split('T')[0];
 
+      const newStatus = payload.decision === 'PASS' ? 'APPROVED' : payload.decision === 'RETURN' ? 'RETURNED' : 'REJECTED';
+
       set((state) => ({
         proposals: state.proposals.map((p) => {
           if (p.id !== id) return p;
           if (normalized) return normalized;
           return {
             ...p,
-            status: payload.decision === 'PASS' ? 'IN_REVIEW' : 'RETURNED',
+            status: newStatus as any,
             lastUpdated: today,
             adminVerification: {
+              isProblemClear: payload.isProblemClear,
+              isNotDuplicated: payload.isNotDuplicated,
+              isUrgencyRelevant: payload.isUrgencyRelevant,
+              isStrategicAligned: payload.isStrategicAligned,
+              isResearchFeasible: payload.isResearchFeasible,
               isDocumentsComplete: payload.decision === 'PASS',
+              decision: payload.decision,
               verificationNotes: payload.verificationNotes,
               verifiedAt: today,
               verifiedBy: adminName || 'Admin BRIDA',
@@ -2024,6 +2101,45 @@ export const useOpdStore = create<OpdState>((set, get) => ({
     }
   },
 
+  generateKakAi: async (proposalId: string, customPrompt = '') => {
+    try {
+      set({ isLoadingStudies: true, errorStudies: null });
+      const res = await axiosInstance.post(`/studies/generate-kak-ai/${proposalId}`, { customPrompt });
+      const result = res.data?.data || res.data;
+      set({ isLoadingStudies: false });
+      return result;
+    } catch (err: any) {
+      console.error('Failed to generate KAK with AI:', err);
+      const errMsg = err.response?.data?.message || err.message || 'Gagal menghasilkan KAK dengan AI';
+      set({ errorStudies: errMsg, isLoadingStudies: false });
+      throw new Error(errMsg);
+    }
+  },
+
+  saveKakStudy: async (proposalId: string, data: any) => {
+    try {
+      set({ isLoadingStudies: true, errorStudies: null });
+      const res = await axiosInstance.post(`/studies/kak-editor/${proposalId}`, data);
+      const savedStudy = res.data?.data || res.data;
+      set((state) => ({
+        currentStudy: savedStudy,
+        studies: [savedStudy, ...state.studies.filter((s) => s.id !== savedStudy.id)],
+        proposals: state.proposals.map((p) =>
+          p.id === proposalId
+            ? { ...p, researchStudy: savedStudy }
+            : p
+        ),
+        isLoadingStudies: false,
+      }));
+      return savedStudy;
+    } catch (err: any) {
+      console.error('Failed to save KAK & RKA study:', err);
+      const errMsg = err.response?.data?.message || err.message || 'Gagal menyimpan draf KAK & RKA';
+      set({ errorStudies: errMsg, isLoadingStudies: false });
+      throw new Error(errMsg);
+    }
+  },
+
   updateStudyStatus: async (id: string, status) => {
     try {
       set({ isLoadingStudies: true, errorStudies: null });
@@ -2045,6 +2161,114 @@ export const useOpdStore = create<OpdState>((set, get) => ({
     } catch (err: any) {
       console.error('Failed to update study status:', err);
       const errMsg = err.response?.data?.message || err.message || 'Gagal memperbarui status kajian';
+      set({ errorStudies: errMsg, isLoadingStudies: false });
+      throw new Error(errMsg);
+    }
+  },
+
+  saveStudyCooperationDoc: async (studyId: string, data) => {
+    try {
+      set({ isLoadingStudies: true, errorStudies: null });
+      const res = await axiosInstance.post(`/studies/${studyId}/cooperation-doc`, data);
+      const updated = res.data?.data || res.data;
+      set((state) => ({
+        currentStudy: state.currentStudy && state.currentStudy.id === studyId
+          ? { ...state.currentStudy, ...updated }
+          : state.currentStudy,
+        studies: state.studies.map((s) => (s.id === studyId ? { ...s, ...updated } : s)),
+        isLoadingStudies: false,
+      }));
+      return updated;
+    } catch (err: any) {
+      console.error('Failed to save cooperation document:', err);
+      const errMsg = err.response?.data?.message || err.message || 'Gagal menyimpan dokumen kerja sama / SK';
+      set({ errorStudies: errMsg, isLoadingStudies: false });
+      throw new Error(errMsg);
+    }
+  },
+
+  addStudyWorkingDoc: async (studyId: string, data) => {
+    try {
+      set({ isLoadingStudies: true, errorStudies: null });
+      const res = await axiosInstance.post(`/studies/${studyId}/working-docs`, data);
+      const newDoc = res.data?.data || res.data;
+      set((state) => ({
+        currentStudy: state.currentStudy && state.currentStudy.id === studyId
+          ? {
+              ...state.currentStudy,
+              workingDocuments: [newDoc, ...(state.currentStudy.workingDocuments || [])],
+            }
+          : state.currentStudy,
+        studies: state.studies.map((s) =>
+          s.id === studyId
+            ? {
+                ...s,
+                workingDocuments: [newDoc, ...(s.workingDocuments || [])],
+              }
+            : s
+        ),
+        isLoadingStudies: false,
+      }));
+      return newDoc;
+    } catch (err: any) {
+      console.error('Failed to add working document:', err);
+      const errMsg = err.response?.data?.message || err.message || 'Gagal mengunggah berkas kerja riset';
+      set({ errorStudies: errMsg, isLoadingStudies: false });
+      throw new Error(errMsg);
+    }
+  },
+
+  deleteStudyWorkingDoc: async (studyId: string, docId: string) => {
+    try {
+      set({ isLoadingStudies: true, errorStudies: null });
+      await axiosInstance.delete(`/studies/${studyId}/working-docs/${docId}`);
+      set((state) => ({
+        currentStudy: state.currentStudy && state.currentStudy.id === studyId
+          ? {
+              ...state.currentStudy,
+              workingDocuments: (state.currentStudy.workingDocuments || []).filter((d) => d.id !== docId),
+            }
+          : state.currentStudy,
+        studies: state.studies.map((s) =>
+          s.id === studyId
+            ? {
+                ...s,
+                workingDocuments: (s.workingDocuments || []).filter((d) => d.id !== docId),
+              }
+            : s
+        ),
+        isLoadingStudies: false,
+      }));
+      return true;
+    } catch (err: any) {
+      console.error('Failed to delete working document:', err);
+      const errMsg = err.response?.data?.message || err.message || 'Gagal menghapus berkas kerja riset';
+      set({ errorStudies: errMsg, isLoadingStudies: false });
+      throw new Error(errMsg);
+    }
+  },
+
+  submitStudyFinalReport: async (studyId: string, data) => {
+    try {
+      set({ isLoadingStudies: true, errorStudies: null });
+      const res = await axiosInstance.post(`/studies/${studyId}/final-report`, data);
+      const updatedStudy = res.data?.data || res.data;
+      set((state) => ({
+        currentStudy: state.currentStudy && state.currentStudy.id === studyId
+          ? { ...state.currentStudy, ...updatedStudy, status: 'COMPLETED' }
+          : state.currentStudy,
+        studies: state.studies.map((s) => (s.id === studyId ? { ...s, ...updatedStudy, status: 'COMPLETED' } : s)),
+        proposals: state.proposals.map((p) =>
+          updatedStudy.proposalId && p.id === updatedStudy.proposalId
+            ? { ...p, status: 'COMPLETED' }
+            : p
+        ),
+        isLoadingStudies: false,
+      }));
+      return updatedStudy;
+    } catch (err: any) {
+      console.error('Failed to submit final report:', err);
+      const errMsg = err.response?.data?.message || err.message || 'Gagal mengunggah Laporan Akhir Riset';
       set({ errorStudies: errMsg, isLoadingStudies: false });
       throw new Error(errMsg);
     }
@@ -2326,6 +2550,21 @@ export const useOpdStore = create<OpdState>((set, get) => ({
     } catch (err: any) {
       console.error('Failed to delete recommendation:', err);
       const errMsg = err.response?.data?.message || err.message || 'Gagal menghapus rekomendasi kebijakan';
+      set({ errorRecommendations: errMsg, isLoadingRecommendations: false });
+      throw new Error(errMsg);
+    }
+  },
+
+  generatePolicyBriefAi: async (studyId: string, customPrompt = '') => {
+    try {
+      set({ isLoadingRecommendations: true, errorRecommendations: null });
+      const res = await axiosInstance.post(`/recommendations/generate-ai/${studyId}`, { customPrompt });
+      const result = res.data?.data || res.data;
+      set({ isLoadingRecommendations: false });
+      return result;
+    } catch (err: any) {
+      console.error('Failed to generate policy brief with AI:', err);
+      const errMsg = err.response?.data?.message || err.message || 'Gagal menghasilkan Policy Brief dengan AI';
       set({ errorRecommendations: errMsg, isLoadingRecommendations: false });
       throw new Error(errMsg);
     }

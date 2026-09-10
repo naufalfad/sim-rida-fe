@@ -42,14 +42,14 @@ export default function ExecutiveMonitoringPage() {
   // Mock health check calculation: (e.g. if progress < 40 and milestone is late -> Overdue flag)
   const getStudyHealth = (prop: OpdProposal) => {
     const progress = prop.studyData?.percentProgress || (prop.status === 'COMPLETED' ? 100 : 30);
-    if (prop.status === 'COMPLETED') return { status: 'COMPLETED', label: 'Selesai', color: 'emerald' };
+    if (prop.status === 'COMPLETED') return { status: 'COMPLETED', label: 'Selesai', color: 'blue' };
     if (progress < 30) {
-      return { status: 'OVERDUE', label: 'Terlambat (Overdue)', color: 'rose', warning: 'Progres di bawah 30% mendekati batas target triwulan.' };
+      return { status: 'OVERDUE', label: 'Terlambat (Overdue)', color: 'slate', warning: 'Progres di bawah 30% mendekati batas target triwulan.' };
     }
     if (progress < 60) {
-      return { status: 'WARNING', label: 'Perlu Perhatian', color: 'amber', warning: 'Perlu akselerasi analisis data lapangan.' };
+      return { status: 'WARNING', label: 'Perlu Perhatian', color: 'slate', warning: 'Perlu akselerasi analisis data lapangan.' };
     }
-    return { status: 'ON_TRACK', label: 'Sesuai Target (On Track)', color: 'teal', warning: null };
+    return { status: 'ON_TRACK', label: 'Sesuai Target (On Track)', color: 'blue', warning: null };
   };
 
   const filteredStudies = runningStudies.filter((p) => {
@@ -80,16 +80,16 @@ export default function ExecutiveMonitoringPage() {
   return (
     <div className="space-y-8 max-w-7xl mx-auto pb-12 font-sans">
       {/* Header Banner */}
-      <div className="bg-gradient-to-r from-slate-950 via-emerald-950 to-slate-900 p-8 rounded-2xl text-white shadow-xl flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="bg-[#0f2c59] p-8 rounded-2xl text-white shadow-xl flex flex-col md:flex-row md:items-center justify-between gap-4 border border-black">
         <div>
-          <div className="flex items-center gap-2 text-emerald-400 text-xs font-black tracking-widest uppercase mb-2">
+          <div className="flex items-center gap-2 text-sky-300 text-xs font-black tracking-widest uppercase mb-2">
             <Activity className="w-4 h-4" />
             Modul 3: Kepala BRIDA
           </div>
           <h1 className="text-2xl md:text-3xl font-black tracking-tight">
             Monitoring & Supervisi Riset Berjalan
           </h1>
-          <p className="text-slate-300 text-xs mt-1.5 max-w-2xl leading-relaxed">
+          <p className="text-slate-200 text-xs mt-1.5 max-w-2xl leading-relaxed">
             Pengawasan real-time tahapan kajian litbang daerah, deteksi dini riset yang berpotensi terlambat (*smart flagging*), dan pemberian arahan langsung pimpinan kepada tim peneliti.
           </p>
         </div>
@@ -97,7 +97,7 @@ export default function ExecutiveMonitoringPage() {
         <div className="flex items-center gap-3">
           <Link
             href="/executive/legalization"
-            className="flex items-center gap-2 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold px-4 py-2.5 rounded-xl transition shadow text-xs"
+            className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-bold px-4 py-2.5 rounded-xl transition shadow text-xs border border-blue-400"
           >
             <span>Pengesahan TTE</span>
             <ArrowRight className="w-4 h-4" />
@@ -107,48 +107,48 @@ export default function ExecutiveMonitoringPage() {
 
       {/* KPI Flags */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
-        <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
+        <div className="bg-white p-6 rounded-2xl border border-black shadow-sm flex items-center justify-between">
           <div>
             <span className="text-xs font-bold text-slate-500 uppercase tracking-wider block">Total Kajian Dipantau</span>
             <span className="text-3xl font-black text-slate-900 mt-1 block">{runningStudies.length}</span>
           </div>
-          <div className="w-12 h-12 bg-blue-50 text-blue-700 rounded-2xl flex items-center justify-center font-bold">
+          <div className="w-12 h-12 bg-blue-50 text-blue-700 rounded-2xl flex items-center justify-center font-bold border border-blue-200">
             <Layers className="w-6 h-6" />
           </div>
         </div>
 
-        <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
+        <div className="bg-white p-6 rounded-2xl border border-black shadow-sm flex items-center justify-between">
           <div>
             <span className="text-xs font-bold text-slate-500 uppercase tracking-wider block">Sesuai Timeline (On Track)</span>
-            <span className="text-3xl font-black text-emerald-600 mt-1 block">
+            <span className="text-3xl font-black text-blue-900 mt-1 block">
               {runningStudies.filter(p => getStudyHealth(p).status === 'ON_TRACK' || getStudyHealth(p).status === 'COMPLETED').length}
             </span>
           </div>
-          <div className="w-12 h-12 bg-emerald-50 text-emerald-700 rounded-2xl flex items-center justify-center font-bold">
+          <div className="w-12 h-12 bg-blue-50 text-blue-700 rounded-2xl flex items-center justify-center font-bold border border-blue-200">
             <CheckCircle2 className="w-6 h-6" />
           </div>
         </div>
 
-        <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
+        <div className="bg-white p-6 rounded-2xl border border-black shadow-sm flex items-center justify-between">
           <div>
             <span className="text-xs font-bold text-slate-500 uppercase tracking-wider block">Perlu Perhatian / Overdue</span>
-            <span className="text-3xl font-black text-rose-600 mt-1 block">
+            <span className="text-3xl font-black text-slate-900 mt-1 block">
               {runningStudies.filter(p => getStudyHealth(p).status === 'OVERDUE' || getStudyHealth(p).status === 'WARNING').length}
             </span>
           </div>
-          <div className="w-12 h-12 bg-rose-50 text-rose-700 rounded-2xl flex items-center justify-center font-bold">
+          <div className="w-12 h-12 bg-slate-100 text-slate-800 rounded-2xl flex items-center justify-center font-bold border border-slate-300">
             <AlertTriangle className="w-6 h-6" />
           </div>
         </div>
       </div>
 
       {/* Filter and Search Bar */}
-      <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-white p-4 rounded-xl border border-black shadow-sm">
         <div className="flex items-center gap-2">
           <button
             onClick={() => setFilterHealth('ALL')}
             className={`px-4 py-2 rounded-lg text-xs font-bold transition ${
-              filterHealth === 'ALL' ? 'bg-emerald-600 text-white shadow' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+              filterHealth === 'ALL' ? 'bg-blue-600 text-white shadow' : 'bg-slate-100 text-slate-700 hover:bg-slate-200 border border-slate-200'
             }`}
           >
             Semua Riset ({runningStudies.length})
@@ -156,7 +156,7 @@ export default function ExecutiveMonitoringPage() {
           <button
             onClick={() => setFilterHealth('ON_TRACK')}
             className={`px-4 py-2 rounded-lg text-xs font-bold transition ${
-              filterHealth === 'ON_TRACK' ? 'bg-emerald-600 text-white shadow' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+              filterHealth === 'ON_TRACK' ? 'bg-blue-600 text-white shadow' : 'bg-slate-100 text-slate-700 hover:bg-slate-200 border border-slate-200'
             }`}
           >
             On Track
@@ -164,7 +164,7 @@ export default function ExecutiveMonitoringPage() {
           <button
             onClick={() => setFilterHealth('OVERDUE')}
             className={`px-4 py-2 rounded-lg text-xs font-bold transition ${
-              filterHealth === 'OVERDUE' ? 'bg-rose-600 text-white shadow' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+              filterHealth === 'OVERDUE' ? 'bg-slate-900 text-white shadow' : 'bg-slate-100 text-slate-700 hover:bg-slate-200 border border-slate-200'
             }`}
           >
             Flagging Terlambat / Warning
@@ -178,7 +178,7 @@ export default function ExecutiveMonitoringPage() {
             placeholder="Cari riset / OPD..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs focus:ring-2 focus:ring-emerald-500 focus:bg-white focus:outline-none"
+            className="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-300 rounded-lg text-xs focus:ring-2 focus:ring-blue-600 focus:bg-white focus:outline-none text-slate-800"
           />
         </div>
       </div>
@@ -188,7 +188,7 @@ export default function ExecutiveMonitoringPage() {
         {/* Left Column: List of Studies (5 cols) */}
         <div className="lg:col-span-5 space-y-4">
           <h2 className="text-sm font-extrabold text-slate-800 uppercase tracking-wider flex items-center gap-2">
-            <Activity className="w-4 h-4 text-emerald-600" />
+            <Activity className="w-4 h-4 text-blue-600" />
             Daftar Riset Dalam Pengawasan ({filteredStudies.length})
           </h2>
 
@@ -202,19 +202,19 @@ export default function ExecutiveMonitoringPage() {
                 key={prop.id}
                 onClick={() => setSelectedProposal(prop)}
                 className={`cursor-pointer bg-white p-5 rounded-2xl border transition shadow-sm hover:shadow-md ${
-                  isSelected ? 'border-emerald-600 ring-2 ring-emerald-500/20' : 'border-slate-200'
+                  isSelected ? 'border-blue-600 ring-2 ring-blue-500/20' : 'border-black'
                 }`}
               >
                 <div className="flex items-center justify-between gap-2 mb-2">
-                  <span className="font-mono text-xs font-bold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded">
+                  <span className="font-mono text-xs font-bold text-blue-900 bg-blue-50 px-2 py-0.5 rounded border border-blue-200">
                     {prop.code}
                   </span>
-                  <span className={`text-[10px] font-black px-2.5 py-0.5 rounded-full uppercase ${
+                  <span className={`text-[10px] font-black px-2.5 py-0.5 rounded-full uppercase border ${
                     health.status === 'OVERDUE' 
-                      ? 'bg-rose-100 text-rose-800 border border-rose-300 animate-pulse' 
+                      ? 'bg-slate-900 text-white border-black animate-pulse' 
                       : health.status === 'WARNING'
-                      ? 'bg-amber-100 text-amber-800 border border-amber-300'
-                      : 'bg-emerald-100 text-emerald-800'
+                      ? 'bg-slate-100 text-slate-900 border-slate-300'
+                      : 'bg-blue-600 text-white border-blue-800'
                   }`}>
                     {health.label}
                   </span>
@@ -225,8 +225,8 @@ export default function ExecutiveMonitoringPage() {
 
                 {/* Flag warning callout if any */}
                 {health.warning && (
-                  <div className="p-2 mb-3 bg-rose-50 rounded-lg text-[11px] font-bold text-rose-800 flex items-center gap-1.5">
-                    <AlertTriangle className="w-3.5 h-3.5 shrink-0 text-rose-600" />
+                  <div className="p-2 mb-3 bg-slate-100 rounded-lg text-[11px] font-bold text-slate-900 flex items-center gap-1.5 border border-black">
+                    <AlertTriangle className="w-3.5 h-3.5 shrink-0 text-blue-600" />
                     <span>{health.warning}</span>
                   </div>
                 )}
@@ -235,13 +235,11 @@ export default function ExecutiveMonitoringPage() {
                 <div className="space-y-1.5">
                   <div className="flex justify-between items-center text-xs font-bold">
                     <span className="text-slate-600">Milestone: {prop.studyData?.currentMilestone || 'PERSIAPAN'}</span>
-                    <span className="text-emerald-700">{progress}%</span>
+                    <span className="text-blue-900">{progress}%</span>
                   </div>
-                  <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
+                  <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden border border-slate-200">
                     <div 
-                      className={`h-full transition-all duration-500 ${
-                        health.status === 'OVERDUE' ? 'bg-rose-500' : 'bg-emerald-600'
-                      }`}
+                      className="h-full transition-all duration-500 bg-blue-600"
                       style={{ width: `${progress}%` }}
                     />
                   </div>
@@ -254,10 +252,10 @@ export default function ExecutiveMonitoringPage() {
         {/* Right Column: Supervision & Arahan Pimpinan Panel (7 cols) */}
         <div className="lg:col-span-7">
           {selectedProposal ? (
-            <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 space-y-6 sticky top-6">
-              <div className="border-b border-slate-100 pb-4">
+            <div className="bg-white rounded-2xl border border-black shadow-sm p-6 space-y-6 sticky top-6">
+              <div className="border-b border-slate-200 pb-4">
                 <div className="flex items-center justify-between gap-2 mb-1">
-                  <span className="font-mono text-xs font-bold text-emerald-800 bg-emerald-50 px-2.5 py-0.5 rounded">
+                  <span className="font-mono text-xs font-bold text-blue-900 bg-blue-50 px-2.5 py-0.5 rounded border border-blue-200">
                     {selectedProposal.code}
                   </span>
                   <span className="text-xs text-slate-500 font-semibold flex items-center gap-1">
@@ -267,20 +265,20 @@ export default function ExecutiveMonitoringPage() {
                 </div>
                 <h3 className="text-lg font-black text-slate-900 mt-2">{selectedProposal.title}</h3>
                 <p className="text-xs text-slate-500 mt-1 flex items-center gap-1.5 font-medium">
-                  <Building2 className="w-4 h-4 text-slate-400" />
+                  <Building2 className="w-4 h-4 text-blue-600" />
                   {selectedProposal.opdName}
                 </p>
               </div>
 
               {/* Form Input Arahan Kepala BRIDA */}
-              <div className="bg-slate-50 p-5 rounded-2xl border border-slate-200 space-y-4">
+              <div className="bg-slate-50 p-5 rounded-2xl border border-slate-300 space-y-4">
                 <h4 className="font-extrabold text-slate-900 text-xs uppercase tracking-wider flex items-center gap-2">
-                  <MessageSquare className="w-4 h-4 text-emerald-600" />
+                  <MessageSquare className="w-4 h-4 text-blue-600" />
                   Beri Catatan & Arahan Supervisi Pimpinan
                 </h4>
 
                 {isGuidanceSuccess && (
-                  <div className="p-3 bg-emerald-100 text-emerald-800 rounded-xl text-xs font-bold flex items-center gap-2">
+                  <div className="p-3 bg-blue-100 text-blue-900 rounded-xl text-xs font-bold flex items-center gap-2 border border-blue-300">
                     <CheckCircle2 className="w-4 h-4" />
                     Arahan pimpinan berhasil dikirimkan ke tim peneliti!
                   </div>
@@ -288,13 +286,13 @@ export default function ExecutiveMonitoringPage() {
 
                 <form onSubmit={handleSendGuidance} className="space-y-3">
                   <div>
-                    <label className="block text-[11px] font-bold text-slate-600 uppercase mb-1">
+                    <label className="block text-[11px] font-bold text-slate-700 uppercase mb-1">
                       Tahapan yang Diberi Arahan:
                     </label>
                     <select
                       value={guidanceStage}
                       onChange={(e) => setGuidanceStage(e.target.value)}
-                      className="w-full p-2 bg-white border border-slate-200 rounded-lg text-xs font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                      className="w-full p-2 bg-white border border-slate-300 rounded-lg text-xs font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-600"
                     >
                       <option value="Persiapan & KAK">Persiapan & KAK</option>
                       <option value="Pengumpulan Data & Survei">Pengumpulan Data & Survei</option>
@@ -305,7 +303,7 @@ export default function ExecutiveMonitoringPage() {
                   </div>
 
                   <div>
-                    <label className="block text-[11px] font-bold text-slate-600 uppercase mb-1">
+                    <label className="block text-[11px] font-bold text-slate-700 uppercase mb-1">
                       Isi Arahan / Instruksi Pimpinan:
                     </label>
                     <textarea
@@ -314,13 +312,13 @@ export default function ExecutiveMonitoringPage() {
                       placeholder="Contoh: Tolong libatkan akademisi pakar gizi dari UGM dalam FGD minggu depan agar metodologi sampling lebih kuat..."
                       value={guidanceText}
                       onChange={(e) => setGuidanceText(e.target.value)}
-                      className="w-full p-3 bg-white border border-slate-200 rounded-xl text-xs focus:ring-2 focus:ring-emerald-500 focus:outline-none leading-relaxed"
+                      className="w-full p-3 bg-white border border-slate-300 rounded-xl text-xs focus:ring-2 focus:ring-blue-600 focus:outline-none leading-relaxed text-slate-800"
                     />
                   </div>
 
                   <button
                     type="submit"
-                    className="w-full py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow transition flex items-center justify-center gap-2"
+                    className="w-full py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-xl shadow transition flex items-center justify-center gap-2 border border-blue-700"
                   >
                     <Send className="w-3.5 h-3.5" />
                     Kirimkan Arahan ke Tim Peneliti
@@ -335,15 +333,15 @@ export default function ExecutiveMonitoringPage() {
                 </h4>
 
                 {(!selectedProposal.executiveGuidanceList || selectedProposal.executiveGuidanceList.length === 0) ? (
-                  <p className="text-xs text-slate-400 italic p-3 bg-slate-50 rounded-xl text-center">
+                  <p className="text-xs text-slate-400 italic p-3 bg-slate-50 rounded-xl text-center border border-slate-200">
                     Belum ada arahan khusus yang diberikan untuk kajian ini.
                   </p>
                 ) : (
                   <div className="space-y-2.5">
                     {selectedProposal.executiveGuidanceList.map((g) => (
-                      <div key={g.id} className="p-3.5 bg-emerald-50/60 rounded-xl border border-emerald-200 text-xs space-y-1">
+                      <div key={g.id} className="p-3.5 bg-blue-50/60 rounded-xl border border-blue-200 text-xs space-y-1">
                         <div className="flex justify-between items-center text-[11px]">
-                          <span className="font-bold text-emerald-900 font-mono">[{g.stage}]</span>
+                          <span className="font-bold text-blue-900 font-mono">[{g.stage}]</span>
                           <span className="text-slate-400">{g.createdAt}</span>
                         </div>
                         <p className="text-slate-800 leading-relaxed">{g.text}</p>
@@ -355,7 +353,7 @@ export default function ExecutiveMonitoringPage() {
               </div>
             </div>
           ) : (
-            <div className="bg-white p-12 rounded-2xl border border-slate-200 text-center text-slate-400 shadow-sm">
+            <div className="bg-white p-12 rounded-2xl border border-black text-center text-slate-400 shadow-sm">
               <Activity className="w-12 h-12 mx-auto text-slate-300 mb-3" />
               <h3 className="font-bold text-slate-700 text-base">Pilih Kajian untuk Supervisi</h3>
               <p className="text-xs text-slate-400 mt-1 max-w-sm mx-auto">

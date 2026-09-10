@@ -213,20 +213,14 @@ export default function AdminScoringDetailPage({ params }: PageProps) {
       </div>
 
       {/* Header Banner */}
-      <div className="bg-gradient-to-r from-slate-950 via-slate-900 to-blue-950 p-8 rounded-2xl text-white shadow-xl flex flex-col md:flex-row md:items-center justify-between gap-6">
+      <div className="bg-[#0f2c59] border border-black p-8 text-white shadow-xl flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div className="space-y-2">
           <div className="flex flex-wrap items-center gap-2.5">
-            <span className="font-mono text-xs font-black bg-blue-500/20 text-blue-300 border border-blue-500/30 px-3 py-1 rounded-md">
+            <span className="font-mono text-xs font-black bg-[#1b3b6f] text-sky-300 border border-[#264978] px-3 py-1">
               {proposal.code}
             </span>
-            <span className={`text-xs font-extrabold px-3 py-1 rounded-full uppercase flex items-center gap-1.5 ${
-              proposal.status === 'IN_REVIEW'
-                ? 'bg-blue-100 text-blue-900'
-                : proposal.status === 'APPROVED'
-                ? 'bg-indigo-100 text-indigo-900'
-                : 'bg-emerald-100 text-emerald-900'
-            }`}>
-              <Award className="w-3.5 h-3.5 text-blue-700" />
+            <span className="text-xs font-extrabold px-3 py-1 uppercase flex items-center gap-1.5 bg-blue-600 text-white border border-blue-700">
+              <Award className="w-3.5 h-3.5 text-white" />
               {proposal.scoringData ? `Sudah Dinilai (Skor: ${proposal.scoringData.totalScore})` : 'Siap Diberi Skor'}
             </span>
           </div>
@@ -237,16 +231,16 @@ export default function AdminScoringDetailPage({ params }: PageProps) {
 
           <div className="flex flex-wrap items-center gap-y-1 gap-x-4 text-xs text-slate-300 font-medium pt-1">
             <span className="flex items-center gap-1.5">
-              <Building2 className="w-4 h-4 text-blue-400" />
+              <Building2 className="w-4 h-4 text-sky-400" />
               {proposal.opdName}
             </span>
             <span>•</span>
             <span className="flex items-center gap-1.5">
-              <Calendar className="w-4 h-4 text-blue-400" />
+              <Calendar className="w-4 h-4 text-sky-400" />
               Diajukan: {proposal.submittedAt || proposal.createdAt}
             </span>
             <span>•</span>
-            <span className="font-bold text-blue-300">
+            <span className="font-bold text-sky-300">
               Kategori: {proposal.category}
             </span>
           </div>
@@ -260,10 +254,10 @@ export default function AdminScoringDetailPage({ params }: PageProps) {
         <div className="lg:col-span-7 space-y-6">
           
           {/* 1. Key Metrics Card */}
-          <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div className="bg-white p-6 border border-black shadow-sm grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div className="space-y-1">
-              <span className="text-3xs font-bold text-slate-400 uppercase tracking-wider block">Estimasi Pagu Anggaran:</span>
-              <span className="text-base font-black text-emerald-700 font-mono block">
+              <span className="text-3xs font-bold text-slate-500 uppercase tracking-wider block">Estimasi Pagu Anggaran:</span>
+              <span className="text-base font-black text-blue-900 font-mono block">
                 {proposal.estimatedBudget 
                   ? new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(proposal.estimatedBudget)
                   : 'Sesuai Standar Satuan Biaya (SBM)'}
@@ -271,30 +265,24 @@ export default function AdminScoringDetailPage({ params }: PageProps) {
             </div>
 
             <div className="space-y-1">
-              <span className="text-3xs font-bold text-slate-400 uppercase tracking-wider block">Target Output Luaran:</span>
+              <span className="text-3xs font-bold text-slate-500 uppercase tracking-wider block">Target Output Luaran:</span>
               <span className="text-xs font-bold text-slate-800 block">
                 {proposal.expectedOutput}
               </span>
             </div>
 
             <div className="space-y-1">
-              <span className="text-3xs font-bold text-slate-400 uppercase tracking-wider block">Tingkat Urgensi OPD:</span>
-              <span className={`inline-block px-2.5 py-0.5 rounded text-xs font-black uppercase ${
-                proposal.urgencyLevel === 'TINGGI' 
-                  ? 'bg-rose-100 text-rose-800 border border-rose-200' 
-                  : proposal.urgencyLevel === 'SEDANG'
-                  ? 'bg-amber-100 text-amber-800 border border-amber-200'
-                  : 'bg-blue-100 text-blue-800 border border-blue-200'
-              }`}>
+              <span className="text-3xs font-bold text-slate-500 uppercase tracking-wider block">Tingkat Urgensi OPD:</span>
+              <span className="inline-block px-2.5 py-0.5 text-xs font-black uppercase bg-blue-50 text-blue-900 border border-blue-300">
                 {proposal.urgencyLevel}
               </span>
             </div>
           </div>
 
           {/* 2. Uraian Masalah & Latar Belakang Lapangan */}
-          <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-3">
-            <h3 className="font-black text-slate-900 text-sm uppercase tracking-wider flex items-center gap-2 border-b pb-3">
-              <FileText className="w-4 h-4 text-blue-600" />
+          <div className="bg-white p-6 border border-black shadow-sm space-y-3">
+            <h3 className="font-black text-slate-900 text-sm uppercase tracking-wider flex items-center gap-2 border-b border-slate-200 pb-3">
+              <FileText className="w-4 h-4 text-[#0f2c59]" />
               1. Identifikasi Masalah & Latar Belakang Lapangan
             </h3>
             <p className="text-xs text-slate-700 leading-relaxed whitespace-pre-line text-justify">
@@ -303,9 +291,9 @@ export default function AdminScoringDetailPage({ params }: PageProps) {
           </div>
 
           {/* 3. Urgensi & Justifikasi Kebijakan */}
-          <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-3">
-            <h3 className="font-black text-slate-900 text-sm uppercase tracking-wider flex items-center gap-2 border-b pb-3">
-              <AlertTriangle className="w-4 h-4 text-amber-500" />
+          <div className="bg-white p-6 border border-black shadow-sm space-y-3">
+            <h3 className="font-black text-slate-900 text-sm uppercase tracking-wider flex items-center gap-2 border-b border-slate-200 pb-3">
+              <AlertTriangle className="w-4 h-4 text-[#0f2c59]" />
               2. Urgensi Penelitian (Mengapa Harus Diteliti Sekarang?)
             </h3>
             <p className="text-xs text-slate-700 leading-relaxed whitespace-pre-line text-justify">
@@ -313,38 +301,37 @@ export default function AdminScoringDetailPage({ params }: PageProps) {
             </p>
           </div>
 
-          {/* 4. Dokumen KAK / TOR */}
-          {/* 3. Dokumen Lampiran Data Dukung */}
-          <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
-            <div className="flex items-center justify-between border-b pb-3">
+          {/* 4. Dokumen Lampiran Data Dukung */}
+          <div className="bg-white p-6 border border-black shadow-sm space-y-4">
+            <div className="flex items-center justify-between border-b border-slate-200 pb-3">
               <h3 className="font-black text-slate-900 text-sm uppercase tracking-wider flex items-center gap-2">
-                <Paperclip className="w-4 h-4 text-blue-600" />
+                <Paperclip className="w-4 h-4 text-[#0f2c59]" />
                 3. Berkas Data Dukung dari OPD ({proposal.supportingDocuments?.length || 0})
               </h3>
-              <span className="text-[11px] font-semibold text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200">
+              <span className="text-[11px] font-semibold text-blue-900 bg-blue-50 px-2.5 py-0.5 border border-blue-300">
                 KAK & RKA Dibuat oleh BRIDA
               </span>
             </div>
 
-            <div className="p-3.5 bg-blue-50/60 rounded-xl border border-blue-200 text-xs text-blue-900 leading-relaxed">
+            <div className="p-3.5 bg-blue-50 border border-blue-200 text-xs text-blue-950 leading-relaxed">
               <p>
                 <strong>Catatan Evaluasi:</strong> Dokumen Kerangka Acuan Kerja (KAK) dan Rencana Kerja & Anggaran (RKA) pelaksanaan kajian difokuskan dan disusun langsung oleh tim BRIDA di tahap Manajemen Riset.
               </p>
             </div>
 
             {(!proposal.supportingDocuments || proposal.supportingDocuments.length === 0) ? (
-              <p className="text-xs text-slate-400 italic p-4 bg-slate-50 rounded-xl text-center border border-dashed border-slate-200">
+              <p className="text-xs text-slate-400 italic p-4 bg-slate-50 text-center border border-dashed border-slate-300">
                 Tidak ada berkas data dukung tambahan khusus yang dilampirkan oleh OPD.
               </p>
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 {proposal.supportingDocuments.map((doc, idx) => (
-                  <div key={idx} className="p-3 bg-slate-50 rounded-xl border border-slate-200 flex items-center justify-between gap-2 hover:bg-slate-100 transition">
+                  <div key={idx} className="p-3 bg-slate-50 border border-slate-300 flex items-center justify-between gap-2 hover:bg-slate-100 transition">
                     <div className="flex items-center gap-2.5 overflow-hidden">
-                      <FileText className="w-4 h-4 text-blue-600 shrink-0" />
+                      <FileText className="w-4 h-4 text-[#0f2c59] shrink-0" />
                       <div className="overflow-hidden">
                         <span className="font-bold text-slate-800 text-xs truncate block">{doc.name}</span>
-                        <span className="text-[10px] text-slate-400">{doc.size}</span>
+                        <span className="text-[10px] text-slate-500">{doc.size}</span>
                       </div>
                     </div>
                     <div className="flex items-center gap-1.5 shrink-0">
@@ -361,16 +348,16 @@ export default function AdminScoringDetailPage({ params }: PageProps) {
                           opdName: proposal.opdName,
                           content: `LAMPIRAN DATA DUKUNG: ${doc.name}\nUsulan: ${proposal.title} (${proposal.code})\nPengunggah: ${proposal.opdName}`
                         }, toast)}
-                        className="px-2.5 py-1 bg-white hover:bg-slate-200 text-slate-700 font-bold text-2xs rounded-lg border transition shadow-xs flex items-center gap-1"
+                        className="px-2.5 py-1 bg-white hover:bg-slate-200 text-slate-800 font-bold text-2xs border border-slate-300 transition shadow-xs flex items-center gap-1"
                       >
                         {isPdfDocument(doc.name) ? (
                           <>
-                            <ExternalLink className="w-3 h-3 text-blue-600" />
+                            <ExternalLink className="w-3 h-3 text-[#0f2c59]" />
                             <span>Buka PDF</span>
                           </>
                         ) : (
                           <>
-                            <Download className="w-3 h-3 text-blue-600" />
+                            <Download className="w-3 h-3 text-[#0f2c59]" />
                             <span>Unduh File</span>
                           </>
                         )}
@@ -382,16 +369,16 @@ export default function AdminScoringDetailPage({ params }: PageProps) {
             )}
           </div>
 
-          {/* 6. Catatan Verifikasi Gatekeeper Sebelumnya */}
+          {/* 5. Catatan Verifikasi Gatekeeper Sebelumnya */}
           {proposal.adminVerification && (
-            <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-2">
-              <h3 className="font-black text-slate-900 text-sm uppercase tracking-wider flex items-center gap-2 border-b pb-3">
-                <ShieldCheck className="w-4 h-4 text-emerald-600" />
+            <div className="bg-white p-6 border border-black shadow-sm space-y-2">
+              <h3 className="font-black text-slate-900 text-sm uppercase tracking-wider flex items-center gap-2 border-b border-slate-200 pb-3">
+                <ShieldCheck className="w-4 h-4 text-[#0f2c59]" />
                 5. Hasil Verifikasi Administrasi (Gatekeeper)
               </h3>
-              <div className="p-3.5 bg-emerald-50 rounded-xl border border-emerald-200 text-xs space-y-1">
-                <p className="text-emerald-950 font-semibold">{proposal.adminVerification.verificationNotes}</p>
-                <span className="text-[10px] text-emerald-700 block">
+              <div className="p-3.5 bg-blue-50 border border-blue-200 text-xs space-y-1">
+                <p className="text-blue-950 font-semibold">{proposal.adminVerification.verificationNotes}</p>
+                <span className="text-[10px] text-blue-700 block">
                   Diverifikasi oleh: {proposal.adminVerification.verifiedBy} ({proposal.adminVerification.verifiedAt})
                 </span>
               </div>
@@ -402,11 +389,11 @@ export default function AdminScoringDetailPage({ params }: PageProps) {
 
         {/* RIGHT COLUMN: Digital Scoring Instrument & Formulation Panel (5 cols, Sticky) */}
         <div className="lg:col-span-5 space-y-6">
-          <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-6 sticky top-6">
+          <div className="bg-white p-6 border border-black shadow-sm space-y-6 sticky top-6">
             
             {/* Header Box */}
-            <div className="border-b pb-4">
-              <div className="flex items-center gap-2 text-blue-600 text-xs font-black uppercase tracking-wider mb-1">
+            <div className="border-b border-slate-200 pb-4">
+              <div className="flex items-center gap-2 text-[#0f2c59] text-xs font-black uppercase tracking-wider mb-1">
                 <Award className="w-4 h-4" />
                 Instrumen Penilaian Digital
               </div>
@@ -415,51 +402,49 @@ export default function AdminScoringDetailPage({ params }: PageProps) {
             </div>
 
             {/* Total Weighted Score Banner */}
-            <div className="p-4 bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-700 rounded-2xl text-white shadow-lg space-y-2">
+            <div className="p-4 bg-[#0f2c59] border border-black text-white shadow-md space-y-2">
               <div className="flex items-center justify-between">
                 <div>
-                  <span className="text-[10px] font-extrabold uppercase tracking-wider text-blue-100 block">
+                  <span className="text-[10px] font-extrabold uppercase tracking-wider text-sky-200 block">
                     Total Skor Tertimbang
                   </span>
                   <div className="text-3xl font-black font-mono">
-                    {totalScore} <span className="text-sm font-normal text-blue-200">/ 100</span>
+                    {totalScore} <span className="text-sm font-normal text-slate-300">/ 100</span>
                   </div>
                 </div>
                 <div className="text-right">
-                  <span className={`inline-block px-3 py-1 rounded-full text-xs font-black uppercase shadow-sm ${
+                  <span className={`inline-block px-3 py-1 text-xs font-black uppercase border ${
                     totalScore >= 80 
-                      ? 'bg-emerald-400 text-emerald-950' 
+                      ? 'bg-blue-600 text-white border-blue-400' 
                       : totalScore >= 65 
-                      ? 'bg-amber-300 text-amber-950' 
-                      : 'bg-rose-300 text-rose-950'
+                      ? 'bg-blue-100 text-blue-950 border-blue-400' 
+                      : 'bg-slate-100 text-slate-900 border-black'
                   }`}>
                     {totalScore >= 80 ? 'Prioritas Utama' : totalScore >= 65 ? 'Prioritas Kedua' : 'Tidak Prioritas'}
                   </span>
-                  <span className="block text-[10px] text-blue-100 font-medium mt-1">
+                  <span className="block text-[10px] text-slate-300 font-medium mt-1">
                     {totalScore >= 80 ? 'Rekomendasi Lolos Agenda Riset' : totalScore >= 65 ? 'Dapat Dipertimbangkan' : 'Perlu Penelaahan Lanjut'}
                   </span>
                 </div>
               </div>
 
               {/* Progress bar */}
-              <div className="w-full bg-blue-900/50 rounded-full h-2 overflow-hidden border border-blue-400/30">
+              <div className="w-full bg-[#0a1e3f] h-2 overflow-hidden border border-[#264978]">
                 <div 
-                  className={`h-full transition-all duration-300 ${
-                    totalScore >= 80 ? 'bg-emerald-400' : totalScore >= 65 ? 'bg-amber-300' : 'bg-rose-400'
-                  }`}
+                  className="h-full transition-all duration-300 bg-sky-400"
                   style={{ width: `${Math.min(100, Math.max(0, totalScore))}%` }}
                 />
               </div>
             </div>
 
             {/* 4 Digital Criteria Sliders */}
-            <div className="space-y-4 bg-slate-50 p-4 rounded-xl border border-slate-200">
+            <div className="space-y-4 bg-slate-50 p-4 border border-slate-300">
               
               {/* Kriteria 1: Kesesuaian Visi-Misi (Bobot 30%) */}
               <div className="space-y-1.5">
                 <div className="flex justify-between items-center text-xs">
                   <span className="font-bold text-slate-800">1. Keselarasan Visi-Misi Daerah & RPJMD (30%)</span>
-                  <span className="font-mono font-black text-blue-700 bg-blue-100 px-2 py-0.5 rounded text-xs">
+                  <span className="font-mono font-black text-white bg-[#0f2c59] px-2 py-0.5 border border-black text-xs">
                     {visionAlignmentScore}
                   </span>
                 </div>
@@ -470,9 +455,9 @@ export default function AdminScoringDetailPage({ params }: PageProps) {
                   step="1"
                   value={visionAlignmentScore}
                   onChange={(e) => setVisionAlignmentScore(Number(e.target.value))}
-                  className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-blue-600"
+                  className="w-full h-2 bg-slate-200 appearance-none cursor-pointer accent-[#0f2c59]"
                 />
-                <div className="flex justify-between text-[10px] text-slate-400 font-semibold">
+                <div className="flex justify-between text-[10px] text-slate-500 font-semibold">
                   <span>0 (Kurang Selaras)</span>
                   <span>50</span>
                   <span>100 (Sangat Selaras)</span>
@@ -483,7 +468,7 @@ export default function AdminScoringDetailPage({ params }: PageProps) {
               <div className="space-y-1.5 pt-2 border-t border-slate-200">
                 <div className="flex justify-between items-center text-xs">
                   <span className="font-bold text-slate-800">2. Tingkat Urgensi Masalah (30%)</span>
-                  <span className="font-mono font-black text-blue-700 bg-blue-100 px-2 py-0.5 rounded text-xs">
+                  <span className="font-mono font-black text-white bg-[#0f2c59] px-2 py-0.5 border border-black text-xs">
                     {urgencyScore}
                   </span>
                 </div>
@@ -494,9 +479,9 @@ export default function AdminScoringDetailPage({ params }: PageProps) {
                   step="1"
                   value={urgencyScore}
                   onChange={(e) => setUrgencyScore(Number(e.target.value))}
-                  className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-blue-600"
+                  className="w-full h-2 bg-slate-200 appearance-none cursor-pointer accent-[#0f2c59]"
                 />
-                <div className="flex justify-between text-[10px] text-slate-400 font-semibold">
+                <div className="flex justify-between text-[10px] text-slate-500 font-semibold">
                   <span>0 (Tidak Mendesak)</span>
                   <span>50</span>
                   <span>100 (Sangat Mendesak)</span>
@@ -507,7 +492,7 @@ export default function AdminScoringDetailPage({ params }: PageProps) {
               <div className="space-y-1.5 pt-2 border-t border-slate-200">
                 <div className="flex justify-between items-center text-xs">
                   <span className="font-bold text-slate-800">3. Kelayakan Pagu Anggaran & Teknis (20%)</span>
-                  <span className="font-mono font-black text-blue-700 bg-blue-100 px-2 py-0.5 rounded text-xs">
+                  <span className="font-mono font-black text-white bg-[#0f2c59] px-2 py-0.5 border border-black text-xs">
                     {budgetFeasibilityScore}
                   </span>
                 </div>
@@ -518,9 +503,9 @@ export default function AdminScoringDetailPage({ params }: PageProps) {
                   step="1"
                   value={budgetFeasibilityScore}
                   onChange={(e) => setBudgetFeasibilityScore(Number(e.target.value))}
-                  className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-blue-600"
+                  className="w-full h-2 bg-slate-200 appearance-none cursor-pointer accent-[#0f2c59]"
                 />
-                <div className="flex justify-between text-[10px] text-slate-400 font-semibold">
+                <div className="flex justify-between text-[10px] text-slate-500 font-semibold">
                   <span>0 (Biaya/Metode Berat)</span>
                   <span>50</span>
                   <span>100 (Sangat Layak)</span>
@@ -531,7 +516,7 @@ export default function AdminScoringDetailPage({ params }: PageProps) {
               <div className="space-y-1.5 pt-2 border-t border-slate-200">
                 <div className="flex justify-between items-center text-xs">
                   <span className="font-bold text-slate-800">4. Kesiapan Data Dukung & Kapasitas Riset (20%)</span>
-                  <span className="font-mono font-black text-blue-700 bg-blue-100 px-2 py-0.5 rounded text-xs">
+                  <span className="font-mono font-black text-white bg-[#0f2c59] px-2 py-0.5 border border-black text-xs">
                     {dataReadinessScore}
                   </span>
                 </div>
@@ -542,9 +527,9 @@ export default function AdminScoringDetailPage({ params }: PageProps) {
                   step="1"
                   value={dataReadinessScore}
                   onChange={(e) => setDataReadinessScore(Number(e.target.value))}
-                  className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-blue-600"
+                  className="w-full h-2 bg-slate-200 appearance-none cursor-pointer accent-[#0f2c59]"
                 />
-                <div className="flex justify-between text-[10px] text-slate-400 font-semibold">
+                <div className="flex justify-between text-[10px] text-slate-500 font-semibold">
                   <span>0 (Data Minim)</span>
                   <span>50</span>
                   <span>100 (Data Lengkap & Matang)</span>
@@ -561,7 +546,7 @@ export default function AdminScoringDetailPage({ params }: PageProps) {
               <select
                 value={fieldClassification}
                 onChange={(e) => setFieldClassification(e.target.value as any)}
-                className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-800 focus:ring-2 focus:ring-blue-500 focus:bg-white focus:outline-none"
+                className="w-full p-2.5 bg-slate-50 border border-slate-300 text-xs font-semibold text-slate-800 focus:ring-1 focus:ring-blue-600 focus:bg-white focus:outline-none"
               >
                 <option value="Ekonomi">Ekonomi & Pariwisata</option>
                 <option value="Pemerintahan & Tata Kelola">Pemerintahan & Tata Kelola Birokrasi</option>
@@ -574,7 +559,7 @@ export default function AdminScoringDetailPage({ params }: PageProps) {
             <div className="space-y-2">
               <label className="block text-xs font-bold text-slate-800 uppercase tracking-wider flex items-center justify-between">
                 <span>Rekomendasi Metode Pelaksanaan:</span>
-                <span className="text-[11px] font-bold text-blue-700 bg-blue-50 px-2 py-0.5 rounded">
+                <span className="text-[11px] font-bold text-blue-900 bg-blue-50 border border-blue-300 px-2 py-0.5">
                   {executionMethod === 'SWAKELOLA' ? 'Swakelola' : executionMethod === 'PENUNJUKAN_LANGSUNG' ? 'Penunjukan Langsung' : executionMethod === 'E_KATALOG' ? 'E-Katalog' : 'Tender'}
                 </span>
               </label>
@@ -582,78 +567,78 @@ export default function AdminScoringDetailPage({ params }: PageProps) {
               <div className="grid grid-cols-1 gap-2">
                 
                 {/* 1. Swakelola */}
-                <label className={`flex items-start gap-2.5 p-3 rounded-xl border cursor-pointer transition ${
+                <label className={`flex items-start gap-2.5 p-3 border cursor-pointer transition ${
                   executionMethod === 'SWAKELOLA'
-                    ? 'border-emerald-600 bg-emerald-50/70 text-emerald-950 font-bold ring-1 ring-emerald-500'
-                    : 'border-slate-200 text-slate-700 hover:bg-slate-50'
+                    ? 'border-blue-700 bg-blue-50 text-blue-950 font-bold ring-1 ring-blue-600'
+                    : 'border-slate-300 text-slate-700 hover:bg-slate-50'
                 }`}>
                   <input
                     type="radio"
                     name="methodRadio"
                     checked={executionMethod === 'SWAKELOLA'}
                     onChange={() => setExecutionMethod('SWAKELOLA')}
-                    className="mt-0.5 text-emerald-600 focus:ring-emerald-500"
+                    className="mt-0.5 text-blue-600 focus:ring-blue-600"
                   />
                   <div>
                     <span className="text-xs block font-bold text-slate-900">1. Swakelola</span>
-                    <span className="text-[11px] font-normal text-slate-500">Dikerjakan mandiri oleh tim peneliti internal BRIDA atau swakelola tipe I/II/III/IV.</span>
+                    <span className="text-[11px] font-normal text-slate-600">Dikerjakan mandiri oleh tim peneliti internal BRIDA atau swakelola tipe I/II/III/IV.</span>
                   </div>
                 </label>
 
                 {/* 2. Penunjukan Langsung */}
-                <label className={`flex items-start gap-2.5 p-3 rounded-xl border cursor-pointer transition ${
+                <label className={`flex items-start gap-2.5 p-3 border cursor-pointer transition ${
                   executionMethod === 'PENUNJUKAN_LANGSUNG'
-                    ? 'border-blue-600 bg-blue-50/70 text-blue-950 font-bold ring-1 ring-blue-500'
-                    : 'border-slate-200 text-slate-700 hover:bg-slate-50'
+                    ? 'border-blue-700 bg-blue-50 text-blue-950 font-bold ring-1 ring-blue-600'
+                    : 'border-slate-300 text-slate-700 hover:bg-slate-50'
                 }`}>
                   <input
                     type="radio"
                     name="methodRadio"
                     checked={executionMethod === 'PENUNJUKAN_LANGSUNG'}
                     onChange={() => setExecutionMethod('PENUNJUKAN_LANGSUNG')}
-                    className="mt-0.5 text-blue-600 focus:ring-blue-500"
+                    className="mt-0.5 text-blue-600 focus:ring-blue-600"
                   />
                   <div>
                     <span className="text-xs block font-bold text-slate-900">2. Penunjukan Langsung</span>
-                    <span className="text-[11px] font-normal text-slate-500">Pengadaan langsung kepada tenaga ahli, pakar, atau konsultan spesialis sesuai regulasi PBJ.</span>
+                    <span className="text-[11px] font-normal text-slate-600">Pengadaan langsung kepada tenaga ahli, pakar, atau konsultan spesialis sesuai regulasi PBJ.</span>
                   </div>
                 </label>
 
                 {/* 3. E-Katalog */}
-                <label className={`flex items-start gap-2.5 p-3 rounded-xl border cursor-pointer transition ${
+                <label className={`flex items-start gap-2.5 p-3 border cursor-pointer transition ${
                   executionMethod === 'E_KATALOG'
-                    ? 'border-purple-600 bg-purple-50/70 text-purple-950 font-bold ring-1 ring-purple-500'
-                    : 'border-slate-200 text-slate-700 hover:bg-slate-50'
+                    ? 'border-blue-700 bg-blue-50 text-blue-950 font-bold ring-1 ring-blue-600'
+                    : 'border-slate-300 text-slate-700 hover:bg-slate-50'
                 }`}>
                   <input
                     type="radio"
                     name="methodRadio"
                     checked={executionMethod === 'E_KATALOG'}
                     onChange={() => setExecutionMethod('E_KATALOG')}
-                    className="mt-0.5 text-purple-600 focus:ring-purple-500"
+                    className="mt-0.5 text-blue-600 focus:ring-blue-600"
                   />
                   <div>
                     <span className="text-xs block font-bold text-slate-900">3. E-Katalog</span>
-                    <span className="text-[11px] font-normal text-slate-500">Pembelian jasa riset, kajian, atau konsultan terdaftar melalui E-Katalog LKPP / LPSE.</span>
+                    <span className="text-[11px] font-normal text-slate-600">Pembelian jasa riset, kajian, atau konsultan terdaftar melalui E-Katalog LKPP / LPSE.</span>
                   </div>
                 </label>
 
                 {/* 4. Tender */}
-                <label className={`flex items-start gap-2.5 p-3 rounded-xl border cursor-pointer transition ${
+                <label className={`flex items-start gap-2.5 p-3 border cursor-pointer transition ${
                   executionMethod === 'TENDER'
-                    ? 'border-amber-600 bg-amber-50/70 text-amber-950 font-bold ring-1 ring-amber-500'
-                    : 'border-slate-200 text-slate-700 hover:bg-slate-50'
+                    ? 'border-blue-700 bg-blue-50 text-blue-950 font-bold ring-1 ring-blue-600'
+                    : 'border-slate-300 text-slate-700 hover:bg-slate-50'
                 }`}>
                   <input
                     type="radio"
                     name="methodRadio"
                     checked={executionMethod === 'TENDER'}
                     onChange={() => setExecutionMethod('TENDER')}
-                    className="mt-0.5 text-amber-600 focus:ring-amber-500"
+                    className="mt-0.5 text-blue-600 focus:ring-blue-600"
                   />
                   <div>
                     <span className="text-xs block font-bold text-slate-900">4. Tender</span>
-                    <span className="text-[11px] font-normal text-slate-500">Seleksi / tender terbuka pengadaan jasa kajian berskala besar yang melibatkan pihak ketiga.</span>
+                    <span className="text-[11px] font-normal text-slate-600">Seleksi / tender terbuka pengadaan jasa kajian berskala besar yang melibatkan pihak ketiga.</span>
                   </div>
                 </label>
 
@@ -670,7 +655,7 @@ export default function AdminScoringDetailPage({ params }: PageProps) {
                 value={evaluatorNotes}
                 onChange={(e) => setEvaluatorNotes(e.target.value)}
                 placeholder="Tuliskan justifikasi kelayakan, metodologi saran, dan catatan prioritas..."
-                className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:ring-2 focus:ring-blue-500 focus:bg-white focus:outline-none leading-relaxed text-slate-800"
+                className="w-full p-2.5 bg-slate-50 border border-slate-300 text-xs focus:ring-1 focus:ring-blue-600 focus:bg-white focus:outline-none leading-relaxed text-slate-800"
               />
             </div>
 
@@ -683,7 +668,7 @@ export default function AdminScoringDetailPage({ params }: PageProps) {
                 type="date"
                 value={targetCompletionDate}
                 onChange={(e) => setTargetCompletionDate(e.target.value)}
-                className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-800 focus:ring-2 focus:ring-blue-500 focus:bg-white focus:outline-none"
+                className="w-full p-2.5 bg-slate-50 border border-slate-300 text-xs font-semibold text-slate-800 focus:ring-1 focus:ring-blue-600 focus:bg-white focus:outline-none"
               />
             </div>
 
@@ -693,7 +678,7 @@ export default function AdminScoringDetailPage({ params }: PageProps) {
                 type="button"
                 disabled={isSubmitting}
                 onClick={handleSaveOnly}
-                className="w-full py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-xs rounded-xl transition flex items-center justify-center gap-2 border border-slate-300"
+                className="w-full py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-xs transition flex items-center justify-center gap-2 border border-slate-300"
               >
                 <Save className="w-4 h-4 text-slate-600" />
                 <span>Simpan Skor Sementara</span>
@@ -703,9 +688,9 @@ export default function AdminScoringDetailPage({ params }: PageProps) {
                 type="button"
                 disabled={isSubmitting}
                 onClick={handleFinalizeAndApprove}
-                className="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-black text-xs rounded-xl shadow-lg transition flex items-center justify-center gap-2 transform active:scale-95"
+                className="w-full py-3 bg-[#0f2c59] hover:bg-[#1a3d70] text-white font-black text-xs border border-black shadow-md transition flex items-center justify-center gap-2"
               >
-                <CheckCircle2 className="w-4 h-4" />
+                <CheckCircle2 className="w-4 h-4 text-sky-400" />
                 <span>Finalisasi Scoring & Teruskan ke Agenda Riset</span>
               </button>
             </div>

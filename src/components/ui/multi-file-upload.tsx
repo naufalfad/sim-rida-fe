@@ -111,7 +111,7 @@ export const MultiFileUpload: React.FC<MultiFileUploadProps> = ({
           'flex flex-col items-center justify-center border-2 border-dashed border-slate-300 rounded-xl p-6 bg-slate-50/50 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900/30 dark:hover:bg-slate-900/50 cursor-pointer transition-all mb-4',
           {
             'border-blue-500 bg-blue-50/30 dark:border-blue-500 dark:bg-blue-950/20': isDragActive,
-            'border-red-500 dark:border-red-500': !!error,
+            'border-black dark:border-white': !!error,
           }
         )}
       >
@@ -129,7 +129,7 @@ export const MultiFileUpload: React.FC<MultiFileUploadProps> = ({
           {value.map((file, idx) => (
             <div 
               key={`${file.name}-${idx}`} 
-              className="flex items-center justify-between p-3 border rounded-xl bg-slate-50 dark:bg-slate-900 dark:border-slate-800 animate-fade-in"
+              className="flex items-center justify-between p-3 border border-black dark:border-white rounded-xl bg-slate-50 dark:bg-slate-900 animate-fade-in"
             >
               <div className="flex items-center gap-3 overflow-hidden">
                 <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg bg-blue-50 text-blue-600 dark:bg-blue-950/30 dark:text-blue-400">
@@ -145,7 +145,7 @@ export const MultiFileUpload: React.FC<MultiFileUploadProps> = ({
                 </div>
               </div>
               <div className="flex items-center gap-1">
-                <span className="flex h-6 w-6 items-center justify-center rounded-full bg-emerald-50 text-emerald-600 dark:bg-emerald-950/30 dark:text-emerald-400">
+                <span className="flex h-6 w-6 items-center justify-center rounded-full bg-blue-50 text-blue-600 dark:bg-blue-950 dark:text-blue-400">
                   <Check className="h-3.5 w-3.5" />
                 </span>
                 <button
@@ -165,7 +165,7 @@ export const MultiFileUpload: React.FC<MultiFileUploadProps> = ({
       )}
 
       {error && (
-        <p className="mt-1 text-xs text-red-650 dark:text-red-400">{error}</p>
+        <p className="mt-1 text-xs text-slate-900 dark:text-slate-200 font-medium">{error}</p>
       )}
     </div>
   );

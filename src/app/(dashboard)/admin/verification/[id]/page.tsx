@@ -6,26 +6,27 @@ import Link from 'next/link';
 import { useOpdStore } from '@/store/useOpdStore';
 import { useAuthStore } from '@/store/useAuthStore';
 import { useToast } from '@/components/ui/toast';
-import { 
-  ArrowLeft, 
-  CheckCircle2, 
-  Clock, 
-  AlertTriangle, 
-  FileText, 
-  Building2, 
-  Calendar, 
-  ShieldCheck, 
-  RotateCcw, 
-  Paperclip,
+import { PageHeader } from '@/components/ui/page-header';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import {
+  ArrowLeft,
+  CheckCircle2,
+  Clock,
+  AlertTriangle,
+  FileText,
+  Building2,
+  Calendar,
+  ShieldCheck,
+  RotateCcw,
   Loader2,
-  Download,
-  ExternalLink,
-  Eye,
-  CheckSquare,
+  XCircle,
+  Sparkles,
+  ArrowRight,
+  DollarSign,
+  Layers,
+  HelpCircle,
 } from 'lucide-react';
-import { DocumentViewerModal, DocumentReviewItem } from '@/components/ui/document-viewer-modal';
-import { openOrDownloadUploadedFile, downloadDocumentFile } from '@/lib/file-storage';
-import { isPdfDocument } from '@/lib/file-viewer';
+import { cn } from '@/lib/utils/cn';
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -36,7 +37,7 @@ export default function AdminVerificationDetailPage({ params }: PageProps) {
   const router = useRouter();
   const { toast } = useToast();
   const { user } = useAuthStore();
-  const { proposals, verifyProposal, returnToOpd, fetchProposals, isLoadingProposals } = useOpdStore();
+  const { proposals, verifyProposal, fetchProposals, isLoadingProposals } = useOpdStore();
 
   const proposalId = resolvedParams.id;
   const proposal = proposals.find((p) => p.id === proposalId);
@@ -47,40 +48,29 @@ export default function AdminVerificationDetailPage({ params }: PageProps) {
     }
   }, [proposal, fetchProposals]);
 
-  // Form states for verification
-  const [isReturnMode, setIsReturnMode] = useState(false);
-  const [verificationNotes, setVerificationNotes] = useState(
-    proposal?.adminVerification?.verificationNotes || 'Dokumen KAK/TOR dan uraian permasalahan telah diperiksa dan dinyatakan lengkap secara administrasi.'
+  // 5 Pilar Validasi State
+  const [isProblemClear, setIsProblemClear] = useState(
+    proposal?.adminVerification?.isProblemClear ?? true
   );
-  const [returnReason, setReturnReason] = useState(proposal?.revisionNotes || '');
+  const [isNotDuplicated, setIsNotDuplicated] = useState(
+    proposal?.adminVerification?.isNotDuplicated ?? true
+  );
+  const [isUrgencyRelevant, setIsUrgencyRelevant] = useState(
+    proposal?.adminVerification?.isUrgencyRelevant ?? true
+  );
+  const [isStrategicAligned, setIsStrategicAligned] = useState(
+    proposal?.adminVerification?.isStrategicAligned ?? true
+  );
+  const [isResearchFeasible, setIsResearchFeasible] = useState(
+    proposal?.adminVerification?.isResearchFeasible ?? true
+  );
+
+  const [verificationNotes, setVerificationNotes] = useState(
+    proposal?.adminVerification?.verificationNotes ||
+      'Usulan telah ditelaah berdasarkan 5 pilar validasi BRIDA dan memenuhi kriteria kelayakan riset daerah.'
+  );
+
   const [isSubmitting, setIsSubmitting] = useState(false);
-
-  // Administrative checklist items
-  const [checkKak, setCheckKak] = useState(!!proposal?.torDocument);
-  const [checkProblem, setCheckProblem] = useState(true);
-  const [checkBudget, setCheckBudget] = useState(true);
-  const [checkSupportingDocs, setCheckSupportingDocs] = useState((proposal?.supportingDocuments?.length || 0) > 0);
-
-  // Document review modal state
-  const [previewDoc, setPreviewDoc] = useState<DocumentReviewItem | null>(null);
-  const [isDocModalOpen, setIsDocModalOpen] = useState(false);
-
-  const openDocumentReview = (docItem: Partial<DocumentReviewItem>) => {
-    setPreviewDoc({
-      name: docItem.name || 'Dokumen_SIMRIDA.pdf',
-      size: docItem.size || '1.4 MB',
-      uploadDate: docItem.uploadDate || proposal?.submittedAt || '01 Jan 2026',
-      type: docItem.type || 'DATA_DUKUNG',
-      proposalCode: proposal?.code,
-      proposalTitle: proposal?.title,
-      opdName: proposal?.opdName,
-      problemStatement: proposal?.problemStatement,
-      urgencyReason: proposal?.urgencyReason,
-      estimatedBudget: proposal?.estimatedBudget,
-      expectedOutput: proposal?.expectedOutput,
-    });
-    setIsDocModalOpen(true);
-  };
 
   if (isLoadingProposals && !proposal) {
     return (
@@ -94,519 +84,469 @@ export default function AdminVerificationDetailPage({ params }: PageProps) {
   if (!proposal) {
     return (
       <div className="max-w-4xl mx-auto py-16 text-center space-y-4 font-sans">
-        <AlertTriangle className="w-12 h-12 text-amber-500 mx-auto" />
+        <AlertTriangle className="w-12 h-12 text-[#0f2c59] mx-auto" />
         <h2 className="text-xl font-bold text-slate-900">Usulan Tidak Ditemukan</h2>
         <p className="text-xs text-slate-500">Data usulan dengan ID tersebut tidak ditemukan dalam sistem.</p>
-        <button
-          onClick={() => router.push('/admin/verification')}
-          className="px-4 py-2 bg-[#0f2c59] hover:bg-[#0a1e3f] text-white text-xs font-semibold uppercase tracking-wider transition"
+        <Link
+          href="/admin/verification"
+          className="inline-flex items-center gap-2 px-4 py-2 bg-[#0f2c59] text-white text-xs font-semibold border border-black"
         >
-          Kembali ke Daftar Verifikasi
-        </button>
+          <ArrowLeft className="w-4 h-4" />
+          Kembali ke Antrean Validasi
+        </Link>
       </div>
     );
   }
 
-  const handleApprove = async () => {
-    if (verificationNotes.trim().length < 5) {
-      toast('Catatan verifikator wajib diisi minimal 5 karakter.', 'warning');
+  const isAlreadyVerified = proposal.status !== 'PENDING';
+
+  const handleDecision = async (decision: 'PASS' | 'RETURN' | 'REJECT') => {
+    if (!verificationNotes.trim() || verificationNotes.trim().length < 5) {
+      toast('Catatan hasil validasi wajib diisi minimal 5 karakter.', 'warning');
       return;
     }
 
-    setIsSubmitting(true);
     try {
+      setIsSubmitting(true);
       await verifyProposal(
         proposal.id,
         {
-          decision: 'PASS',
+          decision,
+          isProblemClear,
+          isNotDuplicated,
+          isUrgencyRelevant,
+          isStrategicAligned,
+          isResearchFeasible,
           verificationNotes: verificationNotes.trim(),
-          isProblemClear: checkProblem,
-          isUrgencyRelevant: checkProblem,
-          isBudgetFeasible: checkBudget,
-          isDataAdequate: checkSupportingDocs,
         },
         verificationNotes.trim(),
-        user?.name || 'Admin BRIDA'
+        user?.name || 'Admin Litbang BRIDA'
       );
-      toast(`Usulan ${proposal.code} berhasil disahkan dan diloloskan ke tahap Penelaahan & Scoring.`, 'success');
+
+      if (decision === 'PASS') {
+        toast('Usulan OPD dinyatakan Lolos Validasi! Usulan kini berstatus Siap Masuk ke Tahap 3 (Penyusunan KAK).', 'success');
+      } else if (decision === 'RETURN') {
+        toast('Usulan berhasil dikembalikan ke OPD dengan catatan revisi perbaikan.', 'warning');
+      } else {
+        toast('Usulan OPD telah ditolak dengan catatan alasan ketidaklayakan.', 'error');
+      }
+
       router.push('/admin/verification');
     } catch (err: any) {
-      toast('Gagal memproses verifikasi: ' + (err.message || 'Terjadi kesalahan sistem'), 'error');
+      toast(`Gagal memproses validasi: ${err.message}`, 'error');
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  const handleReturn = async () => {
-    if (!returnReason.trim()) {
-      toast('Catatan perbaikan / instruksi revisi wajib diisi untuk mengembalikan usulan ke OPD.', 'warning');
-      return;
-    }
-    if (returnReason.trim().length < 5) {
-      toast('Catatan revisi wajib diisi minimal 5 karakter.', 'warning');
-      return;
-    }
-
-    setIsSubmitting(true);
-    try {
-      await verifyProposal(
-        proposal.id,
-        {
-          decision: 'RETURN',
-          verificationNotes: returnReason.trim(),
-          isProblemClear: false,
-          isUrgencyRelevant: false,
-          isBudgetFeasible: false,
-          isDataAdequate: false,
-        },
-        returnReason.trim(),
-        user?.name || 'Admin BRIDA'
-      );
-      toast(`Usulan ${proposal.code} telah dikembalikan ke ${proposal.opdName} untuk revisi.`, 'info');
-      router.push('/admin/verification');
-    } catch (err: any) {
-      toast('Gagal mengembalikan usulan: ' + (err.message || 'Terjadi kesalahan sistem'), 'error');
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
+  const allPillarsChecked =
+    isProblemClear && isNotDuplicated && isUrgencyRelevant && isStrategicAligned && isResearchFeasible;
 
   return (
-    <div className="space-y-6 max-w-7xl mx-auto pb-16 font-sans">
-      
-      {/* Back Button */}
-      <div className="flex items-center justify-between">
-        <Link
-          href="/admin/verification"
-          className="flex items-center gap-1.5 text-xs text-[#0f2c59] hover:underline font-semibold uppercase tracking-wider transition"
+    <div className="space-y-6 max-w-5xl mx-auto pb-20 font-sans">
+      {/* HEADER */}
+      <PageHeader
+        title="Validasi Substansi & Kelayakan Riset OPD"
+        description={`Pemeriksaan kelayakan usulan riset kode ${proposal.code} dari ${proposal.opdName} berdasarkan 5 pilar instrumen validasi BRIDA.`}
+        action={
+          <Link
+            href="/admin/verification"
+            className="inline-flex items-center gap-2 px-3 py-2 text-xs font-semibold text-slate-700 bg-white border border-slate-300 hover:bg-slate-50 transition-colors shadow-xs"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Kembali ke Antrean
+          </Link>
+        }
+      />
+
+      {/* STATUS BANNER IF ALREADY PROCESSED */}
+      {isAlreadyVerified && (
+        <div
+          className={cn(
+            'p-4 border flex items-center justify-between gap-4 text-xs font-medium',
+            proposal.status === 'APPROVED' || proposal.status === 'IN_PROGRESS' || proposal.status === 'COMPLETED'
+              ? 'bg-blue-600 text-white border-blue-700'
+              : proposal.status === 'RETURNED'
+              ? 'bg-slate-100 text-slate-900 border-black'
+              : 'bg-slate-900 text-white border-black'
+          )}
         >
-          <ArrowLeft className="w-4 h-4" />
-          <span>Kembali ke Inbox Verifikasi</span>
-        </Link>
-        <span className="font-mono text-2xs font-bold text-slate-400">
-          ID Usulan: {proposal.id}
-        </span>
-      </div>
-
-      {/* Header Banner */}
-      <div className="border border-slate-200 bg-white p-6 md:p-8 border-l-4 border-l-[#0f2c59] space-y-3">
-        <div className="flex flex-wrap items-center gap-2.5">
-          <span className="font-mono text-xs font-bold text-[#0f2c59] bg-[#dde6f2] px-2.5 py-1 border border-[#bfd2e6]">
-            {proposal.code}
-          </span>
-          <span className={`text-2xs font-semibold px-2.5 py-1 uppercase tracking-wider border ${
-            proposal.status === 'PENDING'
-              ? 'bg-amber-50 text-amber-900 border-amber-300'
-              : 'bg-[#f0f4f9] text-[#0f2c59] border-[#bfd2e6]'
-          }`}>
-            {proposal.status === 'PENDING' ? 'Menunggu Verifikasi Administrasi' : `Status: ${proposal.status}`}
-          </span>
-          <span className="text-2xs font-semibold text-slate-700 bg-slate-100 px-2.5 py-1 border border-slate-300 uppercase tracking-wider">
-            Kategori: {proposal.category}
-          </span>
-        </div>
-
-        <h1 className="text-xl md:text-2xl font-bold tracking-tight text-slate-900 leading-snug">
-          {proposal.title}
-        </h1>
-
-        <div className="flex flex-wrap items-center gap-y-1 gap-x-4 text-xs text-slate-600 font-medium pt-1 border-t border-slate-100">
-          <span className="flex items-center gap-1.5 font-bold text-slate-900">
-            <Building2 className="w-4 h-4 text-[#0f2c59]" />
-            {proposal.opdName}
-          </span>
-          <span>•</span>
-          <span className="flex items-center gap-1.5">
-            <Calendar className="w-4 h-4 text-[#0f2c59]" />
-            Diajukan: {proposal.submittedAt || proposal.createdAt}
-          </span>
-        </div>
-      </div>
-
-      {/* Main 2-Column Content Layout */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-        
-        {/* LEFT COLUMN: Detailed Proposal Dossier (7 cols) */}
-        <div className="lg:col-span-7 space-y-6">
-          
-          {/* Key Metrics Strip (Divided by lines) */}
-          <div className="border border-slate-200 bg-white grid grid-cols-1 sm:grid-cols-3 divide-y sm:divide-y-0 sm:divide-x divide-slate-200">
-            <div className="p-4 space-y-1">
-              <span className="text-2xs font-semibold text-slate-500 uppercase tracking-wider block">Estimasi Kebutuhan Pagu</span>
-              <span className="text-base font-bold text-[#0f2c59] font-mono block">
-                {proposal.estimatedBudget 
-                  ? `Rp ${proposal.estimatedBudget.toLocaleString('id-ID')}`
-                  : 'Sesuai Standar Satuan Biaya (SBM)'}
-              </span>
-            </div>
-
-            <div className="p-4 space-y-1">
-              <span className="text-2xs font-semibold text-slate-500 uppercase tracking-wider block">Target Output Luaran</span>
-              <span className="text-xs font-semibold text-slate-800 block">
-                {proposal.expectedOutput}
-              </span>
-            </div>
-
-            <div className="p-4 space-y-1">
-              <span className="text-2xs font-semibold text-slate-500 uppercase tracking-wider block">Tingkat Urgensi</span>
-              <span className={`inline-block px-2 py-0.5 text-2xs font-semibold uppercase tracking-wider border ${
-                proposal.urgencyLevel === 'TINGGI' 
-                  ? 'bg-rose-50 text-rose-800 border-rose-300' 
-                  : proposal.urgencyLevel === 'SEDANG'
-                  ? 'bg-amber-50 text-amber-800 border-amber-300'
-                  : 'bg-blue-50 text-blue-800 border-blue-300'
-              }`}>
-                {proposal.urgencyLevel}
-              </span>
-            </div>
-          </div>
-
-          {/* 1. Uraian Masalah & Latar Belakang Lapangan */}
-          <div className="border border-slate-200 bg-white p-6 space-y-3">
-            <div className="border-b border-slate-200 pb-3">
-              <h3 className="font-bold text-slate-900 text-xs uppercase tracking-wider flex items-center gap-2">
-                <FileText className="w-4 h-4 text-[#0f2c59]" />
-                1. Identifikasi Masalah & Latar Belakang Lapangan
-              </h3>
-            </div>
-            <p className="text-xs text-slate-700 leading-relaxed whitespace-pre-line text-justify">
-              {proposal.problemStatement}
-            </p>
-          </div>
-
-          {/* 2. Urgensi & Dampak Kebijakan */}
-          <div className="border border-slate-200 bg-white p-6 space-y-3">
-            <div className="border-b border-slate-200 pb-3">
-              <h3 className="font-bold text-slate-900 text-xs uppercase tracking-wider flex items-center gap-2">
-                <AlertTriangle className="w-4 h-4 text-[#0f2c59]" />
-                2. Urgensi Penelitian (Mengapa Harus Diteliti Sekarang?)
-              </h3>
-            </div>
-            <p className="text-xs text-slate-700 leading-relaxed whitespace-pre-line text-justify">
-              {proposal.urgencyReason}
-            </p>
-          </div>
-
-          {/* 3. Dokumen Kerangka Acuan Kerja (KAK / TOR) */}
-          <div className="border border-slate-200 bg-white p-6 space-y-4">
-            <div className="border-b border-slate-200 pb-3 flex items-center justify-between">
-              <h3 className="font-bold text-slate-900 text-xs uppercase tracking-wider flex items-center gap-2">
-                <FileText className="w-4 h-4 text-[#0f2c59]" />
-                3. Dokumen Kerangka Acuan Kerja (KAK / TOR)
-              </h3>
-              {proposal.torDocument ? (
-                <span className="text-2xs font-semibold text-emerald-800 bg-emerald-50 px-2 py-0.5 border border-emerald-300 uppercase">
-                  Tersedia & Valid
-                </span>
-              ) : (
-                <span className="text-2xs font-semibold text-amber-900 bg-amber-50 px-2 py-0.5 border border-amber-300 uppercase">
-                  Belum Dilampirkan OPD
-                </span>
-              )}
-            </div>
-
-            {proposal.torDocument ? (
-              <div className="p-4 border border-slate-200 bg-slate-50 flex flex-col sm:flex-row sm:items-center justify-between gap-4 text-xs">
-                <div className="flex items-center gap-3">
-                  <div className="p-2.5 bg-[#0f2c59] text-white">
-                    <FileText className="h-5 w-5" />
-                  </div>
-                  <div>
-                    <span className="font-bold text-slate-900 block text-xs">{proposal.torDocument.name}</span>
-                    <span className="text-2xs text-slate-500">
-                      {proposal.torDocument.size} • Diunggah pada {proposal.torDocument.uploadDate}
-                    </span>
-                  </div>
-                </div>
-                <div className="flex items-center gap-2 shrink-0">
-                  <button
-                    type="button"
-                    onClick={() => openOrDownloadUploadedFile({
-                      name: proposal.torDocument!.name,
-                      size: proposal.torDocument!.size,
-                      uploadDate: proposal.torDocument!.uploadDate,
-                      url: proposal.torDocument!.url,
-                      proposalCode: proposal.code,
-                      proposalTitle: proposal.title,
-                      opdName: proposal.opdName,
-                    }, toast)}
-                    className="px-3 py-1.5 bg-[#0f2c59] hover:bg-[#0a1e3f] text-white text-xs font-semibold uppercase tracking-wider transition flex items-center gap-1.5 shadow-xs"
-                  >
-                    {isPdfDocument(proposal.torDocument.name) ? (
-                      <>
-                        <ExternalLink className="w-3.5 h-3.5 text-sky-300" />
-                        <span>Buka PDF di Tab Baru</span>
-                      </>
-                    ) : (
-                      <>
-                        <Download className="w-3.5 h-3.5 text-sky-300" />
-                        <span>Unduh File ({proposal.torDocument.name.split('.').pop()?.toUpperCase()})</span>
-                      </>
-                    )}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => downloadDocumentFile({
-                      name: proposal.torDocument!.name,
-                      url: proposal.torDocument!.url,
-                    })}
-                    className="px-3 py-1.5 bg-white border border-slate-300 hover:bg-slate-100 text-slate-800 text-xs font-semibold uppercase tracking-wider transition flex items-center gap-1.5"
-                    title="Unduh Berkas Langsung"
-                  >
-                    <Download className="w-3.5 h-3.5 text-[#0f2c59]" />
-                    <span>Unduh</span>
-                  </button>
-                </div>
-              </div>
+          <div className="flex items-center gap-2.5">
+            {proposal.status === 'APPROVED' ? (
+              <CheckCircle2 className="h-5 w-5 text-white" />
+            ) : proposal.status === 'RETURNED' ? (
+              <AlertTriangle className="h-5 w-5 text-slate-900" />
             ) : (
-              <div className="p-3 border border-amber-300 bg-amber-50 text-amber-900 text-xs flex items-center gap-2">
-                <AlertTriangle className="h-4 w-4 shrink-0" />
-                <span>OPD tidak melampirkan berkas TOR mandiri. BRIDA dapat menyusun KAK teknis secara mandiri pada tahap Manajemen Kajian.</span>
-              </div>
+              <XCircle className="h-5 w-5 text-white" />
             )}
+            <div>
+              <span className="font-bold block text-sm">
+                Status Saat Ini: {proposal.status === 'APPROVED' ? 'Lolos Validasi BRIDA (Siap KAK)' : proposal.status === 'RETURNED' ? 'Dikembalikan untuk Revisi OPD' : proposal.status}
+              </span>
+              <p className="text-[11px] opacity-80 mt-0.5">
+                Divalidasi pada {proposal.adminVerification?.verifiedAt || '2026-09-01'} oleh {proposal.adminVerification?.verifiedBy || 'Admin BRIDA'}.
+              </p>
+            </div>
           </div>
 
-          {/* 4. Berkas Data Dukung Tambahan */}
-          <div className="border border-slate-200 bg-white p-6 space-y-4">
-            <div className="border-b border-slate-200 pb-3 flex items-center justify-between">
-              <h3 className="font-bold text-slate-900 text-xs uppercase tracking-wider flex items-center gap-2">
-                <Paperclip className="w-4 h-4 text-[#0f2c59]" />
-                4. Berkas Lampiran Data Dukung Tambahan ({proposal.supportingDocuments?.length || 0})
-              </h3>
-            </div>
+          {proposal.status === 'APPROVED' && (
+            <Link
+              href="/admin/research"
+              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-[#0f2c59] text-white border border-white font-semibold hover:bg-[#1a3d70] transition-colors"
+            >
+              Lanjut ke Penyusunan KAK
+              <ArrowRight className="h-3.5 w-3.5" />
+            </Link>
+          )}
+        </div>
+      )}
 
-            {(!proposal.supportingDocuments || proposal.supportingDocuments.length === 0) ? (
-              <p className="text-xs text-slate-500 italic p-4 bg-slate-50 text-center border border-slate-200">
-                Tidak ada berkas data dukung tambahan khusus yang dilampirkan oleh OPD.
-              </p>
-            ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+      {/* SECTION 1: PROPOSAL OVERVIEW CARD */}
+      <Card className="bg-white border-black shadow-sm">
+        <CardHeader className="border-b border-slate-200 pb-4">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <div className="flex items-center gap-2">
+              <span className="font-mono text-xs font-bold text-slate-700 px-2.5 py-1 bg-slate-100 border border-slate-300">
+                {proposal.code}
+              </span>
+              <span className="px-2.5 py-1 text-xs font-semibold bg-blue-50 text-blue-900 border border-blue-300">
+                Usulan Perangkat Daerah
+              </span>
+            </div>
+            <span className="text-xs text-slate-500 font-medium">
+              Diajukan: {proposal.submittedAt || proposal.createdAt || '2026-09-01'}
+            </span>
+          </div>
+          <CardTitle className="text-base font-bold text-slate-900 mt-2 leading-snug">
+            {proposal.title}
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="p-5 space-y-4 text-xs">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 p-3.5 bg-slate-50 border border-slate-300">
+            <div>
+              <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 block">
+                OPD Pengusul
+              </span>
+              <span className="font-bold text-slate-800 mt-0.5 block">{proposal.opdName}</span>
+            </div>
+            <div>
+              <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 block">
+                Bidang / Kategori
+              </span>
+              <span className="font-bold text-slate-800 mt-0.5 block">{proposal.category}</span>
+            </div>
+            <div>
+              <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 block">
+                Estimasi Pagu Anggaran
+              </span>
+              <span className="font-bold text-blue-900 mt-0.5 block font-mono">
+                Rp {Number(proposal.estimatedBudget || 0).toLocaleString('id-ID')}
+              </span>
+            </div>
+          </div>
+
+          <div className="space-y-1.5">
+            <span className="font-bold text-slate-800 block text-xs">
+              Rumusan Masalah yang Dihadapi OPD:
+            </span>
+            <div className="p-3 bg-slate-50 rounded-lg border border-slate-200 text-slate-700 leading-relaxed whitespace-pre-wrap">
+              {proposal.problemStatement}
+            </div>
+          </div>
+
+          {proposal.urgencyReason && (
+            <div className="space-y-1.5">
+              <span className="font-bold text-slate-800 block text-xs">
+                Alasan Urgensi & Kebutuhan Solusi Riset:
+              </span>
+              <div className="p-3 bg-slate-50 rounded-lg border border-slate-200 text-slate-700 leading-relaxed whitespace-pre-wrap">
+                {proposal.urgencyReason}
+              </div>
+            </div>
+          )}
+
+          {proposal.supportingDocuments && proposal.supportingDocuments.length > 0 && (
+            <div className="space-y-1.5 pt-1">
+              <span className="font-bold text-slate-800 block text-xs">
+                Dokumen Lampiran TOR / Data Awal ({proposal.supportingDocuments.length}):
+              </span>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                 {proposal.supportingDocuments.map((doc, idx) => (
-                  <div key={idx} className="p-3 border border-slate-200 bg-slate-50 flex items-center justify-between gap-2">
-                    <div className="flex items-center gap-2.5 overflow-hidden">
-                      <FileText className="w-4 h-4 text-[#0f2c59] shrink-0" />
-                      <div className="overflow-hidden">
-                        <span className="font-bold text-slate-900 text-xs truncate block">{doc.name}</span>
-                        <span className="text-2xs text-slate-500">{doc.size}</span>
-                      </div>
+                  <div
+                    key={idx}
+                    className="flex items-center justify-between p-2.5 bg-slate-50 rounded-lg border border-slate-200 text-xs"
+                  >
+                    <div className="flex items-center gap-2 truncate">
+                      <FileText className="h-4 w-4 text-[#0f2c59] shrink-0" />
+                      <span className="truncate font-medium text-slate-800">{doc.name}</span>
                     </div>
-                    <div className="flex items-center gap-1.5 shrink-0">
-                      <button
-                        type="button"
-                        onClick={() => openOrDownloadUploadedFile({
-                          name: doc.name,
-                          size: doc.size,
-                          uploadDate: doc.uploadDate,
-                          url: doc.url,
-                          proposalCode: proposal.code,
-                          proposalTitle: proposal.title,
-                          opdName: proposal.opdName,
-                        }, toast)}
-                        className="px-2.5 py-1 bg-white hover:bg-slate-100 text-slate-800 font-semibold text-2xs border border-slate-300 uppercase flex items-center gap-1"
-                      >
-                        {isPdfDocument(doc.name) ? (
-                          <>
-                            <ExternalLink className="w-3 h-3 text-[#0f2c59]" />
-                            <span>Buka PDF</span>
-                          </>
-                        ) : (
-                          <>
-                            <Download className="w-3 h-3 text-[#0f2c59]" />
-                            <span>Unduh File</span>
-                          </>
-                        )}
-                      </button>
-                    </div>
+                    <span className="text-[10px] text-slate-400 shrink-0 ml-2">{doc.size}</span>
                   </div>
                 ))}
               </div>
-            )}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* SECTION 2: 5 PILAR VALIDASI FORM */}
+      <Card className="bg-white border-black shadow-sm overflow-hidden">
+        <CardHeader className="bg-[#0f2c59] text-white p-5 border-b border-black">
+          <div className="flex items-center gap-2.5">
+            <ShieldCheck className="h-6 w-6 text-sky-400" />
+            <div>
+              <CardTitle className="text-base font-bold text-white">
+                Instrumen Evaluasi 5 Pilar Validasi BRIDA
+              </CardTitle>
+              <CardDescription className="text-xs text-slate-300">
+                Tentukan kelayakan usulan OPD melalui verifikasi 5 kriteria mutlak sebelum meloloskan ke Tahap 3 KAK.
+              </CardDescription>
+            </div>
           </div>
+        </CardHeader>
 
-        </div>
-
-        {/* RIGHT COLUMN: Gatekeeper Action Panel (5 cols) */}
-        <div className="lg:col-span-5 space-y-6">
-          <div className="border border-slate-200 bg-white p-6 space-y-6 sticky top-6">
-            
-            <div className="border-b border-slate-200 pb-3">
-              <div className="flex items-center gap-2 text-[#0f2c59] text-xs font-bold uppercase tracking-wider mb-1">
-                <CheckSquare className="w-4 h-4" />
-                Panel Keputusan Gatekeeper
-              </div>
-              <h3 className="text-sm font-bold text-slate-900">Verifikasi & Validasi Berkas</h3>
-              <p className="text-xs text-slate-500 mt-0.5">Tentukan kelayakan usulan sebelum diteruskan ke penelaahan teknis.</p>
-            </div>
-
-            {/* Checklist Administrasi Digital */}
-            <div className="space-y-2.5 border border-slate-200 bg-slate-50 p-4">
-              <span className="text-xs font-bold text-slate-800 uppercase tracking-wider block mb-1">
-                Checklist Kelengkapan Administrasi:
-              </span>
-
-              <label className="flex items-center gap-2 text-xs font-semibold text-slate-700 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={checkProblem}
-                  onChange={(e) => setCheckProblem(e.target.checked)}
-                  className="rounded-none text-[#0f2c59] focus:ring-0 w-4 h-4"
-                />
-                <span>Uraian Masalah Jelas & Spesifik</span>
-              </label>
-
-              <label className="flex items-center gap-2 text-xs font-semibold text-slate-700 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={checkKak}
-                  onChange={(e) => setCheckKak(e.target.checked)}
-                  className="rounded-none text-[#0f2c59] focus:ring-0 w-4 h-4"
-                />
-                <span>Kesesuaian Urgensi & Target Luaran</span>
-              </label>
-
-              <label className="flex items-center gap-2 text-xs font-semibold text-slate-700 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={checkBudget}
-                  onChange={(e) => setCheckBudget(e.target.checked)}
-                  className="rounded-none text-[#0f2c59] focus:ring-0 w-4 h-4"
-                />
-                <span>Estimasi Kebutuhan Pagu Wajar</span>
-              </label>
-
-              <label className="flex items-center gap-2 text-xs font-semibold text-slate-700 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={checkSupportingDocs}
-                  onChange={(e) => setCheckSupportingDocs(e.target.checked)}
-                  className="rounded-none text-[#0f2c59] focus:ring-0 w-4 h-4"
-                />
-                <span>Data Dukung Lapangan Memadai</span>
-              </label>
-            </div>
-
-            {/* Decision Radio Selector */}
-            <div className="space-y-2">
-              <label className="block text-xs font-bold text-slate-800 uppercase tracking-wider">
-                Pilih Keputusan Gatekeeper:
-              </label>
-
-              <div className="grid grid-cols-1 gap-2">
-                <label className={`flex items-start gap-2.5 p-3 border cursor-pointer transition ${
-                  !isReturnMode 
-                    ? 'border-[#0f2c59] bg-[#f0f4f9] text-[#0f2c59] font-bold' 
-                    : 'border-slate-200 text-slate-700 hover:bg-slate-50'
-                }`}>
-                  <input
-                    type="radio"
-                    name="verifyDecision"
-                    checked={!isReturnMode}
-                    onChange={() => setIsReturnMode(false)}
-                    className="mt-0.5 text-[#0f2c59] focus:ring-0"
-                  />
-                  <div>
-                    <span className="text-xs block uppercase">Loloskan ke Penelaahan & Scoring</span>
-                    <span className="text-2xs font-normal text-slate-500">Usulan valid dan diteruskan ke tim penilai</span>
-                  </div>
-                </label>
-
-                <label className={`flex items-start gap-2.5 p-3 border cursor-pointer transition ${
-                  isReturnMode 
-                    ? 'border-rose-600 bg-rose-50 text-rose-900 font-bold' 
-                    : 'border-slate-200 text-slate-700 hover:bg-slate-50'
-                }`}>
-                  <input
-                    type="radio"
-                    name="verifyDecision"
-                    checked={isReturnMode}
-                    onChange={() => setIsReturnMode(true)}
-                    className="mt-0.5 text-rose-600 focus:ring-0"
-                  />
-                  <div>
-                    <span className="text-xs block uppercase text-rose-700">Kembalikan ke OPD (Minta Revisi)</span>
-                    <span className="text-2xs font-normal text-slate-500">Uraian kurang jelas atau data belum lengkap</span>
-                  </div>
-                </label>
-              </div>
-            </div>
-
-            {/* Form Input Notes */}
-            {!isReturnMode ? (
-              <div className="space-y-1.5">
-                <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider">
-                  Catatan Verifikator (Opsional):
-                </label>
-                <textarea
-                  rows={3}
-                  value={verificationNotes}
-                  onChange={(e) => setVerificationNotes(e.target.value)}
-                  placeholder="Contoh: Dokumen administrasi lengkap dan siap masuk tahap scoring."
-                  className="w-full p-2.5 border border-slate-300 bg-white text-xs focus:border-[#0f2c59] focus:outline-none focus:ring-1 focus:ring-[#0f2c59]"
-                />
-              </div>
-            ) : (
-              <div className="space-y-1.5 p-3 border border-rose-300 bg-rose-50">
-                <label className="block text-xs font-bold text-rose-800 uppercase tracking-wider flex items-center gap-1">
-                  <AlertTriangle className="w-3.5 h-3.5 text-rose-600" />
-                  Catatan Revisi / Instruksi Perbaikan OPD:
-                </label>
-                <textarea
-                  rows={4}
-                  required
-                  value={returnReason}
-                  onChange={(e) => setReturnReason(e.target.value)}
-                  placeholder="Contoh: Mohon lengkapi rincian data prevalensi per wilayah distrik dan kampung..."
-                  className="w-full p-2.5 bg-white border border-rose-300 text-xs focus:outline-none focus:ring-1 focus:ring-rose-500 text-slate-800"
-                />
-              </div>
-            )}
-
-            {/* Submit Action Button */}
-            <div className="pt-2">
-              {!isReturnMode ? (
-                <button
-                  type="button"
-                  disabled={isSubmitting}
-                  onClick={handleApprove}
-                  className="w-full py-2.5 bg-[#0f2c59] hover:bg-[#0a1e3f] text-white font-semibold text-xs uppercase tracking-wider transition flex items-center justify-center gap-2 border border-[#0f2c59]"
-                >
-                  <CheckCircle2 className="w-4 h-4 text-sky-300" />
-                  <span>Sahkan & Loloskan ke Scoring</span>
-                </button>
-              ) : (
-                <button
-                  type="button"
-                  disabled={isSubmitting}
-                  onClick={handleReturn}
-                  className="w-full py-2.5 bg-rose-700 hover:bg-rose-800 text-white font-semibold text-xs uppercase tracking-wider transition flex items-center justify-center gap-2 border border-rose-800"
-                >
-                  <RotateCcw className="w-4 h-4" />
-                  <span>Kirim Balik ke OPD untuk Revisi</span>
-                </button>
+        <CardContent className="p-6 space-y-5">
+          {/* 5 PILARS CHECKLIST */}
+          <div className="grid grid-cols-1 gap-3.5">
+            {/* PILAR 1 */}
+            <label
+              className={cn(
+                'p-4 border transition-all flex items-start gap-3.5 cursor-pointer select-none',
+                isProblemClear
+                  ? 'bg-blue-50/70 border-blue-600 ring-1 ring-blue-500'
+                  : 'bg-slate-50 border-slate-300 hover:border-black'
               )}
-            </div>
-
-            {/* Previous Verification History */}
-            {proposal.adminVerification && (
-              <div className="p-3 border border-slate-200 bg-slate-50 text-xs space-y-1">
-                <span className="text-2xs font-bold uppercase tracking-wider text-slate-500 block">Riwayat Verifikasi Sebelumnya:</span>
-                <p className="text-slate-800 font-semibold">{proposal.adminVerification.verificationNotes}</p>
-                <span className="text-2xs text-slate-500 block">
-                  Oleh: {proposal.adminVerification.verifiedBy} ({proposal.adminVerification.verifiedAt})
-                </span>
+            >
+              <input
+                type="checkbox"
+                disabled={isAlreadyVerified}
+                checked={isProblemClear}
+                onChange={(e) => setIsProblemClear(e.target.checked)}
+                className="mt-1 h-4 w-4 rounded-none text-blue-600 focus:ring-blue-600 cursor-pointer"
+              />
+              <div className="space-y-1 flex-1 text-xs">
+                <div className="flex items-center justify-between">
+                  <strong className="text-slate-900 font-bold text-sm">
+                    Pilar 1: Validasi Kejelasan Masalah
+                  </strong>
+                  {isProblemClear && (
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-white bg-blue-600 px-2 py-0.5 border border-blue-700">
+                      Memenuhi
+                    </span>
+                  )}
+                </div>
+                <p className="text-slate-600 leading-relaxed">
+                  Rumusan masalah diuraikan dengan jelas, didukung fakta empiris lapangan, dan merupakan permasalahan yang membutuhkan kajian ilmiah/inovasi (bukan sekadar belanja barang rutin OPD).
+                </p>
               </div>
-            )}
+            </label>
+
+            {/* PILAR 2: NOVELTY / DUPLICATION CHECK */}
+            <label
+              className={cn(
+                'p-4 border transition-all flex items-start gap-3.5 cursor-pointer select-none',
+                isNotDuplicated
+                  ? 'bg-blue-50/70 border-blue-600 ring-1 ring-blue-500'
+                  : 'bg-slate-50 border-slate-300 hover:border-black'
+              )}
+            >
+              <input
+                type="checkbox"
+                disabled={isAlreadyVerified}
+                checked={isNotDuplicated}
+                onChange={(e) => setIsNotDuplicated(e.target.checked)}
+                className="mt-1 h-4 w-4 rounded-none text-blue-600 focus:ring-blue-600 cursor-pointer"
+              />
+              <div className="space-y-1 flex-1 text-xs">
+                <div className="flex items-center justify-between">
+                  <strong className="text-slate-900 font-bold text-sm">
+                    Pilar 2: Kebaruan & Pemeriksaan Riwayat Riset (Bebas Duplikasi)
+                  </strong>
+                  {isNotDuplicated && (
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-white bg-blue-600 px-2 py-0.5 border border-blue-700">
+                      Memenuhi
+                    </span>
+                  )}
+                </div>
+                <p className="text-slate-600 leading-relaxed">
+                  Telah diverifikasi bahwa riset atau penyelesaian masalah serupa <strong>belum pernah dilakukan sebelumnya</strong> dalam repositori SIM-RIDA, atau usulan ini memberikan kebaruan (novelty) serta kelanjutan yang signifikan.
+                </p>
+              </div>
+            </label>
+
+            {/* PILAR 3: URGENSI */}
+            <label
+              className={cn(
+                'p-4 border transition-all flex items-start gap-3.5 cursor-pointer select-none',
+                isUrgencyRelevant
+                  ? 'bg-blue-50/70 border-blue-600 ring-1 ring-blue-500'
+                  : 'bg-slate-50 border-slate-300 hover:border-black'
+              )}
+            >
+              <input
+                type="checkbox"
+                disabled={isAlreadyVerified}
+                checked={isUrgencyRelevant}
+                onChange={(e) => setIsUrgencyRelevant(e.target.checked)}
+                className="mt-1 h-4 w-4 rounded-none text-blue-600 focus:ring-blue-600 cursor-pointer"
+              />
+              <div className="space-y-1 flex-1 text-xs">
+                <div className="flex items-center justify-between">
+                  <strong className="text-slate-900 font-bold text-sm">
+                    Pilar 3: Tingkat Urgensi Masalah
+                  </strong>
+                  {isUrgencyRelevant && (
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-white bg-blue-600 px-2 py-0.5 border border-blue-700">
+                      Memenuhi
+                    </span>
+                  )}
+                </div>
+                <p className="text-slate-600 leading-relaxed">
+                  Tingkat kepentingan masalah dinilai mendesak. Penundaan penyelesaian masalah berpotensi menimbulkan dampak negatif terhadap pelayanan masyarakat atau kerugian pembangunan daerah.
+                </p>
+              </div>
+            </label>
+
+            {/* PILAR 4: STRATEGIS */}
+            <label
+              className={cn(
+                'p-4 border transition-all flex items-start gap-3.5 cursor-pointer select-none',
+                isStrategicAligned
+                  ? 'bg-blue-50/70 border-blue-600 ring-1 ring-blue-500'
+                  : 'bg-slate-50 border-slate-300 hover:border-black'
+              )}
+            >
+              <input
+                type="checkbox"
+                disabled={isAlreadyVerified}
+                checked={isStrategicAligned}
+                onChange={(e) => setIsStrategicAligned(e.target.checked)}
+                className="mt-1 h-4 w-4 rounded-none text-blue-600 focus:ring-blue-600 cursor-pointer"
+              />
+              <div className="space-y-1 flex-1 text-xs">
+                <div className="flex items-center justify-between">
+                  <strong className="text-slate-900 font-bold text-sm">
+                    Pilar 4: Keselarasan Isu Strategis Daerah (RPJMD)
+                  </strong>
+                  {isStrategicAligned && (
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-white bg-blue-600 px-2 py-0.5 border border-blue-700">
+                      Memenuhi
+                    </span>
+                  )}
+                </div>
+                <p className="text-slate-600 leading-relaxed">
+                  Usulan selaras dengan program prioritas RPJMD Kabupaten Mimika (misal: pengentasan kemiskinan ekstrem, penanganan stunting, diversifikasi ekonomi lokal, penguatan SDM, atau tata kelola pemerintahan).
+                </p>
+              </div>
+            </label>
+
+            {/* PILAR 5: KELAYAKAN RISET */}
+            <label
+              className={cn(
+                'p-4 border transition-all flex items-start gap-3.5 cursor-pointer select-none',
+                isResearchFeasible
+                  ? 'bg-blue-50/70 border-blue-600 ring-1 ring-blue-500'
+                  : 'bg-slate-50 border-slate-300 hover:border-black'
+              )}
+            >
+              <input
+                type="checkbox"
+                disabled={isAlreadyVerified}
+                checked={isResearchFeasible}
+                onChange={(e) => setIsResearchFeasible(e.target.checked)}
+                className="mt-1 h-4 w-4 rounded-none text-blue-600 focus:ring-blue-600 cursor-pointer"
+              />
+              <div className="space-y-1 flex-1 text-xs">
+                <div className="flex items-center justify-between">
+                  <strong className="text-slate-900 font-bold text-sm">
+                    Pilar 5: Kelayakan Penelitian (Data Dukung & Anggaran)
+                  </strong>
+                  {isResearchFeasible && (
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-white bg-blue-600 px-2 py-0.5 border border-blue-700">
+                      Memenuhi
+                    </span>
+                  )}
+                </div>
+                <p className="text-slate-600 leading-relaxed">
+                  Ketersediaan data awal mencukupi, metodologi yang diusulkan masuk akal untuk dikerjakan, dan estimasi kebutuhan anggaran dinilai rasional.
+                </p>
+              </div>
+            </label>
           </div>
-        </div>
 
-      </div>
+          {/* CATATAN HASIL VALIDASI */}
+          <div className="space-y-2 pt-2">
+            <label className="text-xs font-bold text-slate-800 flex items-center justify-between">
+              <span>Catatan Telaah & Rekomendasi Validasi Tim BRIDA <span className="text-blue-600">*</span></span>
+              <span className="text-[10px] text-slate-500">Minimal 5 karakter</span>
+            </label>
+            <textarea
+              rows={4}
+              disabled={isAlreadyVerified}
+              value={verificationNotes}
+              onChange={(e) => setVerificationNotes(e.target.value)}
+              placeholder="Berikan catatan kesimpulan hasil validasi, arahan penajaman ruang lingkup, atau rincian perbaikan jika dikembalikan..."
+              className="w-full p-3.5 text-xs bg-slate-50 border border-slate-300 rounded-none text-slate-800 focus:outline-none focus:ring-1 focus:ring-blue-600 focus:bg-white transition-all leading-relaxed"
+            />
+          </div>
 
-      {/* Document Review & Downloader Modal */}
-      <DocumentViewerModal
-        isOpen={isDocModalOpen}
-        onClose={() => setIsDocModalOpen(false)}
-        document={previewDoc}
-      />
+          {/* ACTION BUTTONS */}
+          {!isAlreadyVerified ? (
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-4 border-t border-slate-200">
+              <Link
+                href="/admin/verification"
+                className="px-4 py-2.5 text-xs font-semibold text-slate-700 hover:text-black border border-slate-300 bg-white"
+              >
+                Batal
+              </Link>
+
+              <div className="flex flex-wrap items-center gap-2.5 w-full sm:w-auto">
+                <button
+                  type="button"
+                  disabled={isSubmitting}
+                  onClick={() => handleDecision('REJECT')}
+                  className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-2 px-4 py-2.5 text-xs font-semibold text-white bg-slate-900 border border-black hover:bg-black transition-colors cursor-pointer"
+                >
+                  <XCircle className="h-4 w-4" />
+                  Tolak Usulan
+                </button>
+
+                <button
+                  type="button"
+                  disabled={isSubmitting}
+                  onClick={() => handleDecision('RETURN')}
+                  className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-2 px-4 py-2.5 text-xs font-semibold text-slate-900 bg-white border border-black hover:bg-slate-100 transition-colors cursor-pointer"
+                >
+                  <RotateCcw className="h-4 w-4" />
+                  Kembalikan ke OPD (Perlu Revisi)
+                </button>
+
+                <button
+                  type="button"
+                  disabled={isSubmitting}
+                  onClick={() => handleDecision('PASS')}
+                  className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-2 px-5 py-2.5 text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 border border-blue-700 shadow-sm transition-colors cursor-pointer"
+                >
+                  <CheckCircle2 className="h-4 w-4" />
+                  {isSubmitting ? 'Memproses...' : 'Loloskan ke Tahap 3 (Penyusunan KAK)'}
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div className="pt-4 border-t border-slate-200 flex items-center justify-between">
+              <span className="text-xs text-slate-600 italic">
+                Usulan ini telah selesai diproses validasi.
+              </span>
+              <Link
+                href="/admin/verification"
+                className="px-4 py-2 text-xs font-semibold text-white bg-[#0f2c59] hover:bg-[#1a3d70] border border-black transition-colors"
+              >
+                Kembali ke Daftar Antrean
+              </Link>
+            </div>
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
 }

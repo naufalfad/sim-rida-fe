@@ -46,22 +46,22 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({ childre
             className={cn(
               'pointer-events-auto flex items-start gap-3 rounded-none border p-4 shadow-lg transition-all animate-slide-in-right bg-white dark:bg-slate-900',
               {
-                'border-emerald-250 bg-emerald-50/90 text-emerald-900 dark:border-emerald-900/50 dark:bg-emerald-950/90 dark:text-emerald-100':
+                'border-black bg-blue-50 text-blue-950 dark:border-white dark:bg-blue-950 dark:text-blue-100':
                   t.type === 'success',
-                'border-red-250 bg-rose-50/90 text-red-900 dark:border-red-900/50 dark:bg-rose-950/90 dark:text-rose-100':
+                'border-black bg-slate-900 text-white dark:border-white dark:bg-slate-950 dark:text-white':
                   t.type === 'error',
-                'border-amber-250 bg-amber-50/90 text-amber-900 dark:border-amber-900/50 dark:bg-amber-950/90 dark:text-amber-100':
+                'border-black bg-blue-100 text-blue-950 dark:border-white dark:bg-blue-900 dark:text-blue-100':
                   t.type === 'warning',
-                'border-blue-250 bg-blue-50/90 text-blue-900 dark:border-blue-900/50 dark:bg-blue-950/90 dark:text-blue-100':
+                'border-blue-700 bg-blue-50 text-blue-900 dark:border-blue-700 dark:bg-blue-950 dark:text-blue-100':
                   t.type === 'info',
               }
             )}
           >
             {/* Icon */}
             <span className="flex-shrink-0 mt-0.5">
-              {t.type === 'success' && <CheckCircle className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />}
-              {t.type === 'error' && <AlertCircle className="h-5 w-5 text-rose-600 dark:text-rose-450" />}
-              {t.type === 'warning' && <AlertTriangle className="h-5 w-5 text-amber-600 dark:text-amber-400" />}
+              {t.type === 'success' && <CheckCircle className="h-5 w-5 text-blue-600 dark:text-blue-400" />}
+              {t.type === 'error' && <AlertCircle className="h-5 w-5 text-white dark:text-white" />}
+              {t.type === 'warning' && <AlertTriangle className="h-5 w-5 text-blue-700 dark:text-blue-300" />}
               {t.type === 'info' && <Info className="h-5 w-5 text-blue-600 dark:text-blue-400" />}
             </span>
 

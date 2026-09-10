@@ -42,8 +42,8 @@ export const ProgressIndicator: React.FC<ProgressProps> = ({
         <div
           className={cn('h-full rounded-full transition-all duration-300 ease-out', {
             'bg-blue-600': variant === 'primary',
-            'bg-emerald-500': variant === 'success',
-            'bg-amber-500': variant === 'warning',
+            'bg-blue-800': variant === 'success',
+            'bg-blue-500': variant === 'warning',
           })}
           style={{ width: `${percentage}%` }}
         />

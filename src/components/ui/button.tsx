@@ -19,15 +19,15 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
           {
             'bg-[#0f2c59] text-white hover:bg-[#0a1e3f] border border-[#0f2c59] focus-visible:ring-[#0f2c59] shadow-none':
               variant === 'primary',
-            'bg-slate-100 text-slate-900 hover:bg-slate-200 border border-slate-200 dark:bg-slate-800 dark:text-slate-100 dark:hover:bg-slate-700 dark:border-slate-700 focus-visible:ring-slate-500':
+            'bg-slate-100 text-slate-900 hover:bg-slate-200 border border-slate-300 focus-visible:ring-slate-500':
               variant === 'secondary',
-            'border border-slate-300 bg-white text-slate-800 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800 focus-visible:ring-slate-400':
+            'border border-slate-300 bg-white text-slate-800 hover:bg-slate-50 focus-visible:ring-slate-400':
               variant === 'outline',
-            'bg-transparent text-slate-700 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800 focus-visible:ring-slate-400':
+            'bg-transparent text-slate-700 hover:bg-slate-100 focus-visible:ring-slate-400':
               variant === 'ghost',
-            'bg-rose-700 text-white hover:bg-rose-800 border border-rose-700 focus-visible:ring-rose-500':
+            'bg-slate-900 text-white hover:bg-black border border-black focus-visible:ring-slate-800':
               variant === 'danger',
-            'bg-emerald-700 text-white hover:bg-emerald-800 border border-emerald-700 focus-visible:ring-emerald-500':
+            'bg-blue-600 text-white hover:bg-blue-700 border border-blue-700 focus-visible:ring-blue-500':
               variant === 'success',
           },
           // Sizes

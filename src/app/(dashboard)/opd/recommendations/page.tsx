@@ -66,23 +66,23 @@ export default function OpdRecommendationsPage() {
       />
 
       {/* Summary Highlight Banner */}
-      <div className="p-4 bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-250 dark:border-emerald-850 rounded-lg flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-emerald-800 dark:text-emerald-300 text-xs shadow-sm">
+      <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-blue-900 text-xs shadow-sm">
         <div className="flex items-center gap-3">
-          <div className="p-2.5 bg-emerald-600 text-white rounded-lg shadow shrink-0">
+          <div className="p-2.5 bg-[#0f2c59] text-white rounded-lg shadow shrink-0 border border-black">
             <ShieldCheck className="h-6 w-6" />
           </div>
           <div className="space-y-0.5">
-            <h4 className="font-bold text-sm text-emerald-950 dark:text-emerald-100">
+            <h4 className="font-bold text-sm text-blue-950">
               Dokumen Bersertifikasi TTE Elektronik (BSrE BSSN)
             </h4>
-            <p className="text-2xs text-emerald-800/80 dark:text-emerald-300/80">
+            <p className="text-2xs text-blue-800">
               Seluruh naskah rekomendasi yang terbit di modul ini sah secara hukum dan dapat digunakan sebagai acuan penyusunan Renja, Perda/Perbup, maupun SOP teknis instansi.
             </p>
           </div>
         </div>
 
         <div className="flex items-center gap-2 shrink-0 self-end sm:self-center">
-          <span className="px-3 py-1 bg-emerald-100 dark:bg-emerald-900 text-emerald-800 dark:text-emerald-200 rounded-full font-extrabold text-2xs border border-emerald-300">
+          <span className="px-3 py-1 bg-blue-600 text-white rounded-full font-extrabold text-2xs border border-blue-800">
             {completedProposals.length} Dokumen Terbit
           </span>
         </div>
@@ -91,22 +91,22 @@ export default function OpdRecommendationsPage() {
       {/* Search & Filter Bar */}
       <div className="flex flex-col sm:flex-row gap-3 items-center justify-between">
         <div className="relative w-full sm:w-80">
-          <Search className="h-3.5 w-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+          <Search className="h-3.5 w-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
           <input
             type="text"
             placeholder="Cari naskah kebijakan atau topik..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-8 pr-3 py-2 text-xs border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-950 focus:ring-1 focus:ring-emerald-500"
+            className="w-full pl-8 pr-3 py-2 text-xs border border-slate-300 rounded-lg bg-white focus:ring-1 focus:ring-blue-600"
           />
         </div>
 
-        <div className="flex items-center gap-2 self-start sm:self-auto text-2xs font-semibold text-gray-500">
+        <div className="flex items-center gap-2 self-start sm:self-auto text-2xs font-semibold text-slate-600">
           <span>Kategori:</span>
           <select
             value={categoryFilter}
             onChange={(e) => setCategoryFilter(e.target.value)}
-            className="p-1.5 text-xs border border-gray-300 dark:border-gray-700 rounded-md bg-white dark:bg-gray-950 font-medium"
+            className="p-1.5 text-xs border border-slate-300 rounded-md bg-white font-medium text-slate-800"
           >
             <option value="ALL">Semua Kategori</option>
             <option value="Kesehatan">Kesehatan</option>
@@ -120,10 +120,10 @@ export default function OpdRecommendationsPage() {
 
       {/* Recommendations Cards Grid */}
       {filteredProposals.length === 0 ? (
-        <Card className="p-12 text-center text-gray-400 space-y-3">
-          <Award className="h-10 w-10 text-gray-300 mx-auto" />
-          <h4 className="font-bold text-xs text-gray-700 dark:text-gray-300">Belum Ada Rekomendasi Selesai</h4>
-          <p className="text-2xs text-gray-500 max-w-md mx-auto">
+        <Card className="p-12 text-center text-slate-400 space-y-3 border border-slate-200">
+          <Award className="h-10 w-10 text-slate-300 mx-auto" />
+          <h4 className="font-bold text-xs text-slate-800">Belum Ada Rekomendasi Selesai</h4>
+          <p className="text-2xs text-slate-500 max-w-md mx-auto">
             Usulan yang diajukan saat ini masih dalam proses telaah atau pelaksanaan riset oleh tim BRIDA. Dokumen rekomendasi akan otomatis tampil di sini setelah ditandatangani elektronik.
           </p>
         </Card>
@@ -132,20 +132,20 @@ export default function OpdRecommendationsPage() {
           {filteredProposals.map((item) => {
             const doc = item.recommendationDoc;
             return (
-              <Card key={item.id} className="border-t-4 border-t-emerald-600 shadow-sm hover:shadow-md transition-shadow flex flex-col justify-between">
-                <CardHeader className="pb-3 border-b dark:border-gray-850">
+              <Card key={item.id} className="border-t-4 border-t-[#0f2c59] border border-black shadow-sm hover:shadow-md transition-shadow flex flex-col justify-between">
+                <CardHeader className="pb-3 border-b border-slate-200">
                   <div className="space-y-2">
                     <div className="flex items-center justify-between gap-2">
-                      <span className="font-mono text-3xs font-extrabold text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950 px-2 py-0.5 rounded border border-emerald-200">
+                      <span className="font-mono text-3xs font-extrabold text-blue-900 bg-blue-50 px-2 py-0.5 rounded border border-blue-200">
                         {item.code}
                       </span>
-                      <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-3xs font-extrabold bg-emerald-50 text-emerald-700 border border-emerald-200">
-                        <ShieldCheck className="h-3 w-3 text-emerald-600" />
+                      <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-3xs font-extrabold bg-blue-600 text-white border border-blue-800">
+                        <ShieldCheck className="h-3 w-3 text-white" />
                         TTE TERVERIFIKASI
                       </span>
                     </div>
 
-                    <h3 className="text-sm font-bold text-gray-900 dark:text-white leading-snug">
+                    <h3 className="text-sm font-bold text-slate-900 leading-snug">
                       {doc?.title || item.title}
                     </h3>
                   </div>
@@ -155,48 +155,48 @@ export default function OpdRecommendationsPage() {
                   
                   {/* Metadata info */}
                   <div className="space-y-2 text-2xs">
-                    <div className="flex items-center justify-between py-1 border-b dark:border-gray-850 text-gray-500">
+                    <div className="flex items-center justify-between py-1 border-b border-slate-200 text-slate-500">
                       <span>Kategori Riset:</span>
-                      <span className="font-bold text-gray-800 dark:text-gray-200">{item.category}</span>
+                      <span className="font-bold text-slate-800">{item.category}</span>
                     </div>
-                    <div className="flex items-center justify-between py-1 border-b dark:border-gray-850 text-gray-500">
+                    <div className="flex items-center justify-between py-1 border-b border-slate-200 text-slate-500">
                       <span>Bentuk Dokumen:</span>
-                      <span className="font-bold text-emerald-700 dark:text-emerald-400">{doc?.type || item.expectedOutput}</span>
+                      <span className="font-bold text-blue-900">{doc?.type || item.expectedOutput}</span>
                     </div>
-                    <div className="flex items-center justify-between py-1 border-b dark:border-gray-850 text-gray-500">
+                    <div className="flex items-center justify-between py-1 border-b border-slate-200 text-slate-500">
                       <span>Tanggal Terbit:</span>
-                      <span className="font-semibold text-gray-700 dark:text-gray-300">{doc?.date || '01 Mar 2026'}</span>
+                      <span className="font-semibold text-slate-700">{doc?.date || '01 Mar 2026'}</span>
                     </div>
-                    <div className="flex items-center justify-between py-1 text-gray-500">
+                    <div className="flex items-center justify-between py-1 text-slate-500">
                       <span>Penandatangan:</span>
-                      <span className="font-semibold text-gray-700 dark:text-gray-300 truncate max-w-48">{doc?.signedBy || 'Kepala BRIDA'}</span>
+                      <span className="font-semibold text-slate-700 truncate max-w-48">{doc?.signedBy || 'Kepala BRIDA'}</span>
                     </div>
                   </div>
 
                   {/* Summary Box */}
-                  <div className="p-3 bg-gray-50 dark:bg-gray-900/60 rounded-lg space-y-1 text-2xs">
-                    <span className="font-bold text-gray-700 dark:text-gray-300 block text-3xs uppercase">Masalah Awal yang Ditindaklanjuti:</span>
-                    <p className="text-gray-500 line-clamp-2">{item.problemStatement}</p>
+                  <div className="p-3 bg-slate-50 rounded-lg space-y-1 text-2xs border border-slate-200">
+                    <span className="font-bold text-slate-700 block text-3xs uppercase">Masalah Awal yang Ditindaklanjuti:</span>
+                    <p className="text-slate-600 line-clamp-2">{item.problemStatement}</p>
                   </div>
 
                   {/* Feedback status indicator */}
                   {item.followUpReport ? (
-                    <div className="p-2.5 bg-teal-50 dark:bg-teal-950/30 border border-teal-250 rounded text-teal-800 dark:text-teal-300 text-3xs flex items-center justify-between">
+                    <div className="p-2.5 bg-blue-50 border border-blue-300 rounded text-blue-900 text-3xs flex items-center justify-between">
                       <span className="flex items-center gap-1 font-bold">
-                        <CheckCircle2 className="h-3.5 w-3.5 text-teal-600" />
+                        <CheckCircle2 className="h-3.5 w-3.5 text-blue-600" />
                         <span>Laporan Pemanfaatan Telah Diisi</span>
                       </span>
                       <span className="font-semibold">Rating: ★ {item.followUpReport.satisfactionRating}/5</span>
                     </div>
                   ) : (
-                    <div className="p-2.5 bg-amber-50 dark:bg-amber-950/30 border border-amber-250 rounded text-amber-800 dark:text-amber-300 text-3xs flex items-center justify-between">
+                    <div className="p-2.5 bg-slate-100 border border-slate-300 rounded text-slate-800 text-3xs flex items-center justify-between">
                       <span>Belum melaporkan pemanfaatan rekomendasi.</span>
                       <button
                         onClick={() => {
                           selectProposal(item.id);
                           router.push('/opd/follow-up');
                         }}
-                        className="font-bold underline hover:text-amber-950"
+                        className="font-bold text-blue-700 underline hover:text-blue-900"
                       >
                         Isi Sekarang
                       </button>
@@ -220,7 +220,7 @@ export default function OpdRecommendationsPage() {
                           content: `NASKAH REKOMENDASI KEBIJAKAN RESMI (POLICY BRIEF)\nBADAN RISET DAN INOVASI DAERAH KABUPATEN MIMIKA\n\nNomor Berkas: ${item.code}/PB-BRIDA/2026\nPerihal: Rekomendasi Hasil Riset ${item.title}\nTujuan: Kepala Perangkat Daerah / Bupati Mimika\nStatus Verifikasi: TTE TERSERTIFIKASI OLEH KEPALA BRIDA MIMIKA (BSrE BSSN)\n\nRINGKASAN EKSEKUTIF:\nBerdasarkan hasil olah data lapangan dan telaah regulasi, direkomendasikan perbaikan tata kelola serta integrasi layanan teknis lintas sektor sebagai rujukan penyusunan Renja dan Perbup Mimika.`
                         }, toast);
                       }}
-                      className="flex-1 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold transition-all shadow flex items-center justify-center gap-1.5"
+                      className="flex-1 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-bold transition-all shadow flex items-center justify-center gap-1.5 border border-blue-700"
                     >
                       <ExternalLink className="h-4 w-4" />
                       <span>Buka & Unduh Naskah ({doc?.fileSize || '4.8 MB'})</span>
@@ -230,10 +230,10 @@ export default function OpdRecommendationsPage() {
                         selectProposal(item.id);
                         router.push('/opd/follow-up');
                       }}
-                      className="p-2.5 bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-200 rounded-lg text-xs font-bold transition-all"
+                      className="p-2.5 bg-white hover:bg-slate-100 text-slate-800 rounded-lg text-xs font-bold transition-all border border-slate-300"
                       title="Isi Tindak Lanjut Pemanfaatan"
                     >
-                      <ClipboardCheck className="h-4 w-4 text-emerald-600" />
+                      <ClipboardCheck className="h-4 w-4 text-blue-600" />
                     </button>
                   </div>
 
