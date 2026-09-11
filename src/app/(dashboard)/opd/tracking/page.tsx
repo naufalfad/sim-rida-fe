@@ -88,7 +88,7 @@ export default function OpdTrackingPage() {
     switch (status) {
       case 'PENDING':
         return (
-          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-3xs font-extrabold bg-slate-100 text-slate-800 border border-black">
+          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-3xs font-extrabold bg-slate-100 text-slate-800 border border-slate-300">
             <Clock className="h-3 w-3" />
             MENUNGGU VERIFIKASI
           </span>
@@ -193,31 +193,31 @@ export default function OpdTrackingPage() {
 
       {/* KPI Summary Cards */}
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
-        <div className="p-3.5 bg-white dark:bg-slate-900 border border-black rounded-lg shadow-sm space-y-1">
+        <div className="p-3.5 bg-white dark:bg-slate-900 border border-slate-200 rounded-lg shadow-xs space-y-1">
           <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">Total Usulan</span>
           <div className="text-xl font-black text-slate-900 dark:text-white">{totalCount}</div>
           <span className="text-[10px] text-slate-500">{draftCount} dalam draf</span>
         </div>
 
-        <div className="p-3.5 bg-slate-50 border border-slate-300 rounded-lg shadow-sm space-y-1">
+        <div className="p-3.5 bg-slate-50 border border-slate-200 rounded-lg shadow-xs space-y-1">
           <span className="text-[10px] font-bold text-slate-700 uppercase tracking-wider block">Menunggu Verifikasi</span>
           <div className="text-xl font-black text-slate-900">{pendingCount}</div>
           <span className="text-[10px] text-slate-600">Antrean telaah BRIDA</span>
         </div>
 
-        <div className="p-3.5 bg-blue-50/50 border border-blue-200 rounded-lg shadow-sm space-y-1">
+        <div className="p-3.5 bg-blue-50/50 border border-blue-200 rounded-lg shadow-xs space-y-1">
           <span className="text-[10px] font-bold text-blue-900 uppercase tracking-wider block">Sedang Dikaji</span>
           <div className="text-xl font-black text-blue-700">{inReviewCount}</div>
           <span className="text-[10px] text-blue-700">Penilaian kelayakan</span>
         </div>
 
-        <div className="p-3.5 bg-blue-100/60 border border-blue-300 rounded-lg shadow-sm space-y-1">
+        <div className="p-3.5 bg-blue-100/60 border border-blue-200 rounded-lg shadow-xs space-y-1">
           <span className="text-[10px] font-bold text-blue-950 uppercase tracking-wider block">Riset Berjalan</span>
           <div className="text-xl font-black text-blue-900">{inProgressCount}</div>
           <span className="text-[10px] text-blue-800">Pengumpulan data</span>
         </div>
 
-        <div className="p-3.5 bg-blue-600 text-white border border-blue-800 rounded-lg shadow-sm space-y-1">
+        <div className="p-3.5 bg-blue-600 text-white border border-blue-700 rounded-lg shadow-xs space-y-1">
           <span className="text-[10px] font-bold text-blue-100 uppercase tracking-wider block">Rekomendasi Terbit</span>
           <div className="text-xl font-black text-white">{completedCount}</div>
           <span className="text-[10px] text-blue-100">Dokumen TTE selesai</span>
@@ -225,8 +225,8 @@ export default function OpdTrackingPage() {
       </div>
 
       {/* Main Table Card */}
-      <Card className="shadow-sm border-t-4 border-t-[#0f2c59] border border-black">
-        <CardHeader className="pb-3 border-b border-black space-y-4">
+      <Card className="shadow-xs border border-slate-200 bg-white">
+        <CardHeader className="pb-3 border-b border-slate-200 space-y-4">
 
           {/* Header title & search controls */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
@@ -235,7 +235,7 @@ export default function OpdTrackingPage() {
               <span>Tabel Riwayat Pengajuan Usulan Penelitian</span>
             </CardTitle>
 
-            <div className="flex items-center gap-2">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full sm:w-auto">
               <div className="relative w-full sm:w-64">
                 <Search className="h-3.5 w-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
                 <input
@@ -250,7 +250,7 @@ export default function OpdTrackingPage() {
               <select
                 value={categoryFilter}
                 onChange={(e) => setCategoryFilter(e.target.value)}
-                className="p-1.5 text-xs border border-slate-300 rounded-lg bg-white font-medium text-slate-800"
+                className="w-full sm:w-auto p-1.5 text-xs border border-slate-300 rounded-lg bg-white font-medium text-slate-800"
               >
                 <option value="ALL">Semua Kategori</option>
                 <option value="Kesehatan">Kesehatan</option>
@@ -263,8 +263,8 @@ export default function OpdTrackingPage() {
             </div>
           </div>
 
-          {/* Quick Filter Tabs */}
-          <div className="flex flex-wrap gap-1.5 text-xs pt-1 border-t border-slate-200">
+          {/* Quick Filter Tabs (Horizontal Swipe on Mobile) */}
+          <div className="flex overflow-x-auto whitespace-nowrap gap-1.5 text-xs pt-1 border-t border-slate-200 pb-1 scrollbar-none">
             {[
               { key: 'ALL', label: `Semua Usulan (${totalCount})` },
               { key: 'PENDING', label: `Pending (${pendingCount})` },
@@ -277,8 +277,8 @@ export default function OpdTrackingPage() {
               <button
                 key={tab.key}
                 onClick={() => setStatusFilter(tab.key)}
-                className={`px-3 py-1.5 rounded-md font-bold transition-all text-2xs ${statusFilter === tab.key
-                    ? 'bg-blue-600 text-white shadow-sm'
+                className={`px-3 py-1.5 rounded-md font-bold transition-all text-2xs shrink-0 ${statusFilter === tab.key
+                    ? 'bg-blue-600 text-white shadow-xs'
                     : 'bg-slate-100 text-slate-700 hover:bg-slate-200 border border-slate-200'
                   }`}
               >
@@ -325,7 +325,7 @@ export default function OpdTrackingPage() {
                         {item.code}
                       </span>
                       {item.urgencyLevel === 'TINGGI' && (
-                        <span className="inline-block mt-0.5 px-1.5 py-0.2 rounded text-[9px] font-extrabold uppercase bg-slate-900 text-white border border-black">
+                        <span className="inline-block mt-0.5 px-1.5 py-0.2 rounded text-[9px] font-bold uppercase bg-red-50 text-red-800 border border-red-200">
                           Urgensi Tinggi
                         </span>
                       )}
@@ -348,8 +348,8 @@ export default function OpdTrackingPage() {
                           </span>
                         )}
                         {item.revisionNotes && (
-                          <span className="inline-flex items-center gap-1 text-[10px] font-bold text-slate-900 bg-slate-100 px-1.5 py-0.2 rounded border border-black">
-                            <AlertTriangle className="h-3 w-3" /> Ada Catatan Revisi
+                          <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-amber-900 bg-amber-50 px-1.5 py-0.2 rounded border border-amber-200">
+                            <AlertTriangle className="h-3 w-3 text-amber-700" /> Ada Catatan Revisi
                           </span>
                         )}
                       </div>
@@ -436,8 +436,8 @@ export default function OpdTrackingPage() {
           <div className="space-y-5 text-xs font-sans">
 
             {/* Header Status & Tabs */}
-            <div className="flex flex-wrap items-center justify-between gap-3 p-3 bg-slate-50 rounded-lg border border-black">
-              <div className="flex items-center gap-2">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3 bg-slate-50 rounded-lg border border-slate-200">
+              <div className="flex flex-wrap items-center gap-2">
                 <span className="font-mono font-extrabold text-xs text-blue-900">
                   {selectedProposal.code}
                 </span>
@@ -448,12 +448,12 @@ export default function OpdTrackingPage() {
               </div>
 
               {/* Tab Switcher */}
-              <div className="flex items-center gap-1 bg-white p-1 rounded border border-slate-300">
+              <div className="flex overflow-x-auto whitespace-nowrap gap-1 bg-white p-1 rounded border border-slate-200 w-full sm:w-auto">
                 <button
                   type="button"
                   onClick={() => setActiveTab('TRACKING')}
-                  className={`px-3 py-1 rounded text-2xs font-bold transition-all ${activeTab === 'TRACKING'
-                      ? 'bg-blue-600 text-white shadow-sm'
+                  className={`flex-1 sm:flex-initial px-3 py-1.5 rounded text-2xs font-bold transition-all text-center shrink-0 ${activeTab === 'TRACKING'
+                      ? 'bg-blue-600 text-white shadow-xs'
                       : 'text-slate-600 hover:text-slate-900'
                     }`}
                 >
@@ -462,8 +462,8 @@ export default function OpdTrackingPage() {
                 <button
                   type="button"
                   onClick={() => setActiveTab('DETAIL')}
-                  className={`px-3 py-1 rounded text-2xs font-bold transition-all ${activeTab === 'DETAIL'
-                      ? 'bg-blue-600 text-white shadow-sm'
+                  className={`flex-1 sm:flex-initial px-3 py-1.5 rounded text-2xs font-bold transition-all text-center shrink-0 ${activeTab === 'DETAIL'
+                      ? 'bg-blue-600 text-white shadow-xs'
                       : 'text-slate-600 hover:text-slate-900'
                     }`}
                 >
@@ -521,8 +521,8 @@ export default function OpdTrackingPage() {
                     </div>
                   </div>
                 ) : (
-                  <div className="p-4 bg-white rounded-lg border border-black space-y-6">
-                    <div className="flex items-center justify-between pb-2 border-b border-black">
+                  <div className="p-4 bg-white rounded-lg border border-slate-200 space-y-6">
+                    <div className="flex items-center justify-between pb-2 border-b border-slate-200">
                       <span className="font-bold text-xs text-slate-900 uppercase tracking-wider flex items-center gap-1.5">
                         <Activity className="h-4 w-4 text-blue-600" />
                         <span>Tahapan Log Status Kajian & Riset</span>
@@ -535,9 +535,9 @@ export default function OpdTrackingPage() {
                         <div key={step.step} className="relative">
                           <div
                             className={`absolute -left-6 top-0 h-6 w-6 rounded-full flex items-center justify-center text-3xs font-bold border-2 transition-all ${step.isCompleted
-                                ? 'bg-blue-600 border-blue-600 text-white shadow-sm'
+                                ? 'bg-blue-600 border-blue-600 text-white shadow-xs'
                                 : step.isCurrent
-                                  ? 'bg-blue-800 border-blue-800 text-white animate-pulse shadow-sm'
+                                  ? 'bg-blue-800 border-blue-800 text-white animate-pulse shadow-xs'
                                   : 'bg-white border-slate-400 text-slate-400'
                               }`}
                           >
@@ -574,7 +574,7 @@ export default function OpdTrackingPage() {
 
                     {/* Completed Action Shortcut inside Modal */}
                     {selectedProposal.status === 'COMPLETED' && (
-                      <div className="p-3 bg-blue-50 border border-blue-300 rounded-lg flex items-center justify-between gap-2">
+                      <div className="p-3 bg-blue-50 border border-blue-300 rounded-lg flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
                         <div className="flex items-center gap-2 text-blue-900 text-2xs font-semibold">
                           <Award className="h-4 w-4 text-blue-600 shrink-0" />
                           <span>Dokumen rekomendasi resmi (Policy Brief / Naskah Akademik) telah selesai dan siap diunduh.</span>
@@ -584,7 +584,7 @@ export default function OpdTrackingPage() {
                             setIsDetailOpen(false);
                             router.push('/opd/recommendations');
                           }}
-                          className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded text-2xs font-bold shadow shrink-0 border border-blue-700"
+                          className="w-full sm:w-auto px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded text-2xs font-bold shadow-xs shrink-0 border border-blue-700 text-center"
                         >
                           Buka Dokumen Rekomendasi
                         </button>
@@ -600,7 +600,7 @@ export default function OpdTrackingPage() {
               <div className="space-y-4">
 
                 {/* Meta summary */}
-                <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 p-3.5 bg-slate-50 rounded-xl text-2xs border border-black">
+                <div className="grid gap-3 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 p-3.5 bg-slate-50 rounded-xl text-2xs border border-slate-200">
                   <div>
                     <span className="text-slate-500 block font-semibold text-3xs uppercase">Topik / Judul Usulan</span>
                     <span className="font-bold text-slate-900 block">{selectedProposal.title}</span>
@@ -638,19 +638,19 @@ export default function OpdTrackingPage() {
                     Dokumen Kerangka Acuan Kerja (KAK / TOR):
                   </span>
                   {selectedProposal.torDocument ? (
-                    <div className="p-3 bg-blue-50/70 border border-blue-300 rounded-xl flex items-center justify-between text-xs">
-                      <div className="flex items-center gap-3">
-                        <div className="p-2 bg-blue-600 text-white rounded-lg">
+                    <div className="p-3 bg-blue-50/70 border border-blue-300 rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+                      <div className="flex items-center gap-3 min-w-0">
+                        <div className="p-2 bg-blue-600 text-white rounded-lg shrink-0">
                           <FileText className="h-5 w-5" />
                         </div>
-                        <div>
-                          <span className="font-bold text-slate-900 block">{selectedProposal.torDocument.name}</span>
+                        <div className="min-w-0">
+                          <span className="font-bold text-slate-900 block truncate max-w-xs">{selectedProposal.torDocument.name}</span>
                           <span className="text-3xs text-blue-800 font-semibold">
                             {selectedProposal.torDocument.size} • Diunggah {selectedProposal.torDocument.uploadDate} (KAK/TOR Resmi)
                           </span>
                         </div>
                       </div>
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-2 shrink-0 self-end sm:self-center">
                         <button
                           type="button"
                           onClick={() => {
@@ -668,7 +668,7 @@ export default function OpdTrackingPage() {
                               }, toast);
                             }
                           }}
-                          className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-2xs font-bold rounded-lg shadow transition flex items-center gap-1 border border-blue-700"
+                          className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-2xs font-bold rounded-lg shadow-xs transition flex items-center gap-1 border border-blue-700"
                         >
                           {isPdfDocument(selectedProposal.torDocument.name) ? (
                             <>
@@ -696,7 +696,7 @@ export default function OpdTrackingPage() {
                   <span className="font-bold text-slate-800 block text-2xs uppercase">
                     Identifikasi Masalah (Latar Belakang Lapangan):
                   </span>
-                  <div className="p-3 bg-white border border-black rounded-lg text-2xs leading-relaxed text-slate-800">
+                  <div className="p-3 bg-white border border-slate-200 rounded-lg text-2xs leading-relaxed text-slate-800">
                     {selectedProposal.problemStatement}
                   </div>
                 </div>
@@ -706,7 +706,7 @@ export default function OpdTrackingPage() {
                   <span className="font-bold text-slate-800 block text-2xs uppercase">
                     Alasan Urgensi (Mengapa Harus Diteliti Sekarang):
                   </span>
-                  <div className="p-3 bg-white border border-black rounded-lg text-2xs leading-relaxed text-slate-800">
+                  <div className="p-3 bg-white border border-slate-200 rounded-lg text-2xs leading-relaxed text-slate-800">
                     {selectedProposal.urgencyReason}
                   </div>
                 </div>
@@ -763,12 +763,12 @@ export default function OpdTrackingPage() {
 
                 {/* Revision notes if any */}
                 {selectedProposal.revisionNotes && (
-                  <div className="p-3 bg-slate-100 border border-black rounded-lg space-y-1 text-2xs">
-                    <div className="flex items-center gap-1 text-slate-900 font-bold">
-                      <AlertTriangle className="h-4 w-4 text-blue-600" />
+                  <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg space-y-1 text-2xs">
+                    <div className="flex items-center gap-1 text-amber-900 font-bold">
+                      <AlertTriangle className="h-4 w-4 text-amber-600" />
                       <span>Catatan Revisi dari BRIDA:</span>
                     </div>
-                    <p className="text-slate-800 pl-5">{selectedProposal.revisionNotes}</p>
+                    <p className="text-amber-800 pl-5">{selectedProposal.revisionNotes}</p>
                   </div>
                 )}
 

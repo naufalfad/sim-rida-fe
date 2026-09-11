@@ -125,8 +125,8 @@ export default function AdminIdentificationPage() {
         );
       case 'RETURNED':
         return (
-          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-semibold bg-slate-100 text-slate-900 border border-black">
-            <AlertCircle className="h-3 w-3 text-slate-800" />
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-semibold bg-amber-50 text-amber-900 border border-amber-200 rounded">
+            <AlertCircle className="h-3 w-3 text-amber-800" />
             Perlu Revisi OPD
           </span>
         );
@@ -157,7 +157,7 @@ export default function AdminIdentificationPage() {
             </button>
             <Link
               href="/admin/identification/new"
-              className="inline-flex items-center gap-2 px-4 py-2 text-xs font-semibold text-white bg-[#0f2c59] hover:bg-[#1a3d70] border border-black transition-colors shadow-sm"
+              className="inline-flex items-center gap-2 px-4 py-2 text-xs font-semibold text-white bg-[#0f2c59] hover:bg-[#1a3d70] border border-[#0f2c59] rounded-lg transition-colors shadow-xs"
             >
               <PlusCircle className="h-4 w-4" />
               Input Analisis BRIDA Baru
@@ -346,7 +346,7 @@ export default function AdminIdentificationPage() {
               {activeTab === 'BRIDA' && (
                 <Link
                   href="/admin/identification/new"
-                  className="mt-2 inline-flex items-center gap-2 px-3.5 py-1.5 text-xs font-semibold text-white bg-[#0f2c59] hover:bg-[#1a3d70] border border-black transition-colors"
+                  className="mt-2 inline-flex items-center gap-2 px-3.5 py-1.5 text-xs font-semibold text-white bg-[#0f2c59] hover:bg-[#1a3d70] border border-[#0f2c59] rounded-lg transition-colors shadow-xs"
                 >
                   <PlusCircle className="h-3.5 w-3.5" />
                   Buat Analisis BRIDA Pertama
@@ -460,7 +460,7 @@ export default function AdminIdentificationPage() {
                       {(isBrida || item.status === 'APPROVED') && (
                         <Link
                           href={`/admin/kak-builder/${item.id}`}
-                          className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-white bg-[#0f2c59] hover:bg-[#1a3a6c] border border-black transition-colors cursor-pointer shadow-xs"
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-white bg-[#0f2c59] hover:bg-[#1a3a6c] border border-[#0f2c59] rounded-lg transition-colors cursor-pointer shadow-xs"
                         >
                           <Sparkles className="h-3.5 w-3.5 text-sky-400" />
                           <span>Susun KAK (Tahap 3)</span>
@@ -479,9 +479,9 @@ export default function AdminIdentificationPage() {
       {/* MODAL DETAIL PROPOSAL / ANALISIS */}
       {selectedProposal && (
         <div className="fixed inset-0 z-50 bg-slate-900/60 flex items-center justify-center p-4">
-          <div className="bg-white border border-black shadow-2xl max-w-2xl w-full max-h-[85vh] flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+          <div className="bg-white rounded-xl border border-slate-200 shadow-2xl max-w-2xl w-full max-h-[85vh] flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-200">
             {/* Modal Header */}
-            <div className="p-5 border-b border-black flex items-center justify-between bg-[#0f2c59] text-white">
+            <div className="p-5 border-b border-slate-200 flex items-center justify-between bg-[#0f2c59] text-white">
               <div className="space-y-1">
                 <div className="flex items-center gap-2">
                   <span className="font-mono text-xs font-bold text-white bg-[#1b3b6f] px-2 py-0.5 border border-[#264978]">
@@ -600,10 +600,10 @@ export default function AdminIdentificationPage() {
             </div>
 
             {/* Modal Footer */}
-            <div className="px-6 py-4 bg-slate-50 border-t border-black flex items-center justify-between">
+            <div className="px-6 py-4 bg-slate-50 border-t border-slate-200 flex items-center justify-between">
               <button
                 onClick={() => setSelectedProposal(null)}
-                className="px-4 py-2 text-xs font-semibold text-slate-700 hover:text-black border border-slate-300 bg-white cursor-pointer"
+                className="px-4 py-2 text-xs font-semibold text-slate-700 hover:text-slate-900 border border-slate-300 rounded-lg bg-white cursor-pointer"
               >
                 Tutup
               </button>
@@ -613,7 +613,7 @@ export default function AdminIdentificationPage() {
                   selectedProposal.status === 'APPROVED' ? (
                   <Link
                     href="/admin/kak-builder"
-                    className="inline-flex items-center gap-2 px-4 py-2 text-xs font-semibold text-white bg-[#0f2c59] hover:bg-[#1a3d70] border border-black transition-colors"
+                    className="inline-flex items-center gap-2 px-4 py-2 text-xs font-semibold text-white bg-[#0f2c59] hover:bg-[#1a3d70] border border-[#0f2c59] rounded-lg transition-colors shadow-xs"
                   >
                     Lanjut ke Penyusunan KAK (Tahap 3)
                     <ArrowRight className="h-3.5 w-3.5" />

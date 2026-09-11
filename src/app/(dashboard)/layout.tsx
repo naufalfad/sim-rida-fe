@@ -129,8 +129,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         return [
           { name: 'Dashboard Usulan OPD', path: '/dashboard', icon: <LayoutDashboard className="h-4 w-4" /> },
           { name: 'Form Pengajuan Riset', path: '/opd/proposals/new', icon: <FileText className="h-4 w-4" /> },
-          { name: 'Riwayat & Pelacakan Usulan', path: '/opd/tracking', icon: <Activity className="h-4 w-4" /> },
-          { name: 'Gudang Rekomendasi Kebijakan', path: '/opd/recommendations', icon: <Award className="h-4 w-4" /> },
+          { name: 'Tracking Usulan', path: '/opd/tracking', icon: <Activity className="h-4 w-4" /> },
+          { name: 'Rekomendasi Kebijakan', path: '/opd/recommendations', icon: <Award className="h-4 w-4" /> },
           { name: 'Tindak Lanjut Rekomendasi', path: '/opd/follow-up', icon: <ClipboardCheck className="h-4 w-4" /> },
         ];
       default:
@@ -259,19 +259,29 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
       {/* ================= SIDEBAR DRAWER (MOBILE) ================= */}
       {isMobileOpen && (
-        <div className="fixed inset-0 z-50 flex md:hidden bg-slate-900/60 backdrop-blur-none">
-          <div className="w-64 bg-[#0f2c59] text-white flex flex-col h-full shadow-2xl relative">
+        <div className="fixed inset-0 z-50 flex md:hidden">
+          {/* Backdrop overlay - click to close */}
+          <div
+            className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs transition-opacity animate-in fade-in duration-200"
+            onClick={() => setIsMobileOpen(false)}
+          />
+          {/* Drawer container */}
+          <div className="relative w-72 max-w-[85vw] bg-[#0f2c59] text-white flex flex-col h-full shadow-2xl z-10 animate-in slide-in-from-left duration-200">
             {/* Header */}
-            <div className="h-16 flex items-center px-4 border-b border-[#1b3b6f] justify-between">
+            <div className="h-16 flex items-center px-4 border-b border-[#1b3b6f] justify-between shrink-0">
               <div className="flex items-center gap-2">
                 <div className="p-1.5 bg-[#0a1e3f] text-white border border-[#264978]">
                   <ShieldCheck className="h-5 w-5 text-sky-400" />
                 </div>
-                <span className="font-bold text-sm tracking-wider uppercase text-white">SIM-RIDA</span>
+                <div className="flex flex-col">
+                  <span className="font-bold text-sm tracking-wider uppercase text-white leading-none">SIM-RIDA</span>
+                  <span className="text-[9px] text-slate-300 font-medium tracking-wide mt-0.5 uppercase">Kabupaten Mimika</span>
+                </div>
               </div>
               <button
                 onClick={() => setIsMobileOpen(false)}
                 className="text-slate-300 hover:text-white p-1"
+                title="Tutup Menu"
               >
                 <X className="h-5 w-5" />
               </button>
@@ -294,31 +304,33 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                         : 'text-slate-300 hover:bg-[#15325b] hover:text-white border-l-4 border-l-transparent'
                     )}
                   >
-                    {link.icon}
-                    <span>{link.name}</span>
+                    <span className={cn('shrink-0', isActive ? 'text-sky-400' : 'text-slate-400')}>
+                      {link.icon}
+                    </span>
+                    <span className="truncate">{link.name}</span>
                   </Link>
                 );
               })}
             </nav>
 
             {/* Footer */}
-            <div className="border-t border-[#1b3b6f] p-4 bg-[#0a1e3f]">
+            <div className="border-t border-[#1b3b6f] p-4 bg-[#0a1e3f] shrink-0">
               <div className="flex items-center gap-3 mb-3">
                 <div className="h-8 w-8 bg-[#1b3b6f] border border-[#264978] flex items-center justify-center text-xs font-bold text-sky-300 uppercase shrink-0">
                   {currentUser.name.charAt(0)}
                 </div>
-                <div>
+                <div className="min-w-0">
                   <p className="text-xs font-bold text-white truncate leading-none mb-1">
                     {currentUser.name}
                   </p>
-                  <span className="text-[10px] text-slate-300 uppercase tracking-wider font-semibold">
+                  <span className="text-[10px] text-slate-300 uppercase tracking-wider font-semibold truncate block">
                     {ROLE_LABELS[currentUser.role] || currentUser.role}
                   </span>
                 </div>
               </div>
               <button
                 onClick={handleLogout}
-                className="w-full flex items-center justify-center gap-2 px-3 py-1.5 border border-[#264978] hover:bg-[#1b3b6f] text-slate-300 hover:text-white text-xs font-semibold tracking-wider uppercase transition-colors"
+                className="w-full flex items-center justify-center gap-2 px-3 py-2 border border-[#264978] hover:bg-[#1b3b6f] text-slate-300 hover:text-white text-xs font-semibold tracking-wider uppercase transition-colors"
               >
                 <LogOut className="h-4 w-4" />
                 <span>Keluar Aplikasi</span>
@@ -329,54 +341,55 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       )}
 
       {/* ================= MAIN COLUMN ================= */}
-      <div className="flex-1 flex flex-col min-w-0">
+      <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
 
         {/* ================= TOPBAR ================= */}
-        <header className="h-16 border-b border-slate-200 bg-white flex items-center justify-between px-6 sticky top-0 z-20">
+        <header className="h-16 border-b border-slate-200 bg-white flex items-center justify-between px-3 sm:px-6 sticky top-0 z-20 shrink-0">
 
           {/* Left Section: Mobile Menu & Breadcrumbs */}
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2 sm:gap-4 min-w-0">
             <button
               onClick={() => setIsMobileOpen(true)}
-              className="md:hidden p-1.5 border border-slate-300 text-slate-700 hover:bg-slate-50"
+              className="md:hidden p-1.5 border border-slate-300 text-slate-700 hover:bg-slate-50 shrink-0"
+              title="Buka Menu"
             >
               <Menu className="h-5 w-5" />
             </button>
 
             {/* Breadcrumbs */}
-            <nav className="hidden sm:flex items-center space-x-2 text-xs font-semibold uppercase tracking-wider text-slate-400">
-              <Link href="/dashboard" className="hover:text-[#0f2c59] transition-colors">
+            <nav className="hidden md:flex items-center space-x-2 text-xs font-semibold uppercase tracking-wider text-slate-400 min-w-0">
+              <Link href="/dashboard" className="hover:text-[#0f2c59] transition-colors shrink-0">
                 SIM-RIDA
               </Link>
               {breadcrumbs.map((crumb) => (
                 <React.Fragment key={crumb.path}>
-                  <span>/</span>
+                  <span className="shrink-0">/</span>
                   {crumb.isLast ? (
-                    <span className="text-[#0f2c59] font-bold">{crumb.label}</span>
+                    <span className="text-[#0f2c59] font-bold truncate max-w-[200px]">{crumb.label}</span>
                   ) : (
-                    <Link href={crumb.path} className="hover:text-[#0f2c59] transition-colors">
+                    <Link href={crumb.path} className="hover:text-[#0f2c59] transition-colors truncate max-w-[120px]">
                       {crumb.label}
                     </Link>
                   )}
                 </React.Fragment>
               ))}
             </nav>
-            <span className="sm:hidden text-sm font-bold text-[#0f2c59]">
+            <span className="md:hidden text-xs sm:text-sm font-bold text-[#0f2c59] truncate max-w-[130px] sm:max-w-[220px]">
               {pageTitle}
             </span>
           </div>
 
           {/* Right Section: Role Switcher & Notif Bell & User Profile Dropdown */}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-1.5 sm:gap-3 shrink-0">
 
             {/* Authenticated User Role Badge */}
-            <div className="flex items-center gap-1.5 border border-slate-300 bg-slate-50 px-2.5 py-1">
+            <div className="flex items-center gap-1 sm:gap-1.5 border border-slate-300 bg-slate-50 px-2 sm:px-2.5 py-1 max-w-[130px] sm:max-w-none">
               <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 hidden sm:inline">Role:</span>
-              <span className="text-xs font-bold text-[#0f2c59]">
+              <span className="text-xs font-bold text-[#0f2c59] truncate max-w-[85px] sm:max-w-none" title={ROLE_LABELS[currentUser.role] || currentUser.role}>
                 {ROLE_LABELS[currentUser.role] || currentUser.role}
               </span>
               {currentUser.opd?.code && (
-                <span className="text-[10px] px-1.5 py-0.2 bg-[#0f2c59] text-white font-mono uppercase font-bold rounded-sm ml-1 hidden md:inline">
+                <span className="text-[10px] px-1.5 py-0.2 bg-[#0f2c59] text-white font-mono uppercase font-bold rounded-sm ml-1 hidden lg:inline">
                   {currentUser.opd.code}
                 </span>
               )}
@@ -392,6 +405,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 className={cn(
                   'p-2 border border-slate-300 text-slate-700 hover:bg-slate-50 transition-colors relative'
                 )}
+                title="Notifikasi Sistem"
               >
                 <Bell className="h-4 w-4" />
                 {unreadCount > 0 && (
@@ -405,7 +419,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               {isNotifOpen && (
                 <>
                   <div className="fixed inset-0 z-40" onClick={() => setIsNotifOpen(false)} />
-                  <div className="absolute right-0 mt-1 w-80 bg-white border border-slate-300 shadow-xl py-0 z-50 text-xs">
+                  <div className="fixed sm:absolute top-16 sm:top-full left-3 sm:left-auto right-3 sm:right-0 mt-1 sm:w-80 bg-white border border-slate-300 shadow-2xl py-0 z-50 text-xs">
                     <div className="px-4 py-2.5 border-b border-slate-200 flex justify-between items-center bg-slate-50">
                       <span className="font-bold uppercase tracking-wider text-slate-800 text-xs">Notifikasi Sistem</span>
                       {unreadCount > 0 && (
@@ -454,16 +468,17 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                   setIsProfileOpen(!isProfileOpen);
                   setIsNotifOpen(false);
                 }}
-                className="flex items-center gap-2.5 px-2.5 py-1.5 border border-slate-300 hover:bg-slate-50 transition-colors"
+                className="flex items-center gap-2 sm:gap-2.5 px-2 sm:px-2.5 py-1.5 border border-slate-300 hover:bg-slate-50 transition-colors"
+                title="Profil Pengguna"
               >
                 <div className="h-6 w-6 bg-[#0f2c59] text-xs font-bold text-white flex items-center justify-center uppercase shrink-0">
                   {currentUser.name.charAt(0)}
                 </div>
-                <div className="hidden sm:block text-left pr-1">
-                  <p className="text-xs font-bold text-slate-900 leading-none mb-0.5">
+                <div className="hidden lg:block text-left pr-1">
+                  <p className="text-xs font-bold text-slate-900 leading-none mb-0.5 truncate max-w-[120px]">
                     {currentUser.name}
                   </p>
-                  <span className="text-[10px] text-slate-500 uppercase tracking-wider font-semibold">
+                  <span className="text-[10px] text-slate-500 uppercase tracking-wider font-semibold truncate block max-w-[120px]">
                     {ROLE_LABELS[currentUser.role] || currentUser.role}
                   </span>
                 </div>
@@ -473,7 +488,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               {isProfileOpen && (
                 <>
                   <div className="fixed inset-0 z-40" onClick={() => setIsProfileOpen(false)} />
-                  <div className="absolute right-0 mt-1 w-52 bg-white border border-slate-300 shadow-xl py-0 z-50 text-xs text-slate-800">
+                  <div className="absolute right-0 mt-1 w-52 max-w-[calc(100vw-1.5rem)] bg-white border border-slate-300 shadow-xl py-0 z-50 text-xs text-slate-800">
                     <div className="px-4 py-3 border-b border-slate-200 bg-slate-50">
                       <p className="font-bold text-slate-900 truncate">{currentUser.name}</p>
                       <p className="text-[10px] text-slate-500 truncate mt-0.5">{currentUser.email}</p>
@@ -510,7 +525,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         </header>
 
         {/* ================= PAGE CONTENT ================= */}
-        <main className="flex-1 p-6 md:p-8 overflow-y-auto">
+        <main className="flex-1 p-3 sm:p-4 md:p-6 lg:p-8 overflow-y-auto min-w-0">
           {children}
         </main>
 

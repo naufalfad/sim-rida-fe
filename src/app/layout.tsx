@@ -1,10 +1,17 @@
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import './globals.css';
 import { ToastProvider } from '@/components/ui/toast';
 import { AuthProvider } from '@/components/AuthProvider';
+
 export const metadata: Metadata = {
   title: 'SIM-RIDA | Sistem Informasi Manajemen Riset Daerah',
   description: 'Sistem Informasi Manajemen Riset Daerah Badan Riset dan Inovasi Daerah (BRIDA)',
+};
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 5,
 };
 
 export default function RootLayout({

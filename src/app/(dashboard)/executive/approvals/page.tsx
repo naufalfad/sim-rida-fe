@@ -141,15 +141,15 @@ export default function ExecutiveApprovalsPage() {
   const rejectedCount = scoredProposals.filter(p => p.status === 'REJECTED' || p.status === 'REVISION_REQUIRED' || p.executiveDecision?.decision === 'REJECTED' || p.executiveDecision?.decision === 'RETURNED' || p.executiveDecision?.decision === 'REVISION_REQUIRED').length;
 
   return (
-    <div className="space-y-8 max-w-7xl mx-auto pb-12 font-sans">
+    <div className="space-y-6 sm:space-y-8 max-w-7xl mx-auto pb-12 font-sans">
       {/* Header Banner */}
-      <div className="bg-[#0f2c59] p-8 rounded-2xl text-white shadow-xl flex flex-col md:flex-row md:items-center justify-between gap-4 border border-black">
+      <div className="bg-[#0f2c59] p-5 sm:p-6 md:p-8 rounded-xl text-white shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-5 border border-slate-200">
         <div>
-          <div className="flex items-center gap-2 text-sky-300 text-xs font-black tracking-widest uppercase mb-2">
+          <div className="flex items-center gap-2 text-sky-300 text-xs font-black tracking-widest uppercase mb-1.5">
             <ClipboardCheck className="w-4 h-4" />
             Modul 2: Kepala BRIDA
           </div>
-          <h1 className="text-2xl md:text-3xl font-black tracking-tight">
+          <h1 className="text-xl sm:text-2xl md:text-3xl font-black tracking-tight">
             Approval Usulan & Penentuan Prioritas Riset
           </h1>
           <p className="text-slate-200 text-xs mt-1.5 max-w-2xl leading-relaxed">
@@ -157,10 +157,10 @@ export default function ExecutiveApprovalsPage() {
           </p>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-2.5 sm:gap-3 shrink-0 w-full md:w-auto">
           <button
             onClick={() => fetchApprovalInbox({ status: 'ALL' })}
-            className="flex items-center gap-2 bg-[#1b3b6f] hover:bg-blue-800 text-white font-semibold px-3.5 py-2.5 rounded-xl transition text-xs border border-blue-400"
+            className="flex-1 sm:flex-initial flex items-center justify-center gap-2 bg-[#1b3b6f] hover:bg-blue-800 text-white font-semibold px-3.5 py-2.5 rounded-lg transition text-xs border border-blue-400"
             title="Muat Ulang Antrean"
           >
             <RefreshCw className={`w-3.5 h-3.5 ${isLoadingProposals ? 'animate-spin' : ''}`} />
@@ -168,22 +168,22 @@ export default function ExecutiveApprovalsPage() {
           </button>
           <Link
             href="/executive/monitoring"
-            className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-bold px-4 py-2.5 rounded-xl transition shadow text-xs border border-blue-400"
+            className="flex-1 sm:flex-initial flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-bold px-4 py-2.5 rounded-lg transition shadow-xs text-xs border border-blue-400"
           >
-            <span>Supervisi Riset Berjalan</span>
+            <span>Supervisi Riset</span>
             <ArrowRight className="w-4 h-4" />
           </Link>
         </div>
       </div>
 
       {/* Filter Tabs & Search */}
-      <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-white p-4 rounded-xl border border-black shadow-sm">
-        <div className="flex flex-wrap items-center gap-2">
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 sm:gap-4 bg-white p-4 rounded-xl border border-slate-200 shadow-xs">
+        <div className="flex items-center gap-1.5 overflow-x-auto whitespace-nowrap scrollbar-none pb-1 max-w-full">
           <button
             onClick={() => setActiveFilter('PENDING_APPROVAL')}
-            className={`px-4 py-2 rounded-lg text-xs font-bold transition ${
+            className={`px-3.5 py-2 rounded-lg text-xs font-bold transition shrink-0 ${
               activeFilter === 'PENDING_APPROVAL'
-                ? 'bg-blue-600 text-white shadow'
+                ? 'bg-blue-600 text-white shadow-xs'
                 : 'bg-slate-100 text-slate-700 hover:bg-slate-200 border border-slate-200'
             }`}
           >
@@ -191,9 +191,9 @@ export default function ExecutiveApprovalsPage() {
           </button>
           <button
             onClick={() => setActiveFilter('APPROVED')}
-            className={`px-4 py-2 rounded-lg text-xs font-bold transition ${
+            className={`px-3.5 py-2 rounded-lg text-xs font-bold transition shrink-0 ${
               activeFilter === 'APPROVED'
-                ? 'bg-blue-600 text-white shadow'
+                ? 'bg-blue-600 text-white shadow-xs'
                 : 'bg-slate-100 text-slate-700 hover:bg-slate-200 border border-slate-200'
             }`}
           >
@@ -201,19 +201,19 @@ export default function ExecutiveApprovalsPage() {
           </button>
           <button
             onClick={() => setActiveFilter('REJECTED_RETURNED')}
-            className={`px-4 py-2 rounded-lg text-xs font-bold transition ${
+            className={`px-3.5 py-2 rounded-lg text-xs font-bold transition shrink-0 ${
               activeFilter === 'REJECTED_RETURNED'
-                ? 'bg-blue-600 text-white shadow'
+                ? 'bg-blue-600 text-white shadow-xs'
                 : 'bg-slate-100 text-slate-700 hover:bg-slate-200 border border-slate-200'
             }`}
           >
-            Ditolak / Dikembalikan ({rejectedCount})
+            Ditolak / Revisi ({rejectedCount})
           </button>
           <button
             onClick={() => setActiveFilter('ALL')}
-            className={`px-4 py-2 rounded-lg text-xs font-bold transition ${
+            className={`px-3.5 py-2 rounded-lg text-xs font-bold transition shrink-0 ${
               activeFilter === 'ALL'
-                ? 'bg-blue-600 text-white shadow'
+                ? 'bg-blue-600 text-white shadow-xs'
                 : 'bg-slate-100 text-slate-700 hover:bg-slate-200 border border-slate-200'
             }`}
           >
@@ -228,20 +228,20 @@ export default function ExecutiveApprovalsPage() {
             placeholder="Cari usulan / OPD..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-300 rounded-lg text-xs focus:ring-2 focus:ring-blue-600 focus:bg-white focus:outline-none text-slate-800"
+            className="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-300 rounded-lg text-xs focus:ring-2 focus:ring-blue-600 focus:bg-white focus:outline-hidden text-slate-800"
           />
         </div>
       </div>
 
       {/* Grid of Proposals with Quick Review Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6">
         {isLoadingProposals && filteredProposals.length === 0 ? (
-          <div className="col-span-full bg-white p-12 rounded-2xl border border-black text-center text-slate-400">
+          <div className="col-span-full bg-white p-8 sm:p-12 rounded-xl border border-slate-200 text-center text-slate-400 shadow-xs">
             <Loader2 className="w-8 h-8 mx-auto text-blue-600 animate-spin mb-3" />
             <p className="font-bold text-slate-700 text-sm">Memuat antrean persetujuan usulan...</p>
           </div>
         ) : filteredProposals.length === 0 ? (
-          <div className="col-span-full bg-white p-12 rounded-2xl border border-black text-center text-slate-400">
+          <div className="col-span-full bg-white p-8 sm:p-12 rounded-xl border border-slate-200 text-center text-slate-400 shadow-xs">
             <ClipboardCheck className="w-12 h-12 mx-auto text-slate-300 mb-3" />
             <p className="font-bold text-slate-700 text-sm">Tidak ada usulan dalam kategori ini</p>
             <p className="text-xs mt-1">Usulan yang telah diberi skor oleh tim penelaah akan otomatis masuk ke daftar tunggu persetujuan.</p>
@@ -258,10 +258,10 @@ export default function ExecutiveApprovalsPage() {
             return (
               <div 
                 key={prop.id}
-                className="bg-white rounded-2xl border border-black shadow-sm hover:shadow-md transition flex flex-col justify-between overflow-hidden"
+                className="bg-white rounded-xl border border-slate-200 shadow-xs hover:border-blue-400 hover:shadow-sm transition flex flex-col justify-between overflow-hidden"
               >
                 {/* Card Top */}
-                <div className="p-6 space-y-4">
+                <div className="p-4 sm:p-6 space-y-4">
                   <div className="flex items-center justify-between">
                     <span className="font-mono text-xs font-bold text-blue-900 bg-blue-50 px-2.5 py-0.5 rounded border border-blue-200">
                       {prop.code}
@@ -331,7 +331,7 @@ export default function ExecutiveApprovalsPage() {
 
                   {/* Decision Tag if already decided */}
                   {prop.executiveDecision && (
-                    <div className={`p-2.5 rounded-lg text-xs font-bold border border-black ${
+                    <div className={`p-2.5 rounded-lg text-xs font-bold border border-slate-200 shadow-2xs ${
                       prop.executiveDecision.decision === 'APPROVED' 
                         ? 'bg-blue-50 text-blue-900' 
                         : 'bg-slate-100 text-slate-900'
@@ -350,17 +350,17 @@ export default function ExecutiveApprovalsPage() {
                 </div>
 
                 {/* Card Actions */}
-                <div className="p-4 bg-slate-50 border-t border-black flex items-center justify-between gap-2">
+                <div className="p-3.5 sm:p-4 bg-slate-50/80 border-t border-slate-100 flex items-center justify-between gap-2">
                   <button
                     onClick={() => handleOpenDecisionModal('APPROVE', prop)}
-                    className="flex-1 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-bold transition shadow flex items-center justify-center gap-1 border border-blue-700"
+                    className="flex-1 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-bold transition shadow-xs flex items-center justify-center gap-1 border border-blue-700"
                   >
                     <ThumbsUp className="w-3.5 h-3.5" />
                     Approve
                   </button>
                   <button
                     onClick={() => handleOpenDecisionModal('RETURN', prop)}
-                    className="py-2 px-3 bg-white hover:bg-slate-100 text-slate-800 rounded-lg text-xs font-bold transition flex items-center justify-center gap-1 border border-slate-300"
+                    className="py-2 px-3 bg-white hover:bg-slate-100 text-slate-800 rounded-lg text-xs font-bold transition flex items-center justify-center gap-1 border border-slate-300 shadow-xs"
                     title="Kembalikan ke tim penelaah"
                   >
                     <CornerUpLeft className="w-3.5 h-3.5 text-blue-600" />
@@ -368,7 +368,7 @@ export default function ExecutiveApprovalsPage() {
                   </button>
                   <button
                     onClick={() => handleOpenDecisionModal('REJECT', prop)}
-                    className="py-2 px-3 bg-slate-900 hover:bg-black text-white rounded-lg text-xs font-bold transition flex items-center justify-center gap-1 border border-black"
+                    className="py-2 px-3 bg-slate-900 hover:bg-black text-white rounded-lg text-xs font-bold transition flex items-center justify-center gap-1 border border-slate-800 shadow-xs"
                     title="Tolak usulan"
                   >
                     <ThumbsDown className="w-3.5 h-3.5" />
@@ -383,9 +383,9 @@ export default function ExecutiveApprovalsPage() {
 
       {/* Decision Confirmation Modal */}
       {decisionType && selectedProposal && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white w-full max-w-lg rounded-2xl shadow-2xl border border-black overflow-hidden animate-in fade-in zoom-in-95 duration-150">
-            <div className="p-6 text-white bg-[#0f2c59] border-b border-black">
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-3 sm:p-4">
+          <div className="bg-white w-full max-w-lg rounded-2xl shadow-2xl border border-slate-200 overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+            <div className="p-5 sm:p-6 text-white bg-[#0f2c59] border-b border-slate-100">
               <h3 className="font-black text-lg flex items-center gap-2">
                 {decisionType === 'APPROVE' && <CheckCircle2 className="w-5 h-5 text-sky-300" />}
                 {decisionType === 'REJECT' && <XCircle className="w-5 h-5 text-slate-300" />}
@@ -473,10 +473,10 @@ export default function ExecutiveApprovalsPage() {
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className={`px-5 py-2 text-xs font-bold text-white rounded-lg transition shadow flex items-center gap-1.5 disabled:opacity-50 border ${
-                    decisionType === 'APPROVE' ? 'bg-blue-600 hover:bg-blue-700 border-blue-800' :
-                    decisionType === 'REJECT' ? 'bg-slate-900 hover:bg-black border-black' :
-                    'bg-[#1b3b6f] hover:bg-blue-900 border-blue-950'
+                  className={`px-5 py-2 text-xs font-bold text-white rounded-lg transition shadow-xs flex items-center gap-1.5 disabled:opacity-50 border ${
+                    decisionType === 'APPROVE' ? 'bg-emerald-600 hover:bg-emerald-700 border-emerald-700' :
+                    decisionType === 'REJECT' ? 'bg-red-600 hover:bg-red-700 border-red-700' :
+                    'bg-[#0f2c59] hover:bg-[#0a1e3f] border-[#0f2c59]'
                   }`}
                 >
                   {isSubmitting && <Loader2 className="w-3.5 h-3.5 animate-spin" />}

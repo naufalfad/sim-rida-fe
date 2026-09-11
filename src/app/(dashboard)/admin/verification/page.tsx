@@ -145,9 +145,9 @@ export default function AdminVerificationPage() {
 
       {/* STATS CARDS */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="bg-white p-5 border border-slate-200 flex items-center gap-4">
-          <div className="w-12 h-12 bg-blue-50 border border-blue-200 text-blue-600 flex items-center justify-center font-bold shrink-0">
-            <Clock className="w-6 h-6" />
+        <div className="bg-white p-4 sm:p-5 border border-slate-200 rounded-xl shadow-xs flex items-center gap-3.5 sm:gap-4">
+          <div className="w-11 h-11 sm:w-12 sm:h-12 bg-blue-50 border border-blue-200 text-blue-600 flex items-center justify-center font-bold shrink-0 rounded-lg">
+            <Clock className="w-5 h-5 sm:w-6 sm:h-6" />
           </div>
           <div className="space-y-0.5 min-w-0">
             <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider truncate">
@@ -158,9 +158,9 @@ export default function AdminVerificationPage() {
           </div>
         </div>
 
-        <div className="bg-white p-5 border border-slate-200 flex items-center gap-4">
-          <div className="w-12 h-12 bg-blue-50 border border-blue-200 text-[#0f2c59] flex items-center justify-center font-bold shrink-0">
-            <CheckCircle2 className="w-6 h-6" />
+        <div className="bg-white p-4 sm:p-5 border border-slate-200 rounded-xl shadow-xs flex items-center gap-3.5 sm:gap-4">
+          <div className="w-11 h-11 sm:w-12 sm:h-12 bg-blue-50 border border-blue-200 text-[#0f2c59] flex items-center justify-center font-bold shrink-0 rounded-lg">
+            <CheckCircle2 className="w-5 h-5 sm:w-6 sm:h-6" />
           </div>
           <div className="space-y-0.5 min-w-0">
             <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider truncate">
@@ -171,9 +171,9 @@ export default function AdminVerificationPage() {
           </div>
         </div>
 
-        <div className="bg-white p-5 border border-slate-200 flex items-center gap-4">
-          <div className="w-12 h-12 bg-blue-50 border border-blue-200 text-blue-800 flex items-center justify-center font-bold shrink-0">
-            <AlertTriangle className="w-6 h-6" />
+        <div className="bg-white p-4 sm:p-5 border border-slate-200 rounded-xl shadow-xs flex items-center gap-3.5 sm:gap-4">
+          <div className="w-11 h-11 sm:w-12 sm:h-12 bg-blue-50 border border-blue-200 text-blue-800 flex items-center justify-center font-bold shrink-0 rounded-lg">
+            <AlertTriangle className="w-5 h-5 sm:w-6 sm:h-6" />
           </div>
           <div className="space-y-0.5 min-w-0">
             <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider truncate">
@@ -186,9 +186,9 @@ export default function AdminVerificationPage() {
           </div>
         </div>
 
-        <div className="bg-white p-5 border border-slate-200 flex items-center gap-4">
-          <div className="w-12 h-12 bg-slate-100 border border-slate-300 text-slate-700 flex items-center justify-center font-bold shrink-0">
-            <Building2 className="w-6 h-6" />
+        <div className="bg-white p-4 sm:p-5 border border-slate-200 rounded-xl shadow-xs flex items-center gap-3.5 sm:gap-4">
+          <div className="w-11 h-11 sm:w-12 sm:h-12 bg-slate-100 border border-slate-300 text-slate-700 flex items-center justify-center font-bold shrink-0 rounded-lg">
+            <Building2 className="w-5 h-5 sm:w-6 sm:h-6" />
           </div>
           <div className="space-y-0.5 min-w-0">
             <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider truncate">
@@ -201,51 +201,51 @@ export default function AdminVerificationPage() {
       </div>
 
       {/* INFORMATIONAL 5 PILARS BANNER */}
-      <div className="border border-slate-200 bg-blue-50/60 p-4 text-xs text-blue-950 flex items-start gap-3.5">
-        <div className="p-2 bg-[#0f2c59] text-white shrink-0 mt-0.5">
+      <div className="border border-slate-200 bg-blue-50/60 p-4 rounded-xl text-xs text-blue-950 flex items-start gap-3.5 shadow-2xs">
+        <div className="p-2 bg-[#0f2c59] text-white shrink-0 mt-0.5 rounded-lg">
           <ShieldCheck className="h-4 w-4 text-sky-300" />
         </div>
-        <div className="space-y-1 leading-relaxed">
+        <div className="space-y-1 leading-relaxed flex-1 min-w-0">
           <span className="font-bold text-[#0f2c59] block text-xs">
             5 Pilar Penilaian Validasi Kelayakan Usulan Masuk dari OPD:
           </span>
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-2 pt-1 text-[11px]">
-            <div className="bg-white p-2 border border-slate-300">
-              <strong>1. Validasi Masalah:</strong> Kejelasan rumusan & fakta empiris lapangan.
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-2 pt-1 text-[11px]">
+            <div className="bg-white p-2.5 border border-slate-200 rounded-lg shadow-2xs">
+              <strong className="text-slate-900 block">1. Validasi Masalah:</strong> Kejelasan rumusan & fakta empiris lapangan.
             </div>
-            <div className="bg-white p-2 border border-slate-300">
-              <strong>2. Kebaruan / Bebas Duplikasi:</strong> Belum pernah diteliti/diselesaikan sebelumnya.
+            <div className="bg-white p-2.5 border border-slate-200 rounded-lg shadow-2xs">
+              <strong className="text-slate-900 block">2. Kebaruan:</strong> Bebas duplikasi kajian sebelumnya.
             </div>
-            <div className="bg-white p-2 border border-slate-300">
-              <strong>3. Urgensi:</strong> Skala prioritas waktu & dampak jika ditunda.
+            <div className="bg-white p-2.5 border border-slate-200 rounded-lg shadow-2xs">
+              <strong className="text-slate-900 block">3. Urgensi:</strong> Skala prioritas waktu & dampak bila tunda.
             </div>
-            <div className="bg-white p-2 border border-slate-300">
-              <strong>4. Keselarasan Strategis:</strong> Kesesuaian visi-misi RPJMD daerah.
+            <div className="bg-white p-2.5 border border-slate-200 rounded-lg shadow-2xs">
+              <strong className="text-slate-900 block">4. Keselarasan:</strong> Sesuai arah visi-misi RPJMD Mimika.
             </div>
-            <div className="bg-white p-2 border border-slate-300">
-              <strong>5. Kelayakan Riset:</strong> Kesiapan data, estimasi anggaran & metodologi.
+            <div className="bg-white p-2.5 border border-slate-200 rounded-lg shadow-2xs">
+              <strong className="text-slate-900 block">5. Kelayakan Riset:</strong> Kesiapan data, anggaran & metode.
             </div>
           </div>
         </div>
       </div>
 
       {/* TABLE CONTAINER */}
-      <Card className="bg-white border-slate-200">
+      <Card className="bg-white border-slate-200 rounded-xl shadow-xs overflow-hidden">
         {/* TABS & SEARCH */}
-        <div className="p-4 border-b border-slate-200 flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4">
-          <div className="flex items-center gap-1.5 p-1 bg-slate-100 shrink-0 border border-slate-200">
+        <div className="p-4 border-b border-slate-100 flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3 sm:gap-4">
+          <div className="flex items-center gap-1.5 p-1 bg-slate-100 shrink-0 border border-slate-200 rounded-lg overflow-x-auto whitespace-nowrap scrollbar-none max-w-full">
             <button
               onClick={() => setActiveTab('PENDING')}
               className={cn(
-                'px-3.5 py-1.5 text-xs font-semibold transition-all flex items-center gap-2 cursor-pointer',
+                'px-3 py-1.5 text-xs font-semibold rounded-md transition-all flex items-center gap-2 cursor-pointer shrink-0',
                 activeTab === 'PENDING'
-                  ? 'bg-[#0f2c59] text-white'
+                  ? 'bg-[#0f2c59] text-white shadow-xs'
                   : 'text-slate-700 hover:text-slate-900'
               )}
             >
               <Clock className="h-3.5 w-3.5 text-sky-400" />
               Menunggu Validasi
-              <span className={cn('px-1.5 py-0.2 text-[10px] font-bold', activeTab === 'PENDING' ? 'bg-[#1b3b6f] text-white' : 'bg-slate-200 text-slate-800')}>
+              <span className={cn('px-1.5 py-0.2 text-[10px] font-bold rounded', activeTab === 'PENDING' ? 'bg-[#1b3b6f] text-white' : 'bg-slate-200 text-slate-800')}>
                 {pendingList.length}
               </span>
             </button>
@@ -253,15 +253,15 @@ export default function AdminVerificationPage() {
             <button
               onClick={() => setActiveTab('APPROVED')}
               className={cn(
-                'px-3.5 py-1.5 text-xs font-semibold transition-all flex items-center gap-2 cursor-pointer',
+                'px-3 py-1.5 text-xs font-semibold rounded-md transition-all flex items-center gap-2 cursor-pointer shrink-0',
                 activeTab === 'APPROVED'
-                  ? 'bg-[#0f2c59] text-white'
+                  ? 'bg-[#0f2c59] text-white shadow-xs'
                   : 'text-slate-700 hover:text-slate-900'
               )}
             >
               <CheckCircle2 className="h-3.5 w-3.5 text-sky-400" />
               Lolos Validasi
-              <span className={cn('px-1.5 py-0.2 text-[10px] font-bold', activeTab === 'APPROVED' ? 'bg-[#1b3b6f] text-white' : 'bg-slate-200 text-slate-800')}>
+              <span className={cn('px-1.5 py-0.2 text-[10px] font-bold rounded', activeTab === 'APPROVED' ? 'bg-[#1b3b6f] text-white' : 'bg-slate-200 text-slate-800')}>
                 {approvedList.length}
               </span>
             </button>
@@ -269,14 +269,14 @@ export default function AdminVerificationPage() {
             <button
               onClick={() => setActiveTab('RETURNED')}
               className={cn(
-                'px-3.5 py-1.5 text-xs font-semibold transition-all flex items-center gap-2 cursor-pointer',
+                'px-3 py-1.5 text-xs font-semibold rounded-md transition-all flex items-center gap-2 cursor-pointer shrink-0',
                 activeTab === 'RETURNED'
-                  ? 'bg-[#0f2c59] text-white'
+                  ? 'bg-[#0f2c59] text-white shadow-xs'
                   : 'text-slate-700 hover:text-slate-900'
               )}
             >
               Revisi / Ditolak
-              <span className={cn('px-1.5 py-0.2 text-[10px] font-bold', activeTab === 'RETURNED' ? 'bg-[#1b3b6f] text-white' : 'bg-slate-200 text-slate-800')}>
+              <span className={cn('px-1.5 py-0.2 text-[10px] font-bold rounded', activeTab === 'RETURNED' ? 'bg-[#1b3b6f] text-white' : 'bg-slate-200 text-slate-800')}>
                 {returnedOrRejectedList.length}
               </span>
             </button>
@@ -284,35 +284,35 @@ export default function AdminVerificationPage() {
             <button
               onClick={() => setActiveTab('ALL')}
               className={cn(
-                'px-3.5 py-1.5 text-xs font-semibold transition-all flex items-center gap-2 cursor-pointer',
+                'px-3 py-1.5 text-xs font-semibold rounded-md transition-all flex items-center gap-2 cursor-pointer shrink-0',
                 activeTab === 'ALL'
-                  ? 'bg-[#0f2c59] text-white'
+                  ? 'bg-[#0f2c59] text-white shadow-xs'
                   : 'text-slate-700 hover:text-slate-900'
               )}
             >
               Semua Usulan
-              <span className={cn('px-1.5 py-0.2 text-[10px]', activeTab === 'ALL' ? 'bg-[#1b3b6f] text-white' : 'bg-slate-200 text-slate-800')}>
+              <span className={cn('px-1.5 py-0.2 text-[10px] rounded', activeTab === 'ALL' ? 'bg-[#1b3b6f] text-white' : 'bg-slate-200 text-slate-800')}>
                 {opdProposals.length}
               </span>
             </button>
           </div>
 
-          <div className="flex flex-wrap items-center gap-2.5">
-            <div className="relative min-w-[220px] flex-1 md:flex-initial">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 w-full md:w-auto">
+            <div className="relative min-w-[200px] flex-1">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400" />
               <input
                 type="text"
                 placeholder="Cari usulan OPD..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="w-full pl-9 pr-3 py-1.5 text-xs bg-slate-50 border border-slate-300 focus:outline-none focus:ring-1 focus:ring-blue-600 focus:bg-white transition-all"
+                className="w-full pl-9 pr-3 py-1.5 text-xs bg-slate-50 border border-slate-300 rounded-lg focus:outline-hidden focus:ring-1 focus:ring-blue-600 focus:bg-white transition-all"
               />
             </div>
 
             <select
               value={selectedOpdId}
               onChange={(e) => setSelectedOpdId(e.target.value)}
-              className="text-xs py-1.5 px-3 bg-slate-50 border border-slate-300 text-slate-700 focus:outline-none focus:ring-1 focus:ring-blue-600 max-w-[180px] truncate"
+              className="text-xs py-1.5 px-3 bg-slate-50 border border-slate-300 rounded-lg text-slate-700 focus:outline-hidden focus:ring-1 focus:ring-blue-600 max-w-full sm:max-w-[180px] truncate"
             >
               <option value="ALL">Semua OPD Pengusul</option>
               {opds.map((o) => (
@@ -333,7 +333,7 @@ export default function AdminVerificationPage() {
             </div>
           ) : filteredList.length === 0 ? (
             <div className="py-16 text-center text-slate-500 text-xs flex flex-col items-center gap-3">
-              <div className="h-12 w-12 bg-slate-100 flex items-center justify-center text-slate-400 border border-slate-300">
+              <div className="h-12 w-12 bg-slate-100 rounded-xl flex items-center justify-center text-slate-400 border border-slate-300">
                 <FileText className="h-6 w-6" />
               </div>
               <div>
@@ -349,14 +349,14 @@ export default function AdminVerificationPage() {
             filteredList.map((item) => (
               <div
                 key={item.id}
-                className="p-5 hover:bg-slate-50 transition-colors flex flex-col md:flex-row items-start md:items-center justify-between gap-4"
+                className="p-4 sm:p-5 hover:bg-slate-50 transition-colors flex flex-col md:flex-row items-start md:items-center justify-between gap-4"
               >
                 <div className="space-y-2 flex-1 min-w-0">
                   <div className="flex flex-wrap items-center gap-2">
-                    <span className="font-mono text-xs font-bold text-slate-700 px-2 py-0.5 bg-slate-100 border border-slate-300">
+                    <span className="font-mono text-xs font-bold text-slate-700 px-2 py-0.5 bg-slate-100 border border-slate-300 rounded">
                       {item.code}
                     </span>
-                    <span className="px-2 py-0.5 text-[11px] font-semibold bg-blue-50 text-blue-900 border border-blue-300 flex items-center gap-1">
+                    <span className="px-2 py-0.5 text-[11px] font-semibold bg-blue-50 text-blue-900 border border-blue-300 rounded flex items-center gap-1">
                       <Building2 className="h-3 w-3 text-blue-700" />
                       Usulan OPD
                     </span>
@@ -372,10 +372,10 @@ export default function AdminVerificationPage() {
                     {item.problemStatement}
                   </p>
 
-                  <div className="flex flex-wrap items-center gap-4 text-xs text-slate-500 pt-1">
+                  <div className="flex flex-wrap items-center gap-3 sm:gap-4 text-xs text-slate-500 pt-1">
                     <div className="flex items-center gap-1.5">
-                      <Building2 className="h-3.5 w-3.5 text-slate-400" />
-                      <span>
+                      <Building2 className="h-3.5 w-3.5 text-slate-400 shrink-0" />
+                      <span className="truncate">
                         Pengusul: <strong className="text-slate-800">{item.opdName}</strong>
                       </span>
                     </div>
@@ -397,14 +397,16 @@ export default function AdminVerificationPage() {
                 </div>
 
                 {/* STATUS & ACTIONS */}
-                <div className="flex flex-row md:flex-col items-end justify-between md:justify-center gap-3 shrink-0 self-stretch md:self-auto border-t md:border-t-0 pt-3 md:pt-0">
-                  {getStatusBadge(item)}
+                <div className="flex flex-row md:flex-col items-center md:items-end justify-between md:justify-center gap-2.5 sm:gap-3 shrink-0 self-stretch md:self-auto border-t md:border-t-0 pt-3 md:pt-0">
+                  <div className="self-start sm:self-auto">
+                    {getStatusBadge(item)}
+                  </div>
 
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 w-full sm:w-auto">
                     {item.status === 'PENDING' ? (
                       <Link
                         href={`/admin/verification/${item.id}`}
-                        className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 border border-blue-700 shadow-sm transition-colors cursor-pointer"
+                        className="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 px-4 py-2 text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 border border-blue-700 rounded-lg shadow-xs transition-colors cursor-pointer"
                       >
                         <ShieldCheck className="h-4 w-4" />
                         Validasi Usulan
@@ -413,7 +415,7 @@ export default function AdminVerificationPage() {
                     ) : (
                       <Link
                         href={`/admin/verification/${item.id}`}
-                        className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-slate-700 bg-white border border-slate-300 hover:bg-slate-50 transition-colors shadow-xs"
+                        className="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-slate-700 bg-white border border-slate-300 hover:bg-slate-50 rounded-lg transition-colors shadow-xs"
                       >
                         <Eye className="h-3.5 w-3.5 text-slate-600" />
                         Lihat Hasil Validasi

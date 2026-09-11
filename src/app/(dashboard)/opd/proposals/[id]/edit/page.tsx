@@ -309,7 +309,7 @@ export default function EditProposalPage() {
               className={`text-2xs font-extrabold px-2.5 py-1 rounded border ${
                 proposal.status === 'RETURNED'
                   ? 'bg-red-50 text-red-700 border-red-300'
-                  : 'bg-slate-100 text-slate-800 border-black'
+                  : 'bg-slate-100 text-slate-800 border-slate-300'
               }`}
             >
               {proposal.status === 'RETURNED' ? 'PERLU REVISI' : 'DRAFT'}
@@ -337,7 +337,7 @@ export default function EditProposalPage() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* ================= LEFT FORM ================= */}
         <div className="lg:col-span-2 space-y-6">
-          <Card className="shadow-sm border-t-4 border-t-[#0f2c59] border border-slate-200">
+          <Card className="border border-slate-200 bg-white shadow-xs">
             <CardHeader className="pb-4 border-b border-slate-200">
               <CardTitle className="text-xs font-bold uppercase tracking-wider text-slate-800 flex items-center gap-2">
                 <FileEdit className="h-4 w-4 text-blue-600" />
@@ -623,21 +623,21 @@ export default function EditProposalPage() {
               </div>
 
               {/* Action Buttons */}
-              <div className="flex flex-wrap items-center justify-between gap-3 pt-5 border-t border-slate-200">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-5 border-t border-slate-200">
                 <button
                   type="button"
                   onClick={() => router.push('/opd/tracking')}
-                  className="px-4 py-2 border border-slate-300 hover:bg-slate-50 rounded text-xs font-bold text-slate-700 transition"
+                  className="w-full sm:w-auto px-4 py-2 border border-slate-300 hover:bg-slate-50 text-xs font-bold text-slate-700 transition text-center"
                 >
                   Batal
                 </button>
 
-                <div className="flex items-center gap-2.5">
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 w-full sm:w-auto">
                   <button
                     type="button"
                     disabled={isSubmitting}
                     onClick={() => handleSave(false)}
-                    className="px-4 py-2 bg-white hover:bg-slate-100 text-slate-800 rounded text-xs font-bold transition flex items-center gap-1.5 shadow-xs border border-slate-300"
+                    className="w-full sm:w-auto px-4 py-2 bg-white hover:bg-slate-100 text-slate-800 text-xs font-bold transition flex items-center justify-center gap-1.5 shadow-xs border border-slate-300"
                   >
                     <Save className="h-4 w-4 text-blue-600" />
                     <span>Simpan Perubahan Draf</span>
@@ -647,7 +647,7 @@ export default function EditProposalPage() {
                     type="button"
                     disabled={isSubmitting}
                     onClick={() => handleSave(true)}
-                    className="px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded text-xs font-extrabold transition shadow flex items-center gap-2 border border-blue-700 active:scale-95"
+                    className="w-full sm:w-auto px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-extrabold transition shadow flex items-center justify-center gap-2 border border-blue-700 active:scale-95"
                   >
                     {isSubmitting ? (
                       <>
@@ -669,7 +669,7 @@ export default function EditProposalPage() {
 
         {/* ================= RIGHT SIDEBAR ================= */}
         <div className="space-y-6">
-          <Card className="shadow-sm border-t-4 border-t-[#0f2c59] border border-slate-200">
+          <Card className="shadow-xs border border-slate-200 bg-white">
             <CardHeader className="pb-2 border-b border-slate-200">
               <CardTitle className="text-xs font-bold uppercase tracking-wider text-slate-800 flex items-center gap-2">
                 <Sparkles className="h-4 w-4 text-blue-600" />

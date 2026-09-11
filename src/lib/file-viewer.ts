@@ -186,7 +186,27 @@ export const generateFallbackFileBlob = (file: ViewableFile): Blob => {
 /**
  * Mengunduh file secara langsung ke penyimpanan lokal pengguna
  */
-export const downloadFileDirectly = (file: ViewableFile) => {
+export const downloadFileDirectly = async (file: ViewableFile) => {
+  if (file.url) {
+    try {
+      const response = await fetch(file.url);
+      if (response.ok) {
+        const blob = await response.blob();
+        const blobUrl = URL.createObjectURL(blob);
+        const anchor = window.document.createElement('a');
+        anchor.href = blobUrl;
+        anchor.download = file.name;
+        window.document.body.appendChild(anchor);
+        anchor.click();
+        window.document.body.removeChild(anchor);
+        setTimeout(() => URL.revokeObjectURL(blobUrl), 5000);
+        return;
+      }
+    } catch {
+      // If direct fetch fails (e.g. offline/network), fall through to standard anchor navigation
+    }
+  }
+
   let downloadUrl = file.url;
   let createdUrl = false;
 
@@ -199,6 +219,7 @@ export const downloadFileDirectly = (file: ViewableFile) => {
   const anchor = window.document.createElement('a');
   anchor.href = downloadUrl;
   anchor.download = file.name;
+  anchor.target = '_blank';
   window.document.body.appendChild(anchor);
   anchor.click();
   window.document.body.removeChild(anchor);
@@ -206,7 +227,7 @@ export const downloadFileDirectly = (file: ViewableFile) => {
   if (createdUrl) {
     setTimeout(() => {
       URL.revokeObjectURL(downloadUrl!);
-    }, 2000);
+    }, 5000);
   }
 };
 

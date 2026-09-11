@@ -308,14 +308,14 @@ export default function KakLiveEditorPage() {
             'p-3.5 rounded-lg text-xs font-medium flex items-center justify-between shadow-2xs border',
             aiStatus.type === 'success'
               ? 'bg-blue-50 text-blue-900 border-blue-200'
-              : 'bg-slate-100 text-slate-900 border-black'
+              : 'bg-amber-50 text-amber-900 border-amber-200'
           )}
         >
           <div className="flex items-center gap-2">
             {aiStatus.type === 'success' ? (
-              <CheckCircle2 className="h-4 w-4 text-blue-700 shrink-0" />
+               <CheckCircle2 className="h-4 w-4 text-blue-700 shrink-0" />
             ) : (
-              <AlertTriangle className="h-4 w-4 text-black shrink-0" />
+               <AlertTriangle className="h-4 w-4 text-amber-700 shrink-0" />
             )}
             <span>{aiStatus.text}</span>
           </div>
@@ -332,14 +332,14 @@ export default function KakLiveEditorPage() {
             'p-3.5 rounded-lg text-xs font-medium flex items-center justify-between shadow-2xs border',
             saveMessage.type === 'success'
               ? 'bg-blue-50 text-blue-900 border-blue-200'
-              : 'bg-slate-100 text-slate-900 border-black'
+              : 'bg-amber-50 text-amber-900 border-amber-200'
           )}
         >
           <div className="flex items-center gap-2">
             {saveMessage.type === 'success' ? (
-              <CheckCircle2 className="h-4 w-4 text-blue-700 shrink-0" />
+               <CheckCircle2 className="h-4 w-4 text-blue-700 shrink-0" />
             ) : (
-              <AlertTriangle className="h-4 w-4 text-black shrink-0" />
+               <AlertTriangle className="h-4 w-4 text-amber-700 shrink-0" />
             )}
             <span>{saveMessage.text}</span>
           </div>
@@ -553,13 +553,13 @@ export default function KakLiveEditorPage() {
       {/* AI CUSTOM PROMPT MODAL */}
       {isAiModalOpen && (
         <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-none flex items-center justify-center p-4">
-          <div className="bg-white rounded-xl shadow-xl max-w-lg w-full p-6 space-y-4 border border-black animate-in fade-in duration-200">
+          <div className="bg-white rounded-xl shadow-xl max-w-lg w-full p-4 sm:p-6 space-y-4 border border-slate-200 animate-in fade-in duration-200">
             <div className="flex items-center justify-between border-b border-slate-200 pb-3">
               <h3 className="font-bold text-sm text-slate-900 flex items-center gap-2">
-                <Sparkles className="h-4 w-4 text-blue-700" />
+                <Sparkles className="h-4 w-4 text-[#0f2c59]" />
                 Panduan Khusus untuk AI Assistant
               </h3>
-              <button onClick={() => setIsAiModalOpen(false)} className="text-slate-400 hover:text-black">
+              <button onClick={() => setIsAiModalOpen(false)} className="text-slate-400 hover:text-slate-700">
                 <X className="h-4 w-4" />
               </button>
             </div>
@@ -596,10 +596,10 @@ export default function KakLiveEditorPage() {
       {/* PRINT / PREVIEW MODAL */}
       {isPrintModalOpen && (
         <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-none flex items-center justify-center p-4">
-          <div className="bg-white rounded-xl shadow-xl max-w-4xl w-full max-h-[90vh] flex flex-col overflow-hidden border border-black animate-in fade-in duration-200">
+          <div className="bg-white rounded-xl shadow-xl max-w-4xl w-full max-h-[90vh] flex flex-col overflow-hidden border border-slate-200 animate-in fade-in duration-200">
             <div className="p-4 border-b border-slate-200 flex items-center justify-between bg-slate-50">
               <h3 className="font-bold text-sm text-slate-900 flex items-center gap-2">
-                <FileText className="h-4 w-4 text-blue-700" />
+                <FileText className="h-4 w-4 text-[#0f2c59]" />
                 Pratinjau Naskah Kerangka Acuan Kerja (KAK)
               </h3>
               <div className="flex items-center gap-2">

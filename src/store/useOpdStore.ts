@@ -173,6 +173,14 @@ export const normalizeProposal = (p: any): OpdProposal => {
       feedbackNotes: p.followUp.feedbackNotes || '',
       submittedAt: p.followUp.submittedAt ? new Date(p.followUp.submittedAt).toISOString().split('T')[0] : '',
     } : p.followUpReport,
+    recommendationDoc: p.recommendationDoc || (p.researchStudy?.policyRecommendations?.[0] ? {
+      title: p.researchStudy.policyRecommendations[0].title,
+      type: (p.researchStudy.policyRecommendations[0].targetPolicyType || 'Policy Brief') as any,
+      date: p.researchStudy.policyRecommendations[0].signedAt ? new Date(p.researchStudy.policyRecommendations[0].signedAt).toLocaleDateString('id-ID') : '01 Mar 2026',
+      fileSize: '3.8 MB',
+      tteStatus: (p.researchStudy.policyRecommendations[0].status === 'FINALIZED' ? 'TERVERIFIKASI_TTE' : 'DRAFT') as any,
+      signedBy: p.researchStudy.policyRecommendations[0].signedBy?.name || 'Dr. Petrus Renyaan, M.Si (Kepala BRIDA)',
+    } : undefined),
     researchStudy: p.researchStudy || undefined,
     createdBy: p.createdBy ? {
       id: p.createdBy.id,
@@ -347,15 +355,45 @@ export interface PolicyRecommendationItem {
     title: string;
     fiscalYear: number;
     executionScheme: string;
+    allocatedBudget?: number | string;
+    finalReportName?: string | null;
+    finalReportUrl?: string | null;
+    finalReportSummary?: string | null;
+    kakDocument?: KakDocumentData | null;
+    workingDocuments?: Array<{
+      id: string;
+      title: string;
+      type: string;
+      fileUrl?: string | null;
+      fileSize?: string | null;
+      uploadDate?: string;
+    }>;
     proposal?: {
       id: string;
       code: string;
       category: string;
+      problemStatement?: string;
+      urgencyReason?: string;
+      strategicImpact?: string | null;
       opd?: {
         id: string;
         code: string;
         name: string;
       };
+      supportingDocuments?: Array<{
+        id: string;
+        name: string;
+        size: string;
+        uploadDate?: string;
+        fileUrl?: string | null;
+      }>;
+      followUp?: {
+        id?: string;
+        utilizationType: string;
+        utilizationSummary: string;
+        satisfactionRating: number;
+        feedbackNotes?: string;
+      } | any;
     };
   };
   createdBy?: {

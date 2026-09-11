@@ -149,13 +149,13 @@ export default function AdminScoringPage() {
     <div className="space-y-6 max-w-7xl mx-auto pb-12 font-sans">
       
       {/* Header Banner */}
-      <div className="border border-slate-200 bg-white p-6 md:p-8 flex flex-col md:flex-row md:items-center justify-between gap-6 border-l-4 border-l-[#0f2c59]">
+      <div className="border border-slate-200 bg-white rounded-xl shadow-xs p-4 sm:p-6 md:p-8 flex flex-col md:flex-row md:items-center justify-between gap-5 md:gap-6">
         <div className="space-y-1">
           <div className="flex items-center gap-2 text-[#0f2c59] text-xs font-bold uppercase tracking-widest">
             <Award className="w-4 h-4" />
             Modul Penelaahan & Scoring (Prioritasi Riset)
           </div>
-          <h1 className="text-xl md:text-2xl font-bold tracking-tight text-slate-900">
+          <h1 className="text-lg sm:text-xl md:text-2xl font-bold tracking-tight text-slate-900">
             Penelaahan Teknis & Pembobotan Usulan Riset
           </h1>
           <p className="text-slate-600 text-xs max-w-3xl leading-relaxed">
@@ -163,25 +163,25 @@ export default function AdminScoringPage() {
           </p>
         </div>
 
-        <div className="flex items-center gap-3 shrink-0">
+        <div className="flex flex-wrap items-center gap-2.5 sm:gap-3 shrink-0 w-full sm:w-auto">
           <button
             onClick={handleRefresh}
             disabled={isLoadingProposals}
-            className="p-2 border border-slate-300 bg-slate-50 hover:bg-slate-100 text-slate-700 text-xs font-semibold flex items-center gap-1.5 transition disabled:opacity-50"
+            className="p-2.5 border border-slate-300 bg-slate-50 hover:bg-slate-100 text-slate-700 text-xs font-semibold rounded-lg flex items-center justify-center gap-1.5 transition disabled:opacity-50"
             title="Segarkan data antrean scoring"
           >
             <RefreshCw className={`w-3.5 h-3.5 ${isLoadingProposals ? 'animate-spin' : ''}`} />
-            <span className="hidden sm:inline">Refresh</span>
+            <span className="inline">Refresh</span>
           </button>
-          <span className="px-3.5 py-1.5 bg-[#dde6f2] text-[#0f2c59] font-mono font-bold text-xs border border-[#bfd2e6]">
+          <span className="px-3 py-2 bg-[#dde6f2] text-[#0f2c59] font-mono font-bold text-xs border border-[#bfd2e6] rounded-lg">
             {scorableProposals.filter((p) => p.status === 'IN_REVIEW').length} Menunggu Penilaian
           </span>
         </div>
       </div>
 
       {/* Main Table Container */}
-      <div className="border border-slate-200 bg-white">
-        <div className="p-4 border-b border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-slate-50">
+      <div className="border border-slate-200 bg-white rounded-xl shadow-xs overflow-hidden">
+        <div className="p-4 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-slate-50/70">
           <div className="flex items-center gap-2">
             <Award className="h-4 w-4 text-[#0f2c59]" />
             <h2 className="text-xs font-bold uppercase tracking-wider text-slate-800">
@@ -196,7 +196,7 @@ export default function AdminScoringPage() {
               placeholder="Cari OPD, kode, atau judul usulan..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full pl-8 pr-3 py-1.5 text-xs border border-slate-300 bg-white focus:border-[#0f2c59] focus:outline-none focus:ring-1 focus:ring-[#0f2c59]"
+              className="w-full pl-8 pr-3 py-1.5 text-xs border border-slate-300 rounded-lg bg-white focus:border-[#0f2c59] focus:outline-hidden focus:ring-1 focus:ring-[#0f2c59]"
             />
           </div>
         </div>
@@ -328,7 +328,7 @@ export default function AdminScoringPage() {
                     <TableCell className="text-center align-middle py-3.5">
                       <button
                         onClick={() => router.push(`/admin/scoring/${item.id}`)}
-                        className="px-3 py-1.5 bg-[#0f2c59] hover:bg-[#0a1e3f] text-white text-xs font-semibold uppercase tracking-wider transition border border-[#0f2c59] inline-flex items-center justify-center gap-1.5 mx-auto"
+                        className="px-3 py-1.5 bg-[#0f2c59] hover:bg-[#0a1e3f] text-white text-xs font-semibold uppercase tracking-wider rounded-lg transition border border-[#0f2c59] inline-flex items-center justify-center gap-1.5 mx-auto shadow-xs"
                       >
                         <Award className="h-3.5 w-3.5" />
                         <span>{item.scoringData ? 'Edit Skor' : 'Mulai Skor'}</span>
@@ -356,15 +356,15 @@ export default function AdminScoringPage() {
           <div className="space-y-4 text-xs font-sans">
             
             {/* Total Score Highlight */}
-            <div className="p-3 border border-black bg-blue-50 flex items-center justify-between">
+            <div className="p-3 border border-slate-200 bg-[#dde6f2]/40 rounded-lg flex items-center justify-between">
               <div>
                 <span className="text-2xs font-bold uppercase tracking-wider text-[#0f2c59] block">Total Skor Tertimbang</span>
-                <h3 className="text-xl font-black text-[#0f2c59] font-mono">
+                <h3 className="text-xl font-bold text-[#0f2c59] font-mono">
                   {totalScore} <span className="text-xs font-normal text-slate-500">/ 100 Poin</span>
                 </h3>
               </div>
-              <span className={`px-2.5 py-1 text-2xs font-bold uppercase tracking-wider border ${
-                totalScore >= 80 ? 'bg-blue-600 text-white border-blue-700' : totalScore >= 65 ? 'bg-blue-100 text-blue-950 border-blue-400' : 'bg-slate-100 text-slate-900 border-black'
+              <span className={`px-2.5 py-1 text-2xs font-bold uppercase tracking-wider rounded border ${
+                totalScore >= 80 ? 'bg-[#0f2c59] text-white border-[#0f2c59]' : totalScore >= 65 ? 'bg-blue-100 text-blue-950 border-blue-300' : 'bg-slate-100 text-slate-900 border-slate-300'
               }`}>
                 {totalScore >= 80 ? 'Prioritas Utama' : totalScore >= 65 ? 'Prioritas Kedua' : 'Tidak Prioritas'}
               </span>

@@ -211,8 +211,8 @@ export default function NewProposalPage() {
         
         {/* ================= LEFT MAIN FORM ================= */}
         <div className="lg:col-span-2 space-y-6">
-          <Card className="border-t-4 border-t-[#0f2c59] border border-black shadow-sm">
-            <CardHeader className="pb-3 border-b border-black">
+          <Card className="border border-slate-200 bg-white shadow-xs">
+            <CardHeader className="pb-3 border-b border-slate-200">
               <CardTitle className="text-xs font-bold uppercase tracking-wider text-slate-800 flex items-center gap-2">
                 <FilePlus2 className="h-4 w-4 text-blue-600" />
                 <span>Rincian Informasi Usulan Masalah</span>
@@ -372,12 +372,12 @@ export default function NewProposalPage() {
 
               {/* 5. Urgensi Penelitian */}
               <div className="space-y-1.5">
-                <div className="flex items-center justify-between">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                   <label className="font-bold text-slate-800 flex items-center gap-1">
                     <span>6. Urgensi Penelitian (Mengapa Harus Diteliti Sekarang?)</span>
                     <span className="text-slate-900">*</span>
                   </label>
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 flex-wrap">
                     <span className="text-3xs text-slate-500 font-semibold">Tingkat Urgensi:</span>
                     {(['TINGGI', 'SEDANG', 'RENDAH'] as ProposalUrgency[]).map((lvl) => (
                       <button
@@ -517,21 +517,21 @@ export default function NewProposalPage() {
               </div>
 
               {/* Action Buttons */}
-              <div className="flex flex-wrap items-center justify-between gap-3 pt-4 border-t border-black">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-4 border-t border-slate-200">
                 <button
                   type="button"
                   onClick={() => router.push('/dashboard')}
-                  className="px-4 py-2 border border-slate-300 hover:bg-slate-50 rounded-lg text-xs font-bold text-slate-700 transition-all"
+                  className="w-full sm:w-auto px-4 py-2 border border-slate-300 hover:bg-slate-50 text-xs font-bold text-slate-700 transition-all text-center"
                 >
                   Batal
                 </button>
 
-                <div className="flex items-center gap-2.5">
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 w-full sm:w-auto">
                   <button
                     type="button"
                     disabled={isSubmitting}
                     onClick={() => handleSave(true)}
-                    className="px-4 py-2.5 bg-white hover:bg-slate-100 text-slate-800 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 shadow-sm border border-slate-300"
+                    className="w-full sm:w-auto px-4 py-2.5 bg-white hover:bg-slate-100 text-slate-800 text-xs font-bold transition-all flex items-center justify-center gap-1.5 shadow-xs border border-slate-300"
                   >
                     <Save className="h-4 w-4 text-blue-600" />
                     <span>Simpan Sebagai Draft</span>
@@ -540,7 +540,7 @@ export default function NewProposalPage() {
                     type="button"
                     disabled={isSubmitting}
                     onClick={() => handleSave(false)}
-                    className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-black transition-all shadow-md flex items-center gap-2 transform active:scale-95 border border-blue-700"
+                    className="w-full sm:w-auto px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-black transition-all shadow-md flex items-center justify-center gap-2 transform active:scale-95 border border-blue-700"
                   >
                     <Send className="h-4 w-4" />
                     <span>Kirim Usulan ke BRIDA</span>
@@ -554,8 +554,8 @@ export default function NewProposalPage() {
 
         {/* ================= RIGHT SIDEBAR (Panduan Pengisian) ================= */}
         <div className="space-y-6">
-          <Card className="shadow-sm border-t-4 border-t-[#0f2c59] border border-black">
-            <CardHeader className="pb-2 border-b border-black">
+          <Card className="shadow-xs border border-slate-200 bg-white">
+            <CardHeader className="pb-2 border-b border-slate-200">
               <CardTitle className="text-xs font-bold uppercase tracking-wider text-slate-800 flex items-center gap-2">
                 <Sparkles className="h-4 w-4 text-blue-600" />
                 <span>Petunjuk Penyusunan Usulan</span>

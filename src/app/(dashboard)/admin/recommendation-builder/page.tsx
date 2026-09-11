@@ -517,13 +517,13 @@ function RecommendationBuilderContent() {
       {/* ========================================================================= */}
       {/* 1. HEADER SECTION & NAVIGATION                                            */}
       {/* ========================================================================= */}
-      <div className="bg-[#0f2c59] p-6 sm:p-8 text-white border border-slate-200 flex flex-col md:flex-row md:items-center md:justify-between gap-5">
+      <div className="bg-[#0f2c59] p-5 sm:p-6 md:p-8 text-white border border-slate-200 rounded-xl shadow-xs flex flex-col md:flex-row md:items-center md:justify-between gap-5">
         <div className="space-y-1.5">
           <div className="flex items-center gap-2 text-sky-300 text-2xs font-black tracking-widest uppercase">
             <BookOpen className="w-4 h-4 text-sky-400" />
             Tahap 5 • Modul Admin BRIDA
           </div>
-          <h1 className="text-xl sm:text-2xl md:text-3xl font-black tracking-tight text-white">
+          <h1 className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-black tracking-tight text-white">
             {viewMode === 'CATALOG'
               ? 'Penyusunan Rekomendasi OPD'
               : 'Ruang Kerja Naskah Rekomendasi'}
@@ -536,7 +536,7 @@ function RecommendationBuilderContent() {
         </div>
 
         {/* Global Header Actions */}
-        <div className="flex flex-wrap items-center gap-2.5 shrink-0">
+        <div className="flex flex-wrap items-center gap-2.5 shrink-0 w-full sm:w-auto">
           {viewMode === 'CATALOG' ? (
             <button
               type="button"
@@ -544,7 +544,7 @@ function RecommendationBuilderContent() {
                 fetchAvailableStudiesForRec();
                 fetchRecommendations();
               }}
-              className="flex items-center gap-2 bg-slate-800 hover:bg-slate-900 text-white font-bold px-4 py-2.5 border border-slate-700 text-xs transition shadow"
+              className="flex-1 sm:flex-initial flex items-center justify-center gap-2 bg-slate-800 hover:bg-slate-900 text-white font-bold px-4 py-2.5 border border-slate-700 rounded-lg text-xs transition shadow-xs"
             >
               <RefreshCw className={cn('w-3.5 h-3.5 text-sky-400', isLoadingRecommendations && 'animate-spin')} />
               Muat Ulang Data
@@ -553,10 +553,10 @@ function RecommendationBuilderContent() {
             <button
               type="button"
               onClick={() => setViewMode('CATALOG')}
-              className="flex items-center gap-2 bg-slate-800 hover:bg-slate-900 text-white font-bold px-4 py-2.5 border border-slate-700 text-xs transition shadow"
+              className="flex-1 sm:flex-initial flex items-center justify-center gap-2 bg-slate-800 hover:bg-slate-900 text-white font-bold px-4 py-2.5 border border-slate-700 rounded-lg text-xs transition shadow-xs"
             >
               <ArrowLeft className="w-3.5 h-3.5 text-sky-400" />
-              Kembali ke Katalog Usulan
+              Kembali ke Katalog
             </button>
           )}
 
@@ -567,7 +567,7 @@ function RecommendationBuilderContent() {
                 setQuickPickerSearch('');
                 setIsQuickPickerOpen(true);
               }}
-              className="flex items-center gap-2 bg-slate-800 hover:bg-slate-900 text-white font-bold px-4 py-2.5 border border-slate-700 text-xs transition shadow"
+              className="flex-1 sm:flex-initial flex items-center justify-center gap-2 bg-slate-800 hover:bg-slate-900 text-white font-bold px-4 py-2.5 border border-slate-700 rounded-lg text-xs transition shadow-xs"
             >
               <Layers className="w-3.5 h-3.5 text-sky-300" />
               Ganti Usulan
@@ -580,7 +580,7 @@ function RecommendationBuilderContent() {
       {feedbackMessage && (
         <div
           className={cn(
-            'p-4 flex items-center justify-between text-xs font-bold border transition animate-in fade-in',
+            'p-4 rounded-xl flex items-center justify-between text-xs font-bold border transition animate-in fade-in shadow-2xs',
             feedbackMessage.type === 'success'
               ? 'bg-blue-50 border-blue-300 text-blue-950'
               : 'bg-rose-50 border-rose-300 text-rose-950'
@@ -610,47 +610,47 @@ function RecommendationBuilderContent() {
       {viewMode === 'CATALOG' && (
         <div className="space-y-6">
           {/* KPI Metrics Cards */}
-          <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
-            <div className="bg-white p-4 border border-slate-200">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+            <div className="bg-white p-3.5 sm:p-4 border border-slate-200 rounded-xl shadow-xs">
               <span className="text-2xs font-bold text-slate-900 uppercase tracking-wider block">Total Agenda</span>
               <div className="flex items-baseline justify-between mt-1">
-                <span className="text-2xl font-black text-slate-900">{kpis.total}</span>
+                <span className="text-xl sm:text-2xl font-black text-slate-900">{kpis.total}</span>
                 <Layers className="w-4 h-4 text-slate-600" />
               </div>
               <span className="text-[10px] text-slate-800/80 mt-1 block">Kajian siap rekomendasi</span>
             </div>
 
-            <div className="bg-white p-4 border border-slate-200">
+            <div className="bg-white p-3.5 sm:p-4 border border-slate-200 rounded-xl shadow-xs">
               <span className="text-2xs font-bold text-slate-900 uppercase tracking-wider block">Perlu Disusun</span>
               <div className="flex items-baseline justify-between mt-1">
-                <span className="text-2xl font-black text-slate-800">{kpis.untouched}</span>
+                <span className="text-xl sm:text-2xl font-black text-slate-800">{kpis.untouched}</span>
                 <Clock className="w-4 h-4 text-slate-600" />
               </div>
               <span className="text-[10px] text-slate-800/80 mt-1 block">Belum ada draf naskah</span>
             </div>
 
-            <div className="bg-white p-4 border border-slate-200">
+            <div className="bg-white p-3.5 sm:p-4 border border-slate-200 rounded-xl shadow-xs">
               <span className="text-2xs font-bold text-slate-900 uppercase tracking-wider block">Draf Litbang</span>
               <div className="flex items-baseline justify-between mt-1">
-                <span className="text-2xl font-black text-slate-900">{kpis.draft}</span>
+                <span className="text-xl sm:text-2xl font-black text-slate-900">{kpis.draft}</span>
                 <Edit3 className="w-4 h-4 text-slate-600" />
               </div>
               <span className="text-[10px] text-slate-800/80 mt-1 block">Sedang disusun/diperbaiki</span>
             </div>
 
-            <div className="bg-white p-4 border border-slate-200">
+            <div className="bg-white p-3.5 sm:p-4 border border-slate-200 rounded-xl shadow-xs">
               <span className="text-2xs font-bold text-slate-900 uppercase tracking-wider block">Menunggu TTE</span>
               <div className="flex items-baseline justify-between mt-1">
-                <span className="text-2xl font-black text-slate-900">{kpis.submitted}</span>
+                <span className="text-xl sm:text-2xl font-black text-slate-900">{kpis.submitted}</span>
                 <Send className="w-4 h-4 text-slate-600" />
               </div>
               <span className="text-[10px] text-slate-800/80 mt-1 block">Di meja Kepala BRIDA</span>
             </div>
 
-            <div className="bg-white p-4 border border-slate-200">
+            <div className="bg-white p-3.5 sm:p-4 border border-slate-200 rounded-xl shadow-xs col-span-2 sm:col-span-1">
               <span className="text-2xs font-bold text-slate-900 uppercase tracking-wider block">Selesai Disahkan</span>
               <div className="flex items-baseline justify-between mt-1">
-                <span className="text-2xl font-black text-slate-900">{kpis.finalized}</span>
+                <span className="text-xl sm:text-2xl font-black text-slate-900">{kpis.finalized}</span>
                 <ShieldCheck className="w-4 h-4 text-slate-600" />
               </div>
               <span className="text-[10px] text-slate-800/80 mt-1 block">TTE BSrE Sah & Terkunci</span>
@@ -658,7 +658,7 @@ function RecommendationBuilderContent() {
           </div>
 
           {/* Search, Filter Tabs & OPD Switcher */}
-          <div className="bg-white p-4 border border-slate-200 space-y-4">
+          <div className="bg-white p-4 border border-slate-200 rounded-xl shadow-xs space-y-4">
             <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
               {/* Search Bar */}
               <div className="relative flex-1">
@@ -668,7 +668,7 @@ function RecommendationBuilderContent() {
                   value={catalogSearch}
                   onChange={(e) => setCatalogSearch(e.target.value)}
                   placeholder="Cari berdasarkan judul riset, nama OPD, kode usulan, atau isu kebijakan..."
-                  className="w-full pl-9 pr-8 py-2 bg-slate-50 border border-slate-300 text-xs font-medium focus:ring-2 focus:ring-blue-600 focus:bg-white focus:outline-none"
+                  className="w-full pl-9 pr-8 py-2 bg-slate-50 border border-slate-300 rounded-lg text-xs font-medium focus:ring-2 focus:ring-blue-600 focus:bg-white focus:outline-hidden"
                 />
                 {catalogSearch && (
                   <button
@@ -686,7 +686,7 @@ function RecommendationBuilderContent() {
                 <select
                   value={catalogOpdFilter}
                   onChange={(e) => setCatalogOpdFilter(e.target.value)}
-                  className="w-full py-2 px-3 bg-slate-50 border border-slate-300 text-xs font-semibold focus:ring-2 focus:ring-blue-600 focus:outline-none"
+                  className="w-full py-2 px-3 bg-slate-50 border border-slate-300 rounded-lg text-xs font-semibold focus:ring-2 focus:ring-blue-600 focus:outline-hidden"
                 >
                   <option value="">Semua Perangkat Daerah ({uniqueOpds.length} OPD)</option>
                   {uniqueOpds.map((opd) => (
@@ -699,10 +699,10 @@ function RecommendationBuilderContent() {
             </div>
 
             {/* Filter Tabs */}
-            <div className="flex flex-wrap items-center gap-1.5 border-t border-slate-200 pt-3 text-xs">
-              <span className="text-2xs font-bold text-slate-500 uppercase tracking-wider mr-2 flex items-center gap-1">
+            <div className="flex items-center gap-1.5 border-t border-slate-100 pt-3 text-xs overflow-x-auto whitespace-nowrap scrollbar-none pb-1">
+              <span className="text-2xs font-bold text-slate-500 uppercase tracking-wider mr-1 flex items-center gap-1 shrink-0">
                 <Filter className="w-3.5 h-3.5" />
-                Status Rekomendasi:
+                Status:
               </span>
               {[
                 { key: 'ALL', label: 'Semua Usulan', count: kpis.total },
@@ -718,16 +718,16 @@ function RecommendationBuilderContent() {
                     type="button"
                     onClick={() => setCatalogStatusFilter(tab.key as any)}
                     className={cn(
-                      'px-3 py-1.5 font-bold text-2xs uppercase tracking-wider transition border flex items-center gap-1.5',
+                      'px-3 py-1.5 font-bold text-2xs uppercase tracking-wider transition border rounded-lg flex items-center gap-1.5 shrink-0',
                       isActive
-                        ? 'bg-[#0f2c59] text-white border-[#0f2c59] shadow-sm'
+                        ? 'bg-[#0f2c59] text-white border-[#0f2c59] shadow-xs'
                         : 'bg-slate-50 hover:bg-slate-100 text-slate-700 border-slate-300'
                     )}
                   >
                     <span>{tab.label}</span>
                     <span
                       className={cn(
-                        'px-1.5 py-0.2 rounded-none text-[10px] font-black',
+                        'px-1.5 py-0.2 rounded text-[10px] font-black',
                         isActive ? 'bg-sky-400 text-slate-950' : 'bg-slate-200 text-slate-700'
                       )}
                     >
@@ -745,10 +745,10 @@ function RecommendationBuilderContent() {
                     setCatalogStatusFilter('ALL');
                     setCatalogOpdFilter('');
                   }}
-                  className="text-2xs font-bold text-rose-600 hover:text-rose-800 ml-auto flex items-center gap-1 underline"
+                  className="text-2xs font-bold text-rose-600 hover:text-rose-800 ml-auto flex items-center gap-1 underline shrink-0"
                 >
                   <X className="w-3 h-3" />
-                  Reset Filter
+                  Reset
                 </button>
               )}
             </div>
@@ -756,7 +756,7 @@ function RecommendationBuilderContent() {
 
           {/* Catalog Cards Grid */}
           {filteredStudies.length === 0 ? (
-            <div className="bg-white p-12 text-center border border-slate-200 space-y-3">
+            <div className="bg-white p-8 sm:p-12 text-center border border-slate-200 rounded-xl shadow-xs space-y-3">
               <Layers className="w-12 h-12 mx-auto text-slate-300" />
               <h3 className="font-bold text-sm text-slate-900">Tidak ada usulan / kajian riset yang cocok</h3>
               <p className="text-xs text-slate-500 max-w-md mx-auto">
@@ -778,7 +778,7 @@ function RecommendationBuilderContent() {
                 return (
                   <div
                     key={study.id}
-                    className="bg-white border border-slate-200 hover:border-slate-300 transition flex flex-col justify-between p-5 space-y-4"
+                    className="bg-white border border-slate-200 rounded-xl shadow-xs hover:border-blue-400 hover:shadow-sm transition flex flex-col justify-between p-4 sm:p-5 space-y-4"
                   >
                     <div className="space-y-3">
                       {/* Meta header bar */}
@@ -1331,7 +1331,7 @@ function RecommendationBuilderContent() {
           {viewMode === 'PREVIEW' && (
             <div
               id="printable-recommendation-doc"
-              className="bg-white border border-black shadow-xl p-8 sm:p-12 max-w-4xl mx-auto space-y-8 font-sans"
+              className="bg-white border border-slate-200 shadow-xs rounded-xl p-6 sm:p-12 max-w-4xl mx-auto space-y-8 font-sans"
             >
               {/* Official Letterhead */}
               <div className="border-b-4 border-double border-black pb-6 text-center">
@@ -1485,7 +1485,7 @@ function RecommendationBuilderContent() {
       {/* A. Quick Proposal Switcher Modal */}
       {isQuickPickerOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 animate-in fade-in duration-150">
-          <div className="bg-white max-w-2xl w-full p-6 shadow-2xl border border-black space-y-4 max-h-[85vh] flex flex-col">
+          <div className="bg-white rounded-xl max-w-2xl w-full p-4 sm:p-6 shadow-xl border border-slate-200 space-y-4 max-h-[85vh] flex flex-col">
             <div className="flex items-center justify-between border-b border-slate-200 pb-3">
               <div className="flex items-center gap-2">
                 <Layers className="w-5 h-5 text-blue-700" />
@@ -1585,7 +1585,7 @@ function RecommendationBuilderContent() {
       {/* B. AI Assistant Modal */}
       {isAiModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 animate-in fade-in duration-150">
-          <div className="bg-white max-w-lg w-full p-6 shadow-2xl border border-black space-y-4">
+          <div className="bg-white rounded-xl max-w-lg w-full p-4 sm:p-6 shadow-xl border border-slate-200 space-y-4">
             <div className="flex items-center justify-between border-b border-slate-200 pb-3">
               <div className="flex items-center gap-2.5">
                 <div className="w-9 h-9 bg-blue-50 text-blue-800 border border-blue-200 flex items-center justify-center font-bold">

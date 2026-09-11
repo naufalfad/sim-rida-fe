@@ -213,30 +213,30 @@ export default function AdminScoringDetailPage({ params }: PageProps) {
       </div>
 
       {/* Header Banner */}
-      <div className="bg-[#0f2c59] border border-slate-200 p-8 text-white flex flex-col md:flex-row md:items-center justify-between gap-6">
+      <div className="bg-[#0f2c59] border border-slate-200 p-5 sm:p-6 md:p-8 text-white rounded-xl shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-5 md:gap-6">
         <div className="space-y-2">
           <div className="flex flex-wrap items-center gap-2.5">
-            <span className="font-mono text-xs font-black bg-[#1b3b6f] text-sky-300 border border-[#264978] px-3 py-1">
+            <span className="font-mono text-xs font-black bg-[#1b3b6f] text-sky-300 border border-[#264978] px-3 py-1 rounded">
               {proposal.code}
             </span>
-            <span className="text-xs font-extrabold px-3 py-1 uppercase flex items-center gap-1.5 bg-blue-600 text-white border border-blue-700">
+            <span className="text-xs font-extrabold px-3 py-1 uppercase flex items-center gap-1.5 bg-blue-600 text-white border border-blue-700 rounded">
               <Award className="w-3.5 h-3.5 text-white" />
               {proposal.scoringData ? `Sudah Dinilai (Skor: ${proposal.scoringData.totalScore})` : 'Siap Diberi Skor'}
             </span>
           </div>
 
-          <h1 className="text-xl md:text-2xl font-black tracking-tight leading-snug">
+          <h1 className="text-lg sm:text-xl md:text-2xl font-black tracking-tight leading-snug">
             {proposal.title}
           </h1>
 
-          <div className="flex flex-wrap items-center gap-y-1 gap-x-4 text-xs text-slate-300 font-medium pt-1">
+          <div className="flex flex-wrap items-center gap-y-1 gap-x-3 sm:gap-x-4 text-xs text-slate-300 font-medium pt-1">
             <span className="flex items-center gap-1.5">
-              <Building2 className="w-4 h-4 text-sky-400" />
-              {proposal.opdName}
+              <Building2 className="w-4 h-4 text-sky-400 shrink-0" />
+              <span className="truncate max-w-[200px] sm:max-w-none">{proposal.opdName}</span>
             </span>
             <span>•</span>
             <span className="flex items-center gap-1.5">
-              <Calendar className="w-4 h-4 text-sky-400" />
+              <Calendar className="w-4 h-4 text-sky-400 shrink-0" />
               Diajukan: {proposal.submittedAt || proposal.createdAt}
             </span>
             <span>•</span>
@@ -444,7 +444,7 @@ export default function AdminScoringDetailPage({ params }: PageProps) {
               <div className="space-y-1.5">
                 <div className="flex justify-between items-center text-xs">
                   <span className="font-bold text-slate-800">1. Keselarasan Visi-Misi Daerah & RPJMD (30%)</span>
-                  <span className="font-mono font-black text-white bg-[#0f2c59] px-2 py-0.5 border border-black text-xs">
+                  <span className="font-mono font-bold text-white bg-[#0f2c59] px-2.5 py-0.5 rounded border border-[#0f2c59] text-xs">
                     {visionAlignmentScore}
                   </span>
                 </div>
@@ -468,7 +468,7 @@ export default function AdminScoringDetailPage({ params }: PageProps) {
               <div className="space-y-1.5 pt-2 border-t border-slate-200">
                 <div className="flex justify-between items-center text-xs">
                   <span className="font-bold text-slate-800">2. Tingkat Urgensi Masalah (30%)</span>
-                  <span className="font-mono font-black text-white bg-[#0f2c59] px-2 py-0.5 border border-black text-xs">
+                  <span className="font-mono font-bold text-white bg-[#0f2c59] px-2.5 py-0.5 rounded border border-[#0f2c59] text-xs">
                     {urgencyScore}
                   </span>
                 </div>
@@ -492,7 +492,7 @@ export default function AdminScoringDetailPage({ params }: PageProps) {
               <div className="space-y-1.5 pt-2 border-t border-slate-200">
                 <div className="flex justify-between items-center text-xs">
                   <span className="font-bold text-slate-800">3. Kelayakan Pagu Anggaran & Teknis (20%)</span>
-                  <span className="font-mono font-black text-white bg-[#0f2c59] px-2 py-0.5 border border-black text-xs">
+                  <span className="font-mono font-bold text-white bg-[#0f2c59] px-2.5 py-0.5 rounded border border-[#0f2c59] text-xs">
                     {budgetFeasibilityScore}
                   </span>
                 </div>
@@ -516,7 +516,7 @@ export default function AdminScoringDetailPage({ params }: PageProps) {
               <div className="space-y-1.5 pt-2 border-t border-slate-200">
                 <div className="flex justify-between items-center text-xs">
                   <span className="font-bold text-slate-800">4. Kesiapan Data Dukung & Kapasitas Riset (20%)</span>
-                  <span className="font-mono font-black text-white bg-[#0f2c59] px-2 py-0.5 border border-black text-xs">
+                  <span className="font-mono font-bold text-white bg-[#0f2c59] px-2.5 py-0.5 rounded border border-[#0f2c59] text-xs">
                     {dataReadinessScore}
                   </span>
                 </div>
@@ -678,7 +678,7 @@ export default function AdminScoringDetailPage({ params }: PageProps) {
                 type="button"
                 disabled={isSubmitting}
                 onClick={handleSaveOnly}
-                className="w-full py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-xs transition flex items-center justify-center gap-2 border border-slate-300"
+                className="w-full py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-xs rounded-lg transition flex items-center justify-center gap-2 border border-slate-300 shadow-xs"
               >
                 <Save className="w-4 h-4 text-slate-600" />
                 <span>Simpan Skor Sementara</span>
@@ -688,7 +688,7 @@ export default function AdminScoringDetailPage({ params }: PageProps) {
                 type="button"
                 disabled={isSubmitting}
                 onClick={handleFinalizeAndApprove}
-                className="w-full py-3 bg-[#0f2c59] hover:bg-[#1a3d70] text-white font-black text-xs border border-blue-900 transition flex items-center justify-center gap-2"
+                className="w-full py-3 bg-[#0f2c59] hover:bg-[#1a3d70] text-white font-black text-xs border border-blue-900 rounded-lg shadow-xs transition flex items-center justify-center gap-2"
               >
                 <CheckCircle2 className="w-4 h-4 text-sky-400" />
                 <span>Finalisasi Scoring & Teruskan ke Agenda Riset</span>

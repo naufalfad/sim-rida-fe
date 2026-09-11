@@ -49,7 +49,7 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-slate-100 px-4 font-sans py-12">
       <div className="w-full max-w-md bg-white p-8 border border-slate-300 shadow-xl space-y-6">
-        
+
         {/* Brand Header */}
         <div className="text-center space-y-2">
           <div className="inline-flex items-center justify-center p-3 bg-[#0f2c59] text-white shadow-sm mb-1">
@@ -163,7 +163,7 @@ export default function LoginPage() {
               <div>• <strong>Admin BRIDA:</strong> <code className="bg-slate-200/70 px-1 py-0.5 text-slate-800">admin@simrida.local</code></div>
               <div>• <strong>Kepala BRIDA:</strong> <code className="bg-slate-200/70 px-1 py-0.5 text-slate-800">kepala@simrida.local</code></div>
               <div>• <strong>OPD (Bappeda):</strong> <code className="bg-slate-200/70 px-1 py-0.5 text-slate-800">bappeda@simrida.local</code></div>
-              <div>• <strong>OPD (Dinkes):</strong> <code className="bg-slate-200/70 px-1 py-0.5 text-slate-800">dinkes@simrida.local</code></div>
+              <div>• <strong>OPD (DLH):</strong> <code className="bg-slate-200/70 px-1 py-0.5 text-slate-800">dlh@simrida.local</code></div>
             </div>
           </div>
         </div>

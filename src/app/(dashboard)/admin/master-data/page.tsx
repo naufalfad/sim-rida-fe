@@ -180,21 +180,23 @@ export default function AdminMasterDataPage() {
   );
 
   return (
-    <div className="space-y-8 max-w-7xl mx-auto pb-12 font-sans">
+    <div className="space-y-6 max-w-7xl mx-auto pb-12 font-sans">
       {/* Header Banner */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 bg-gradient-to-r from-emerald-900 via-teal-900 to-slate-900 p-8 rounded-2xl text-white shadow-xl">
-        <div>
-          <div className="flex items-center gap-2 text-emerald-300 text-sm font-semibold tracking-wide uppercase mb-2">
-            <Database className="w-5 h-5" />
+      <div className="border border-slate-200 bg-white rounded-xl shadow-xs p-4 sm:p-6 md:p-8 flex flex-col md:flex-row md:items-center justify-between gap-5 md:gap-6">
+        <div className="space-y-1">
+          <div className="flex items-center gap-2 text-[#0f2c59] text-xs font-bold uppercase tracking-widest">
+            <Database className="w-4 h-4" />
             Pusat Konfigurasi • Admin Litbang BRIDA Mimika
           </div>
-          <h1 className="text-2xl md:text-3xl font-extrabold tracking-tight">Manajemen Master Data & Konfigurasi Sistem</h1>
-          <p className="text-slate-300 text-xs md:text-sm mt-1 max-w-2xl leading-relaxed">
+          <h1 className="text-lg sm:text-xl md:text-2xl font-bold tracking-tight text-slate-900">
+            Manajemen Master Data & Konfigurasi Sistem
+          </h1>
+          <p className="text-slate-600 text-xs max-w-3xl leading-relaxed">
             Kelola data referensi master akun pengguna instansi, daftar perangkat daerah (OPD), klasifikasi tema riset kelitbangan, serta kendali buka/tutup periode tahun anggaran usulan.
           </p>
         </div>
 
-        <div className="flex items-center gap-2 shrink-0">
+        <div className="flex items-center gap-2 sm:gap-3 shrink-0 w-full sm:w-auto">
           <button
             onClick={() => {
               fetchUsers();
@@ -202,62 +204,62 @@ export default function AdminMasterDataPage() {
               toast('Data master berhasil diperbarui dari server.', 'info');
             }}
             disabled={isLoadingMaster}
-            className="p-2.5 bg-white/10 hover:bg-white/20 text-white rounded-lg border border-white/20 transition flex items-center gap-2 text-xs font-semibold"
+            className="p-2.5 bg-white hover:bg-slate-50 text-slate-700 rounded-lg border border-slate-300 transition flex items-center justify-center gap-2 text-xs font-semibold w-full sm:w-auto shadow-xs"
           >
-            <RefreshCw className={`w-4 h-4 ${isLoadingMaster ? 'animate-spin' : ''}`} />
+            <RefreshCw className={`w-4 h-4 ${isLoadingMaster ? 'animate-spin text-[#0f2c59]' : 'text-slate-600'}`} />
             <span>Perbarui Data</span>
           </button>
         </div>
       </div>
 
       {/* Tab Navigation */}
-      <div className="flex flex-wrap border-b border-slate-200 bg-white p-2 rounded-xl shadow-sm gap-2">
+      <div className="flex overflow-x-auto scrollbar-none border border-slate-200 bg-white p-1.5 rounded-xl shadow-xs gap-1.5">
         <button
           onClick={() => setActiveTab('USERS')}
-          className={`flex items-center gap-2 px-5 py-3 rounded-lg text-xs font-bold transition ${
+          className={`flex items-center gap-2 px-4 py-2.5 rounded-lg text-xs font-semibold whitespace-nowrap transition ${
             activeTab === 'USERS'
-              ? 'bg-emerald-600 text-white shadow'
-              : 'text-slate-600 hover:bg-slate-100'
+              ? 'bg-[#0f2c59] text-white shadow-xs'
+              : 'text-slate-600 hover:bg-slate-50'
           }`}
         >
           <Users className="w-4 h-4" />
-          Akun Pengguna Sistem ({opdUsers.length})
+          <span>Akun Pengguna Sistem ({opdUsers.length})</span>
         </button>
 
         <button
           onClick={() => setActiveTab('OPDS')}
-          className={`flex items-center gap-2 px-5 py-3 rounded-lg text-xs font-bold transition ${
+          className={`flex items-center gap-2 px-4 py-2.5 rounded-lg text-xs font-semibold whitespace-nowrap transition ${
             activeTab === 'OPDS'
-              ? 'bg-emerald-600 text-white shadow'
-              : 'text-slate-600 hover:bg-slate-100'
+              ? 'bg-[#0f2c59] text-white shadow-xs'
+              : 'text-slate-600 hover:bg-slate-50'
           }`}
         >
           <Building2 className="w-4 h-4" />
-          Master Perangkat Daerah ({opds.length})
+          <span>Master Perangkat Daerah ({opds.length})</span>
         </button>
 
         <button
           onClick={() => setActiveTab('CATEGORIES')}
-          className={`flex items-center gap-2 px-5 py-3 rounded-lg text-xs font-bold transition ${
+          className={`flex items-center gap-2 px-4 py-2.5 rounded-lg text-xs font-semibold whitespace-nowrap transition ${
             activeTab === 'CATEGORIES'
-              ? 'bg-emerald-600 text-white shadow'
-              : 'text-slate-600 hover:bg-slate-100'
+              ? 'bg-[#0f2c59] text-white shadow-xs'
+              : 'text-slate-600 hover:bg-slate-50'
           }`}
         >
           <Tag className="w-4 h-4" />
-          Kategori Bidang Riset ({categories.length})
+          <span>Kategori Bidang Riset ({categories.length})</span>
         </button>
 
         <button
           onClick={() => setActiveTab('PERIODS')}
-          className={`flex items-center gap-2 px-5 py-3 rounded-lg text-xs font-bold transition ${
+          className={`flex items-center gap-2 px-4 py-2.5 rounded-lg text-xs font-semibold whitespace-nowrap transition ${
             activeTab === 'PERIODS'
-              ? 'bg-emerald-600 text-white shadow'
-              : 'text-slate-600 hover:bg-slate-100'
+              ? 'bg-[#0f2c59] text-white shadow-xs'
+              : 'text-slate-600 hover:bg-slate-50'
           }`}
         >
           <Calendar className="w-4 h-4" />
-          Periode Anggaran & Pagu ({budgetYears.length})
+          <span>Periode Anggaran & Pagu ({budgetYears.length})</span>
         </button>
       </div>
 

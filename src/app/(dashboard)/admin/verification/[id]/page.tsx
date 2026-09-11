@@ -216,7 +216,7 @@ export default function AdminVerificationDetailPage({ params }: PageProps) {
       {isAlreadyVerified && (
         <div
           className={cn(
-            'p-4 border flex items-center justify-between gap-4 text-xs font-medium',
+            'p-4 sm:p-5 rounded-xl border flex flex-col sm:flex-row sm:items-center justify-between gap-3.5 text-xs font-medium shadow-xs',
             proposal.status === 'APPROVED' || proposal.status === 'IN_PROGRESS' || proposal.status === 'COMPLETED'
               ? 'bg-blue-600 text-white border-blue-700'
               : proposal.status === 'RETURNED'
@@ -226,11 +226,11 @@ export default function AdminVerificationDetailPage({ params }: PageProps) {
         >
           <div className="flex items-center gap-2.5">
             {proposal.status === 'APPROVED' ? (
-              <CheckCircle2 className="h-5 w-5 text-white" />
+              <CheckCircle2 className="h-5 w-5 text-white shrink-0" />
             ) : proposal.status === 'RETURNED' ? (
-              <AlertTriangle className="h-5 w-5 text-slate-900" />
+              <AlertTriangle className="h-5 w-5 text-slate-900 shrink-0" />
             ) : (
-              <XCircle className="h-5 w-5 text-white" />
+              <XCircle className="h-5 w-5 text-white shrink-0" />
             )}
             <div>
               <span className="font-bold block text-sm">
@@ -245,7 +245,7 @@ export default function AdminVerificationDetailPage({ params }: PageProps) {
           {proposal.status === 'APPROVED' && (
             <Link
               href="/admin/research"
-              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-[#0f2c59] text-white border border-white font-semibold hover:bg-[#1a3d70] transition-colors"
+              className="inline-flex items-center justify-center gap-1.5 px-3.5 py-2 bg-[#0f2c59] text-white border border-white font-semibold rounded-lg hover:bg-[#1a3d70] transition-colors w-full sm:w-auto"
             >
               Lanjut ke Penyusunan KAK
               <ArrowRight className="h-3.5 w-3.5" />
@@ -255,7 +255,7 @@ export default function AdminVerificationDetailPage({ params }: PageProps) {
       )}
 
       {/* ================= SECTION 1: PROPOSAL OVERVIEW CARD ================= */}
-      <Card className="bg-white border-slate-200 shadow-xs">
+      <Card className="bg-white border-slate-200 rounded-xl shadow-xs overflow-hidden">
         <CardHeader className="border-b border-slate-200 pb-4">
           <div className="flex flex-wrap items-center justify-between gap-2">
             <div className="flex items-center gap-2">
@@ -557,10 +557,10 @@ export default function AdminVerificationDetailPage({ params }: PageProps) {
             {/* PILAR 1 */}
             <label
               className={cn(
-                'p-4 border transition-all flex items-start gap-3.5 cursor-pointer select-none',
+                'p-4 border rounded-xl transition-all flex items-start gap-3.5 cursor-pointer select-none shadow-xs',
                 isProblemClear
-                  ? 'bg-blue-50/70 border-blue-600 ring-1 ring-blue-500'
-                  : 'bg-slate-50 border-slate-300 hover:border-black'
+                  ? 'bg-[#dde6f2]/50 border-[#0f2c59] ring-1 ring-[#0f2c59]'
+                  : 'bg-slate-50 border-slate-200 hover:border-slate-300'
               )}
             >
               <input
@@ -568,7 +568,7 @@ export default function AdminVerificationDetailPage({ params }: PageProps) {
                 disabled={isAlreadyVerified}
                 checked={isProblemClear}
                 onChange={(e) => setIsProblemClear(e.target.checked)}
-                className="mt-1 h-4 w-4 rounded-none text-blue-600 focus:ring-blue-600 cursor-pointer"
+                className="mt-1 h-4 w-4 rounded text-[#0f2c59] focus:ring-[#0f2c59] cursor-pointer"
               />
               <div className="space-y-1 flex-1 text-xs">
                 <div className="flex items-center justify-between">
@@ -576,7 +576,7 @@ export default function AdminVerificationDetailPage({ params }: PageProps) {
                     Pilar 1: Validasi Kejelasan Masalah
                   </strong>
                   {isProblemClear && (
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-white bg-blue-600 px-2 py-0.5 border border-blue-700">
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-white bg-[#0f2c59] px-2 py-0.5 rounded border border-[#0f2c59]">
                       Memenuhi
                     </span>
                   )}
@@ -590,10 +590,10 @@ export default function AdminVerificationDetailPage({ params }: PageProps) {
             {/* PILAR 2: NOVELTY / DUPLICATION CHECK */}
             <label
               className={cn(
-                'p-4 border transition-all flex items-start gap-3.5 cursor-pointer select-none',
+                'p-4 border rounded-xl transition-all flex items-start gap-3.5 cursor-pointer select-none shadow-xs',
                 isNotDuplicated
-                  ? 'bg-blue-50/70 border-blue-600 ring-1 ring-blue-500'
-                  : 'bg-slate-50 border-slate-300 hover:border-black'
+                  ? 'bg-[#dde6f2]/50 border-[#0f2c59] ring-1 ring-[#0f2c59]'
+                  : 'bg-slate-50 border-slate-200 hover:border-slate-300'
               )}
             >
               <input
@@ -601,7 +601,7 @@ export default function AdminVerificationDetailPage({ params }: PageProps) {
                 disabled={isAlreadyVerified}
                 checked={isNotDuplicated}
                 onChange={(e) => setIsNotDuplicated(e.target.checked)}
-                className="mt-1 h-4 w-4 rounded-none text-blue-600 focus:ring-blue-600 cursor-pointer"
+                className="mt-1 h-4 w-4 rounded text-[#0f2c59] focus:ring-[#0f2c59] cursor-pointer"
               />
               <div className="space-y-1 flex-1 text-xs">
                 <div className="flex items-center justify-between">
@@ -609,7 +609,7 @@ export default function AdminVerificationDetailPage({ params }: PageProps) {
                     Pilar 2: Kebaruan & Pemeriksaan Duplikasi
                   </strong>
                   {isNotDuplicated && (
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-white bg-blue-600 px-2 py-0.5 border border-blue-700">
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-white bg-[#0f2c59] px-2 py-0.5 rounded border border-[#0f2c59]">
                       Memenuhi
                     </span>
                   )}
@@ -623,10 +623,10 @@ export default function AdminVerificationDetailPage({ params }: PageProps) {
             {/* PILAR 3: URGENSI */}
             <label
               className={cn(
-                'p-4 border transition-all flex items-start gap-3.5 cursor-pointer select-none',
+                'p-4 border rounded-xl transition-all flex items-start gap-3.5 cursor-pointer select-none shadow-xs',
                 isUrgencyRelevant
-                  ? 'bg-blue-50/70 border-blue-600 ring-1 ring-blue-500'
-                  : 'bg-slate-50 border-slate-300 hover:border-black'
+                  ? 'bg-[#dde6f2]/50 border-[#0f2c59] ring-1 ring-[#0f2c59]'
+                  : 'bg-slate-50 border-slate-200 hover:border-slate-300'
               )}
             >
               <input
@@ -634,7 +634,7 @@ export default function AdminVerificationDetailPage({ params }: PageProps) {
                 disabled={isAlreadyVerified}
                 checked={isUrgencyRelevant}
                 onChange={(e) => setIsUrgencyRelevant(e.target.checked)}
-                className="mt-1 h-4 w-4 rounded-none text-blue-600 focus:ring-blue-600 cursor-pointer"
+                className="mt-1 h-4 w-4 rounded text-[#0f2c59] focus:ring-[#0f2c59] cursor-pointer"
               />
               <div className="space-y-1 flex-1 text-xs">
                 <div className="flex items-center justify-between">
@@ -642,7 +642,7 @@ export default function AdminVerificationDetailPage({ params }: PageProps) {
                     Pilar 3: Tingkat Urgensi Kebijakan Daerah
                   </strong>
                   {isUrgencyRelevant && (
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-white bg-blue-600 px-2 py-0.5 border border-blue-700">
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-white bg-[#0f2c59] px-2 py-0.5 rounded border border-[#0f2c59]">
                       Memenuhi
                     </span>
                   )}
@@ -656,10 +656,10 @@ export default function AdminVerificationDetailPage({ params }: PageProps) {
             {/* PILAR 4: STRATEGIS */}
             <label
               className={cn(
-                'p-4 border transition-all flex items-start gap-3.5 cursor-pointer select-none',
+                'p-4 border rounded-xl transition-all flex items-start gap-3.5 cursor-pointer select-none shadow-xs',
                 isStrategicAligned
-                  ? 'bg-blue-50/70 border-blue-600 ring-1 ring-blue-500'
-                  : 'bg-slate-50 border-slate-300 hover:border-black'
+                  ? 'bg-[#dde6f2]/50 border-[#0f2c59] ring-1 ring-[#0f2c59]'
+                  : 'bg-slate-50 border-slate-200 hover:border-slate-300'
               )}
             >
               <input
@@ -667,7 +667,7 @@ export default function AdminVerificationDetailPage({ params }: PageProps) {
                 disabled={isAlreadyVerified}
                 checked={isStrategicAligned}
                 onChange={(e) => setIsStrategicAligned(e.target.checked)}
-                className="mt-1 h-4 w-4 rounded-none text-blue-600 focus:ring-blue-600 cursor-pointer"
+                className="mt-1 h-4 w-4 rounded text-[#0f2c59] focus:ring-[#0f2c59] cursor-pointer"
               />
               <div className="space-y-1 flex-1 text-xs">
                 <div className="flex items-center justify-between">
@@ -675,7 +675,7 @@ export default function AdminVerificationDetailPage({ params }: PageProps) {
                     Pilar 4: Keselarasan Isu Strategis Daerah (RPJMD)
                   </strong>
                   {isStrategicAligned && (
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-white bg-blue-600 px-2 py-0.5 border border-blue-700">
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-white bg-[#0f2c59] px-2 py-0.5 rounded border border-[#0f2c59]">
                       Memenuhi
                     </span>
                   )}
@@ -689,10 +689,10 @@ export default function AdminVerificationDetailPage({ params }: PageProps) {
             {/* PILAR 5: KELAYAKAN RISET */}
             <label
               className={cn(
-                'p-4 border transition-all flex items-start gap-3.5 cursor-pointer select-none',
+                'p-4 border rounded-xl transition-all flex items-start gap-3.5 cursor-pointer select-none shadow-xs',
                 isResearchFeasible
-                  ? 'bg-blue-50/70 border-blue-600 ring-1 ring-blue-500'
-                  : 'bg-slate-50 border-slate-300 hover:border-black'
+                  ? 'bg-[#dde6f2]/50 border-[#0f2c59] ring-1 ring-[#0f2c59]'
+                  : 'bg-slate-50 border-slate-200 hover:border-slate-300'
               )}
             >
               <input
@@ -700,7 +700,7 @@ export default function AdminVerificationDetailPage({ params }: PageProps) {
                 disabled={isAlreadyVerified}
                 checked={isResearchFeasible}
                 onChange={(e) => setIsResearchFeasible(e.target.checked)}
-                className="mt-1 h-4 w-4 rounded-none text-blue-600 focus:ring-blue-600 cursor-pointer"
+                className="mt-1 h-4 w-4 rounded text-[#0f2c59] focus:ring-[#0f2c59] cursor-pointer"
               />
               <div className="space-y-1 flex-1 text-xs">
                 <div className="flex items-center justify-between">
@@ -708,7 +708,7 @@ export default function AdminVerificationDetailPage({ params }: PageProps) {
                     Pilar 5: Kelayakan Penelitian (Data Dukung & Anggaran)
                   </strong>
                   {isResearchFeasible && (
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-white bg-blue-600 px-2 py-0.5 border border-blue-700">
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-white bg-[#0f2c59] px-2 py-0.5 rounded border border-[#0f2c59]">
                       Memenuhi
                     </span>
                   )}
@@ -723,8 +723,8 @@ export default function AdminVerificationDetailPage({ params }: PageProps) {
           {/* CATATAN HASIL VALIDASI */}
           <div className="space-y-2 pt-2">
             <label className="text-xs font-bold text-slate-800 flex items-center justify-between">
-              <span>Catatan Telaah & Rekomendasi Validasi Tim BRIDA <span className="text-blue-600">*</span></span>
-              <span className="text-[10px] text-slate-500">Minimal 5 karakter</span>
+              <span>Catatan Telaah & Rekomendasi Validasi Tim BRIDA <span className="text-[#0f2c59]">*</span></span>
+              <span className="text-2xs text-slate-500 font-medium">Minimal 5 karakter</span>
             </label>
             <textarea
               rows={4}
@@ -732,26 +732,26 @@ export default function AdminVerificationDetailPage({ params }: PageProps) {
               value={verificationNotes}
               onChange={(e) => setVerificationNotes(e.target.value)}
               placeholder="Berikan catatan kesimpulan hasil validasi, arahan penajaman ruang lingkup, atau rincian perbaikan jika dikembalikan..."
-              className="w-full p-3.5 text-xs bg-slate-50 border border-slate-300 rounded-none text-slate-800 focus:outline-none focus:ring-1 focus:ring-blue-600 focus:bg-white transition-all leading-relaxed"
+              className="w-full p-3.5 text-xs bg-slate-50 border border-slate-300 rounded-lg text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#0f2c59] focus:bg-white transition-all leading-relaxed"
             />
           </div>
 
           {/* ACTION BUTTONS */}
           {!isAlreadyVerified ? (
-            <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-4 border-t border-slate-200">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 pt-4 border-t border-slate-100">
               <Link
                 href="/admin/verification"
-                className="px-4 py-2.5 text-xs font-semibold text-slate-700 hover:text-black border border-slate-300 bg-white"
+                className="w-full sm:w-auto inline-flex items-center justify-center px-4 py-2.5 text-xs font-semibold text-slate-700 hover:text-black border border-slate-300 rounded-lg bg-white"
               >
                 Batal
               </Link>
 
-              <div className="flex flex-wrap items-center gap-2.5 w-full sm:w-auto">
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-2.5 w-full sm:w-auto">
                 <button
                   type="button"
                   disabled={isSubmitting}
                   onClick={() => handleDecision('REJECT')}
-                  className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-2 px-4 py-2.5 text-xs font-semibold text-white bg-slate-900 border border-slate-800 hover:bg-black transition-colors cursor-pointer"
+                  className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2.5 text-xs font-semibold text-white bg-slate-900 border border-slate-800 hover:bg-black rounded-lg transition-colors cursor-pointer"
                 >
                   <XCircle className="h-4 w-4" />
                   Tolak Usulan
@@ -761,31 +761,31 @@ export default function AdminVerificationDetailPage({ params }: PageProps) {
                   type="button"
                   disabled={isSubmitting}
                   onClick={() => handleDecision('RETURN')}
-                  className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-2 px-4 py-2.5 text-xs font-semibold text-slate-900 bg-white border border-slate-300 hover:bg-slate-100 transition-colors cursor-pointer"
+                  className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2.5 text-xs font-semibold text-slate-900 bg-white border border-slate-300 hover:bg-slate-100 rounded-lg transition-colors cursor-pointer"
                 >
                   <RotateCcw className="h-4 w-4" />
-                  Kembalikan ke OPD (Perlu Revisi)
+                  Kembalikan (Revisi)
                 </button>
 
                 <button
                   type="button"
                   disabled={isSubmitting}
                   onClick={() => handleDecision('PASS')}
-                  className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-2 px-5 py-2.5 text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 border border-blue-700 shadow-sm transition-colors cursor-pointer"
+                  className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-2.5 text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 border border-blue-700 rounded-lg shadow-xs transition-colors cursor-pointer"
                 >
                   <CheckCircle2 className="h-4 w-4" />
-                  {isSubmitting ? 'Memproses...' : 'Loloskan ke Tahap 3 (Penyusunan KAK)'}
+                  {isSubmitting ? 'Memproses...' : 'Loloskan ke Tahap 3 (KAK)'}
                 </button>
               </div>
             </div>
           ) : (
-            <div className="pt-4 border-t border-slate-200 flex items-center justify-between">
+            <div className="pt-4 border-t border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <span className="text-xs text-slate-600 italic">
                 Usulan ini telah selesai diproses validasi.
               </span>
               <Link
                 href="/admin/verification"
-                className="px-4 py-2 text-xs font-semibold text-white bg-[#0f2c59] hover:bg-[#1a3d70] border border-blue-900 transition-colors"
+                className="w-full sm:w-auto inline-flex items-center justify-center px-4 py-2 text-xs font-semibold text-white bg-[#0f2c59] hover:bg-[#1a3d70] border border-blue-900 rounded-lg transition-colors"
               >
                 Kembali ke Daftar Antrean
               </Link>

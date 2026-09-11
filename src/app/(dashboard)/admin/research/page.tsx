@@ -158,25 +158,25 @@ export default function AdminResearchPage() {
   const totalBudget = researchList.reduce((sum, r) => sum + (r.allocatedBudget || 0), 0);
 
   return (
-    <div className="space-y-8 max-w-7xl mx-auto pb-16">
+    <div className="space-y-6 sm:space-y-8 max-w-7xl mx-auto pb-16">
       {/* Top Banner Header */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6 bg-[#0f2c59] border border-slate-200 p-8 text-white">
-        <div className="space-y-2">
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-5 md:gap-6 bg-[#0f2c59] border border-slate-200 p-5 sm:p-6 md:p-8 rounded-xl shadow-xs text-white">
+        <div className="space-y-1.5">
           <div className="flex items-center gap-2 text-sky-300 text-xs font-bold tracking-wider uppercase">
             <FlaskConical className="w-4 h-4" />
             Tahap 4: Pelaksanaan Riset Daerah
           </div>
-          <h1 className="text-2xl md:text-3xl font-black tracking-tight">
+          <h1 className="text-xl sm:text-2xl md:text-3xl font-black tracking-tight">
             Pelaksanaan Riset & Pengelolaan Laporan Akhir
           </h1>
-          <p className="text-slate-300 text-sm max-w-2xl leading-relaxed">
+          <p className="text-slate-300 text-xs sm:text-sm max-w-2xl leading-relaxed">
             Kelola penetapan pelaksana riset, unggah berkas legalitas kerja sama (SK / PKS), repositori berkas kerja lapangan, serta penerimaan Laporan Akhir Hasil Riset untuk diteruskan ke Tahap 5 Rekomendasi Kebijakan.
           </p>
         </div>
-        <div className="flex flex-wrap items-center gap-3 shrink-0">
+        <div className="flex flex-wrap items-center gap-2.5 sm:gap-3 shrink-0 w-full md:w-auto">
           <button
             onClick={() => { fetchStudies(); fetchProposals(); }}
-            className="flex items-center gap-2 bg-[#1b3b6f] hover:bg-[#15325b] text-white font-semibold px-4 py-2.5 transition text-xs border border-[#264978]"
+            className="flex-1 sm:flex-initial flex items-center justify-center gap-2 bg-[#1b3b6f] hover:bg-[#15325b] text-white font-semibold px-4 py-2.5 transition text-xs border border-[#264978] rounded-lg"
             title="Muat Ulang Data Riset"
           >
             <RefreshCw className={cn('w-4 h-4 text-sky-300', isLoadingStudies && 'animate-spin')} />
@@ -184,14 +184,14 @@ export default function AdminResearchPage() {
           </button>
           <Link
             href="/admin/kak-builder"
-            className="flex items-center gap-2 bg-white hover:bg-slate-50 text-slate-900 font-bold px-4 py-2.5 transition text-xs border border-slate-200"
+            className="flex-1 sm:flex-initial flex items-center justify-center gap-2 bg-white hover:bg-slate-50 text-slate-900 font-bold px-4 py-2.5 transition text-xs border border-slate-200 rounded-lg shadow-xs"
           >
             <Layers className="w-4 h-4 text-blue-700" />
-            <span>Tahap 3 (Penyusunan KAK)</span>
+            <span>Tahap 3 (KAK)</span>
           </Link>
           <Link
             href="/admin/recommendation-builder"
-            className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-bold px-4 py-2.5 transition text-xs border border-blue-700"
+            className="flex-1 sm:flex-initial flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-bold px-4 py-2.5 transition text-xs border border-blue-700 rounded-lg shadow-xs"
           >
             <BookOpen className="w-4 h-4" />
             <span>Tahap 5 (Rekomendasi)</span>
@@ -201,10 +201,10 @@ export default function AdminResearchPage() {
       </div>
 
       {/* KPI Metric Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-        <div className="bg-white p-6 border border-slate-200 flex items-center gap-4">
-          <div className="w-12 h-12 bg-blue-50 border border-blue-200 text-[#0f2c59] flex items-center justify-center font-bold">
-            <Layers className="w-6 h-6" />
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
+        <div className="bg-white p-4 sm:p-5 border border-slate-200 rounded-xl shadow-xs flex items-center gap-4">
+          <div className="w-11 h-11 sm:w-12 sm:h-12 bg-blue-50 border border-blue-200 text-[#0f2c59] flex items-center justify-center font-bold rounded-lg shrink-0">
+            <Layers className="w-5 h-5 sm:w-6 sm:h-6" />
           </div>
           <div>
             <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Total Riset Masuk</p>
@@ -212,9 +212,9 @@ export default function AdminResearchPage() {
           </div>
         </div>
 
-        <div className="bg-white p-6 border border-slate-200 flex items-center gap-4">
-          <div className="w-12 h-12 bg-blue-50 border border-blue-200 text-blue-700 flex items-center justify-center font-bold">
-            <Clock className="w-6 h-6" />
+        <div className="bg-white p-4 sm:p-5 border border-slate-200 rounded-xl shadow-xs flex items-center gap-4">
+          <div className="w-11 h-11 sm:w-12 sm:h-12 bg-blue-50 border border-blue-200 text-blue-700 flex items-center justify-center font-bold rounded-lg shrink-0">
+            <Clock className="w-5 h-5 sm:w-6 sm:h-6" />
           </div>
           <div>
             <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Sedang Berjalan</p>
@@ -222,9 +222,9 @@ export default function AdminResearchPage() {
           </div>
         </div>
 
-        <div className="bg-white p-6 border border-slate-200 flex items-center gap-4">
-          <div className="w-12 h-12 bg-blue-50 border border-blue-200 text-[#0f2c59] flex items-center justify-center font-bold">
-            <CheckCircle2 className="w-6 h-6" />
+        <div className="bg-white p-4 sm:p-5 border border-slate-200 rounded-xl shadow-xs flex items-center gap-4">
+          <div className="w-11 h-11 sm:w-12 sm:h-12 bg-blue-50 border border-blue-200 text-[#0f2c59] flex items-center justify-center font-bold rounded-lg shrink-0">
+            <CheckCircle2 className="w-5 h-5 sm:w-6 sm:h-6" />
           </div>
           <div>
             <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Laporan Akhir Terbit</p>
@@ -232,13 +232,13 @@ export default function AdminResearchPage() {
           </div>
         </div>
 
-        <div className="bg-white p-6 border border-slate-200 flex items-center gap-4">
-          <div className="w-12 h-12 bg-blue-50 border border-blue-200 text-blue-700 flex items-center justify-center font-bold">
-            <DollarSign className="w-6 h-6" />
+        <div className="bg-white p-4 sm:p-5 border border-slate-200 rounded-xl shadow-xs flex items-center gap-4">
+          <div className="w-11 h-11 sm:w-12 sm:h-12 bg-blue-50 border border-blue-200 text-blue-700 flex items-center justify-center font-bold rounded-lg shrink-0">
+            <DollarSign className="w-5 h-5 sm:w-6 sm:h-6" />
           </div>
           <div>
             <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Total Alokasi Anggaran</p>
-            <p className="text-lg font-black text-blue-900 font-mono">
+            <p className="text-base sm:text-lg font-black text-blue-900 font-mono">
               {new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(totalBudget)}
             </p>
           </div>
@@ -246,7 +246,7 @@ export default function AdminResearchPage() {
       </div>
 
       {/* Filters and Search */}
-      <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs flex flex-col md:flex-row items-center justify-between gap-4">
+      <div className="bg-white p-4 sm:p-5 rounded-xl border border-slate-200 shadow-xs flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3 sm:gap-4">
         {/* Search */}
         <div className="relative w-full md:w-96">
           <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
@@ -255,17 +255,17 @@ export default function AdminResearchPage() {
             placeholder="Cari judul riset, OPD pengusul, atau kode..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:bg-white transition"
+            className="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs sm:text-sm focus:outline-hidden focus:ring-2 focus:ring-blue-600 focus:bg-white transition"
           />
         </div>
 
         {/* Filter Badges */}
-        <div className="flex flex-wrap items-center gap-2 w-full md:w-auto">
-          <div className="flex rounded-xl bg-slate-100 p-1 text-xs font-bold gap-1">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 w-full md:w-auto">
+          <div className="flex rounded-lg bg-slate-100 p-1 text-xs font-bold gap-1 overflow-x-auto whitespace-nowrap scrollbar-none max-w-full">
             <button
               onClick={() => setFilterStatus('ALL')}
               className={cn(
-                'px-3 py-1.5 rounded-lg transition',
+                'px-3 py-1.5 rounded-md transition shrink-0',
                 filterStatus === 'ALL' ? 'bg-white text-slate-900 shadow-xs' : 'text-slate-600 hover:text-slate-900'
               )}
             >
@@ -274,7 +274,7 @@ export default function AdminResearchPage() {
             <button
               onClick={() => setFilterStatus('IN_PROGRESS')}
               className={cn(
-                'px-3 py-1.5 rounded-lg transition',
+                'px-3 py-1.5 rounded-md transition shrink-0',
                 filterStatus === 'IN_PROGRESS' ? 'bg-white text-amber-700 shadow-xs' : 'text-slate-600 hover:text-slate-900'
               )}
             >
@@ -283,7 +283,7 @@ export default function AdminResearchPage() {
             <button
               onClick={() => setFilterStatus('COMPLETED')}
               className={cn(
-                'px-3 py-1.5 rounded-lg transition',
+                'px-3 py-1.5 rounded-md transition shrink-0',
                 filterStatus === 'COMPLETED' ? 'bg-white text-emerald-700 shadow-xs' : 'text-slate-600 hover:text-slate-900'
               )}
             >
@@ -294,7 +294,7 @@ export default function AdminResearchPage() {
           <select
             value={filterScheme}
             onChange={(e) => setFilterScheme(e.target.value)}
-            className="px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+            className="px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs font-semibold text-slate-700 focus:outline-hidden focus:ring-2 focus:ring-blue-600"
           >
             <option value="ALL">Semua Skema</option>
             <option value="SWAKELOLA">Swakelola BRIDA</option>
@@ -307,29 +307,29 @@ export default function AdminResearchPage() {
 
       {/* Main Research Cards Grid */}
       {filteredResearch.length === 0 ? (
-        <div className="bg-white rounded-2xl border border-slate-200 p-12 text-center text-slate-500 space-y-3">
+        <div className="bg-white rounded-xl border border-slate-200 p-8 sm:p-12 text-center text-slate-500 space-y-3 shadow-xs">
           <FlaskConical className="w-12 h-12 mx-auto text-slate-300" />
-          <h3 className="font-bold text-slate-800 text-lg">Belum Ada Riset dalam Pelaksanaan</h3>
+          <h3 className="font-bold text-slate-800 text-base sm:text-lg">Belum Ada Riset dalam Pelaksanaan</h3>
           <p className="text-xs text-slate-500 max-w-md mx-auto">
             Usulan yang telah lolos validasi (Tahap 2) dan telah diselesaikan dokumen KAK & RKA (Tahap 3) akan otomatis masuk ke daftar pelaksanaan riset ini.
           </p>
           <Link
             href="/admin/kak-builder"
-            className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl transition shadow"
+            className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-lg transition shadow-xs"
           >
             <Plus className="w-4 h-4" />
             <span>Ke Modul Penyusunan KAK (Tahap 3)</span>
           </Link>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6">
           {filteredResearch.map((item) => {
             const isDone = item.status === 'COMPLETED';
 
             return (
               <div
                 key={item.id}
-                className="bg-white rounded-2xl border border-slate-200 hover:border-emerald-500 hover:shadow-md transition-all flex flex-col justify-between overflow-hidden group"
+                className="bg-white rounded-xl border border-slate-200 hover:border-blue-500 hover:shadow-md transition-all flex flex-col justify-between overflow-hidden group shadow-xs"
               >
                 {/* Card Top */}
                 <div className="p-6 space-y-4">
