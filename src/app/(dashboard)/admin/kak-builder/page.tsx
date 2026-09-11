@@ -150,98 +150,108 @@ export default function KakBuilderDashboardPage() {
         }
       />
 
-      {/* STATS CARDS */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card className="bg-white border-slate-300 shadow-sm relative overflow-hidden">
-          <div className="absolute top-0 left-0 h-1 w-full bg-slate-400" />
-          <CardContent className="p-4.5 flex items-center justify-between">
-            <div className="space-y-1">
-              <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500">
-                Belum Disusun KAK
-              </span>
-              <div className="text-2xl font-bold text-slate-800">{untouchedList.length}</div>
-              <p className="text-[11px] text-slate-500">Usulan siap dirumuskan</p>
-            </div>
-            <div className="h-10 w-10 rounded-lg bg-slate-100 border border-slate-300 flex items-center justify-center text-slate-700">
-              <Sparkles className="h-5 w-5" />
-            </div>
-          </CardContent>
-        </Card>
+      {/* BANNER AI ASSISTANT & LIVE EDITOR */}
+      <div className="relative overflow-hidden rounded-xl border border-slate-200 border-l-4 border-l-[#0f2c59] bg-gradient-to-r from-white via-blue-50/30 to-slate-50/60 p-5 shadow-xs">
+        <div className="flex items-start gap-4 relative z-10">
+          <div className="p-2.5 rounded-lg bg-blue-50 text-[#0f2c59] border border-blue-200 shrink-0">
+            <Sparkles className="h-5 w-5 text-blue-700" />
+          </div>
 
-        <Card className="bg-white border-slate-300 shadow-sm relative overflow-hidden">
-          <div className="absolute top-0 left-0 h-1 w-full bg-blue-500" />
-          <CardContent className="p-4.5 flex items-center justify-between">
-            <div className="space-y-1">
-              <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500">
-                Draf KAK In-System
+          <div className="space-y-2 flex-1">
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="font-bold text-slate-900 text-sm">
+                Alur Otomasi KAK dengan AI Terpadu (In-System Live Editor)
               </span>
-              <div className="text-2xl font-bold text-blue-700">{draftKakList.length}</div>
-              <p className="text-[11px] text-slate-500">Sedang diedit di sistem</p>
+              <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-blue-100 text-blue-900 border border-blue-200 uppercase tracking-wider">
+                AI-Powered Workflow
+              </span>
             </div>
-            <div className="h-10 w-10 rounded-lg bg-blue-50 border border-blue-200 flex items-center justify-center text-blue-700">
-              <Edit3 className="h-5 w-5" />
-            </div>
-          </CardContent>
-        </Card>
 
-        <Card className="bg-white border-slate-300 shadow-sm relative overflow-hidden">
-          <div className="absolute top-0 left-0 h-1 w-full bg-blue-600" />
-          <CardContent className="p-4.5 flex items-center justify-between">
-            <div className="space-y-1">
-              <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500">
-                KAK Final
-              </span>
-              <div className="text-2xl font-bold text-blue-600">{finalKakList.length}</div>
-              <p className="text-[11px] text-slate-500">Siap pelaksanaan riset</p>
-            </div>
-            <div className="h-10 w-10 rounded-lg bg-blue-50 border border-blue-200 flex items-center justify-center text-blue-700">
-              <CheckCircle2 className="h-5 w-5" />
-            </div>
-          </CardContent>
-        </Card>
+            <p className="text-slate-600 leading-relaxed text-xs max-w-4xl font-sans">
+              Admin BRIDA dapat menggunakan fitur <strong className="text-slate-900 font-semibold">&quot;Susun KAK dengan AI&quot;</strong> untuk merumuskan secara otomatis 5 struktur narasi KAK (Latar Belakang, Permasalahan, Maksud/Tujuan, Metodologi, dan Target Luaran). Seluruh draf dapat <strong className="text-slate-900 font-semibold">langsung disunting secara real-time</strong> di dalam sistem tanpa perlu proses unduh dan unggah dokumen manual.
+            </p>
 
-        <Card className="bg-white border-slate-300 shadow-sm relative overflow-hidden">
-          <div className="absolute top-0 left-0 h-1 w-full bg-[#0f2c59]" />
-          <CardContent className="p-4.5 flex items-center justify-between">
-            <div className="space-y-1">
-              <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500">
-                Total Usulan Siap KAK
+            <div className="flex flex-wrap items-center gap-2 pt-1">
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded bg-white border border-slate-200 text-3xs font-semibold text-slate-700 shadow-2xs">
+                <Sparkles className="h-3 w-3 text-blue-600" />
+                <span>Otomasi 5 Bab Narasi KAK</span>
               </span>
-              <div className="text-2xl font-bold text-[#0f2c59]">{approvedProposals.length}</div>
-              <p className="text-[11px] text-slate-500">Inisiatif BRIDA & OPD Lolos</p>
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded bg-white border border-slate-200 text-3xs font-semibold text-slate-700 shadow-2xs">
+                <Edit3 className="h-3 w-3 text-blue-600" />
+                <span>Live Editor Tanpa Berkas Manual</span>
+              </span>
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded bg-white border border-slate-200 text-3xs font-semibold text-slate-700 shadow-2xs">
+                <Wallet className="h-3 w-3 text-blue-600" />
+                <span>Simulasi Plafon RKA Pagu APBD</span>
+              </span>
             </div>
-            <div className="h-10 w-10 rounded-lg bg-blue-50 border border-blue-200 flex items-center justify-center text-[#0f2c59]">
-              <FileText className="h-5 w-5" />
-            </div>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
+
+        {/* Subtle Decorative Watermark Icon */}
+        <Sparkles className="absolute -right-3 -bottom-4 h-24 w-24 text-blue-100/50 pointer-events-none" />
       </div>
 
-      {/* BANNER AI ASSISTANT & LIVE EDITOR */}
-      <div className="rounded-xl border border-black bg-[#0f2c59] p-4.5 text-xs text-white flex items-start gap-4 shadow-sm">
-        <div className="p-2.5 rounded-lg bg-blue-600 text-white shrink-0 border border-blue-500">
-          <Sparkles className="h-5 w-5 text-sky-200" />
-        </div>
-        <div className="space-y-1.5 flex-1">
-          <div className="flex items-center gap-2">
-            <span className="font-bold text-white text-sm">
-              Alur Otomasi KAK dengan AI Terpadu (In-System Live Editor)
-            </span>
-            <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-blue-600 text-white border border-blue-400">
-              AI-Powered Live Workflow
-            </span>
+      {/* STATS CARDS */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="bg-white p-5 border border-slate-200 flex items-center gap-4">
+          <div className="w-12 h-12 bg-slate-100 border border-slate-300 text-slate-700 flex items-center justify-center font-bold shrink-0">
+            <Sparkles className="w-6 h-6" />
           </div>
-          <p className="text-slate-200 leading-relaxed text-xs">
-            Admin BRIDA dapat mengklik <strong>&quot;Susun KAK dengan AI&quot;</strong> untuk men-generate otomatis 5 struktur narasi KAK (Latar Belakang, Permasalahan, Maksud/Tujuan, Metodologi, Target Output). Draf dapat <strong>langsung diedit di sistem secara real-time</strong> tanpa perlu repot unduh dan unggah ulang berkas.
-          </p>
+          <div className="space-y-0.5 min-w-0">
+            <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider truncate">
+              Belum Disusun KAK
+            </p>
+            <p className="text-2xl font-black text-slate-800 font-mono">{untouchedList.length}</p>
+            <p className="text-xs text-slate-500 truncate">Usulan siap dirumuskan</p>
+          </div>
+        </div>
+
+        <div className="bg-white p-5 border border-slate-200 flex items-center gap-4">
+          <div className="w-12 h-12 bg-blue-50 border border-blue-200 text-blue-700 flex items-center justify-center font-bold shrink-0">
+            <Edit3 className="w-6 h-6" />
+          </div>
+          <div className="space-y-0.5 min-w-0">
+            <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider truncate">
+              Draf KAK In-System
+            </p>
+            <p className="text-2xl font-black text-blue-700 font-mono">{draftKakList.length}</p>
+            <p className="text-xs text-slate-500 truncate">Sedang diedit di sistem</p>
+          </div>
+        </div>
+
+        <div className="bg-white p-5 border border-slate-200 flex items-center gap-4">
+          <div className="w-12 h-12 bg-blue-50 border border-blue-200 text-blue-700 flex items-center justify-center font-bold shrink-0">
+            <CheckCircle2 className="w-6 h-6" />
+          </div>
+          <div className="space-y-0.5 min-w-0">
+            <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider truncate">
+              KAK Final
+            </p>
+            <p className="text-2xl font-black text-blue-600 font-mono">{finalKakList.length}</p>
+            <p className="text-xs text-slate-500 truncate">Siap pelaksanaan riset</p>
+          </div>
+        </div>
+
+        <div className="bg-white p-5 border border-slate-200 flex items-center gap-4">
+          <div className="w-12 h-12 bg-blue-50 border border-blue-200 text-[#0f2c59] flex items-center justify-center font-bold shrink-0">
+            <FileText className="w-6 h-6" />
+          </div>
+          <div className="space-y-0.5 min-w-0">
+            <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider truncate">
+              Total Usulan Siap KAK
+            </p>
+            <p className="text-2xl font-black text-[#0f2c59] font-mono">{approvedProposals.length}</p>
+            <p className="text-xs text-slate-500 truncate">Inisiatif BRIDA & OPD Lolos</p>
+          </div>
         </div>
       </div>
 
       {/* TABLE CONTAINER */}
-      <Card className="bg-white border-slate-300 shadow-sm">
+      <Card className="bg-white border-slate-200">
         {/* TABS & SEARCH */}
         <div className="p-4 border-b border-slate-200 flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4">
-          <div className="flex items-center gap-1.5 p-1 bg-slate-100 rounded-lg shrink-0 overflow-x-auto border border-slate-300">
+          <div className="flex items-center gap-1.5 p-1 bg-slate-100 rounded-lg shrink-0 overflow-x-auto border border-slate-200">
             <button
               onClick={() => setActiveTab('ALL')}
               className={cn(

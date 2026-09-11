@@ -32,14 +32,17 @@ import {
   Sparkles,
   Download,
   ExternalLink,
-  X
+  X,
+  FileEdit,
+  Loader2,
+  Trash2,
 } from 'lucide-react';
 import { openOrDownloadFile, downloadFileDirectly, isPdfDocument } from '@/lib/file-viewer';
 
 export default function OpdTrackingPage() {
   const router = useRouter();
   const { toast } = useToast();
-  const { proposals, submitDraft, getTrackingSteps, fetchProposals } = useOpdStore();
+  const { proposals, submitDraft, deleteProposal, getTrackingSteps, fetchProposals } = useOpdStore();
 
   const [documentReview, setDocumentReview] = useState<DocumentReviewState | null>(null);
 
@@ -133,17 +136,47 @@ export default function OpdTrackingPage() {
     setIsDetailOpen(true);
   };
 
-  const handleSendDraft = (id: string, title: string) => {
-    submitDraft(id);
-    toast(`Usulan "${title}" resmi dikirim ke BRIDA.`, 'success');
-    if (selectedProposal && selectedProposal.id === id) {
-      setSelectedProposal({ ...selectedProposal, status: 'PENDING', submittedAt: new Date().toISOString().split('T')[0] });
+  const [isSendingDraft, setIsSendingDraft] = useState(false);
+  const [isDeletingDraft, setIsDeletingDraft] = useState(false);
+
+  const handleSendDraft = async (id: string, title: string) => {
+    try {
+      setIsSendingDraft(true);
+      await submitDraft(id);
+      toast(`Usulan "${title}" resmi dikirim ke antrean verifikasi BRIDA.`, 'success');
+      if (selectedProposal && selectedProposal.id === id) {
+        setSelectedProposal({
+          ...selectedProposal,
+          status: 'PENDING',
+          submittedAt: new Date().toISOString().split('T')[0],
+        });
+      }
+      setIsDetailOpen(false);
+    } catch (err: any) {
+      toast(`Gagal mengirimkan usulan: ${err.message}`, 'error');
+    } finally {
+      setIsSendingDraft(false);
+    }
+  };
+
+  const handleDeleteDraft = async (id: string, title: string) => {
+    if (!confirm(`Apakah Anda yakin ingin menghapus draf usulan "${title}"? Tindakan ini tidak dapat dibatalkan.`)) return;
+    try {
+      setIsDeletingDraft(true);
+      await deleteProposal(id);
+      toast(`Draf usulan "${title}" berhasil dihapus.`, 'info');
+      setIsDetailOpen(false);
+      setSelectedProposal(null);
+    } catch (err: any) {
+      toast(`Gagal menghapus draf: ${err.message}`, 'error');
+    } finally {
+      setIsDeletingDraft(false);
     }
   };
 
   return (
     <div className="space-y-6 font-sans">
-      
+
       <PageHeader
         title="Riwayat & Tracking Usulan Penelitian"
         description="Daftar seluruh usulan masalah pembangunan daerah yang diajukan oleh OPD Anda beserta tahapan progres kajian BRIDA secara real-time."
@@ -194,7 +227,7 @@ export default function OpdTrackingPage() {
       {/* Main Table Card */}
       <Card className="shadow-sm border-t-4 border-t-[#0f2c59] border border-black">
         <CardHeader className="pb-3 border-b border-black space-y-4">
-          
+
           {/* Header title & search controls */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <CardTitle className="text-xs font-bold uppercase tracking-wider text-slate-800 dark:text-slate-200 flex items-center gap-2">
@@ -244,11 +277,10 @@ export default function OpdTrackingPage() {
               <button
                 key={tab.key}
                 onClick={() => setStatusFilter(tab.key)}
-                className={`px-3 py-1.5 rounded-md font-bold transition-all text-2xs ${
-                  statusFilter === tab.key
+                className={`px-3 py-1.5 rounded-md font-bold transition-all text-2xs ${statusFilter === tab.key
                     ? 'bg-blue-600 text-white shadow-sm'
                     : 'bg-slate-100 text-slate-700 hover:bg-slate-200 border border-slate-200'
-                }`}
+                  }`}
               >
                 {tab.label}
               </button>
@@ -281,7 +313,7 @@ export default function OpdTrackingPage() {
               ) : (
                 filteredProposals.map((item, idx) => (
                   <TableRow key={item.id} className="hover:bg-gray-50/70 dark:hover:bg-gray-900/40 transition-colors">
-                    
+
                     {/* No. (Centered) */}
                     <TableCell className="text-center align-middle text-xs font-semibold text-gray-400 py-3.5">
                       {idx + 1}
@@ -353,13 +385,35 @@ export default function OpdTrackingPage() {
 
                     {/* Aksi (Centered) */}
                     <TableCell className="text-center align-middle py-3.5">
-                      <button
-                        onClick={() => handleOpenDetail(item)}
-                        className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded text-2xs font-bold transition-all shadow inline-flex items-center justify-center gap-1.5 mx-auto border border-blue-700"
-                      >
-                        <Eye className="h-3 w-3" />
-                        <span>Detail</span>
-                      </button>
+                      <div className="flex items-center justify-center gap-1.5">
+                        {item.status === 'DRAFT' && (
+                          <button
+                            onClick={() => router.push(`/opd/proposals/${item.id}/edit`)}
+                            className="px-2.5 py-1.5 bg-amber-500 hover:bg-amber-600 text-white rounded text-2xs font-bold transition-all shadow-xs inline-flex items-center justify-center gap-1 border border-amber-600"
+                            title="Lanjutkan Pengisian Draf"
+                          >
+                            <FileEdit className="h-3 w-3" />
+                            <span>Lanjutkan</span>
+                          </button>
+                        )}
+                        {item.status === 'RETURNED' && (
+                          <button
+                            onClick={() => router.push(`/opd/proposals/${item.id}/edit`)}
+                            className="px-2.5 py-1.5 bg-red-600 hover:bg-red-700 text-white rounded text-2xs font-bold transition-all shadow-xs inline-flex items-center justify-center gap-1 border border-red-700"
+                            title="Revisi Usulan"
+                          >
+                            <RotateCcw className="h-3 w-3" />
+                            <span>Revisi</span>
+                          </button>
+                        )}
+                        <button
+                          onClick={() => handleOpenDetail(item)}
+                          className="px-2.5 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded text-2xs font-bold transition-all shadow-xs inline-flex items-center justify-center gap-1 border border-blue-700"
+                        >
+                          <Eye className="h-3 w-3" />
+                          <span>Detail</span>
+                        </button>
+                      </div>
                     </TableCell>
 
                   </TableRow>
@@ -380,7 +434,7 @@ export default function OpdTrackingPage() {
       >
         {selectedProposal && (
           <div className="space-y-5 text-xs font-sans">
-            
+
             {/* Header Status & Tabs */}
             <div className="flex flex-wrap items-center justify-between gap-3 p-3 bg-slate-50 rounded-lg border border-black">
               <div className="flex items-center gap-2">
@@ -398,22 +452,20 @@ export default function OpdTrackingPage() {
                 <button
                   type="button"
                   onClick={() => setActiveTab('TRACKING')}
-                  className={`px-3 py-1 rounded text-2xs font-bold transition-all ${
-                    activeTab === 'TRACKING'
+                  className={`px-3 py-1 rounded text-2xs font-bold transition-all ${activeTab === 'TRACKING'
                       ? 'bg-blue-600 text-white shadow-sm'
                       : 'text-slate-600 hover:text-slate-900'
-                  }`}
+                    }`}
                 >
                   Tracking Progres BRIDA
                 </button>
                 <button
                   type="button"
                   onClick={() => setActiveTab('DETAIL')}
-                  className={`px-3 py-1 rounded text-2xs font-bold transition-all ${
-                    activeTab === 'DETAIL'
+                  className={`px-3 py-1 rounded text-2xs font-bold transition-all ${activeTab === 'DETAIL'
                       ? 'bg-blue-600 text-white shadow-sm'
                       : 'text-slate-600 hover:text-slate-900'
-                  }`}
+                    }`}
                 >
                   Informasi Lengkap Usulan
                 </button>
@@ -424,19 +476,49 @@ export default function OpdTrackingPage() {
             {activeTab === 'TRACKING' && (
               <div className="space-y-4">
                 {selectedProposal.status === 'DRAFT' ? (
-                  <div className="p-6 text-center bg-slate-50 border border-black rounded-lg space-y-2">
+                  <div className="p-6 text-center bg-slate-50 border border-slate-300 rounded-lg space-y-3">
                     <AlertCircle className="h-8 w-8 text-blue-600 mx-auto" />
                     <h4 className="font-bold text-xs text-slate-900">Usulan Masih Tersimpan Sebagai Draft</h4>
                     <p className="text-2xs text-slate-600 max-w-md mx-auto">
-                      Usulan ini belum dikirimkan ke BRIDA. Silakan kirimkan sekarang agar dapat langsung masuk ke antrean verifikasi dan telaah tim litbang.
+                      Usulan ini belum dikirimkan ke BRIDA. Anda dapat melanjutkan pengisian draf untuk melengkapi data dan berkas, atau langsung mengirimkannya ke antrean telaah litbang.
                     </p>
-                    <button
-                      onClick={() => handleSendDraft(selectedProposal.id, selectedProposal.title)}
-                      className="mt-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded text-2xs font-bold transition-all shadow inline-flex items-center gap-1.5 border border-blue-700"
-                    >
-                      <Send className="h-3.5 w-3.5" />
-                      <span>Kirim Usulan ke BRIDA Sekarang</span>
-                    </button>
+                    <div className="flex flex-wrap items-center justify-center gap-2 pt-1">
+                      <button
+                        onClick={() => {
+                          setIsDetailOpen(false);
+                          router.push(`/opd/proposals/${selectedProposal.id}/edit`);
+                        }}
+                        className="px-3.5 py-2 bg-white hover:bg-slate-100 text-slate-800 rounded text-2xs font-bold transition-all shadow-xs inline-flex items-center gap-1.5 border border-slate-300"
+                      >
+                        <FileEdit className="h-3.5 w-3.5 text-blue-600" />
+                        <span>Lanjutkan & Sunting Draf</span>
+                      </button>
+                      <button
+                        disabled={isSendingDraft}
+                        onClick={() => handleSendDraft(selectedProposal.id, selectedProposal.title)}
+                        className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded text-2xs font-bold transition-all shadow inline-flex items-center gap-1.5 border border-blue-700 disabled:opacity-50"
+                      >
+                        {isSendingDraft ? (
+                          <>
+                            <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                            <span>Mengirimkan...</span>
+                          </>
+                        ) : (
+                          <>
+                            <Send className="h-3.5 w-3.5" />
+                            <span>Kirim Usulan ke BRIDA Sekarang</span>
+                          </>
+                        )}
+                      </button>
+                      <button
+                        disabled={isDeletingDraft}
+                        onClick={() => handleDeleteDraft(selectedProposal.id, selectedProposal.title)}
+                        className="px-3 py-2 text-red-600 hover:bg-red-50 rounded text-2xs font-bold transition-all inline-flex items-center gap-1 border border-red-200 disabled:opacity-50"
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                        <span>Hapus</span>
+                      </button>
+                    </div>
                   </div>
                 ) : (
                   <div className="p-4 bg-white rounded-lg border border-black space-y-6">
@@ -452,13 +534,12 @@ export default function OpdTrackingPage() {
                       {trackingSteps.map((step, idx) => (
                         <div key={step.step} className="relative">
                           <div
-                            className={`absolute -left-6 top-0 h-6 w-6 rounded-full flex items-center justify-center text-3xs font-bold border-2 transition-all ${
-                              step.isCompleted
+                            className={`absolute -left-6 top-0 h-6 w-6 rounded-full flex items-center justify-center text-3xs font-bold border-2 transition-all ${step.isCompleted
                                 ? 'bg-blue-600 border-blue-600 text-white shadow-sm'
                                 : step.isCurrent
-                                ? 'bg-blue-800 border-blue-800 text-white animate-pulse shadow-sm'
-                                : 'bg-white border-slate-400 text-slate-400'
-                            }`}
+                                  ? 'bg-blue-800 border-blue-800 text-white animate-pulse shadow-sm'
+                                  : 'bg-white border-slate-400 text-slate-400'
+                              }`}
                           >
                             {step.isCompleted ? (
                               <CheckCircle2 className="h-3.5 w-3.5" />
@@ -470,13 +551,12 @@ export default function OpdTrackingPage() {
                           <div className="pl-3 space-y-1">
                             <div className="flex items-center justify-between gap-2">
                               <h4
-                                className={`text-xs font-bold ${
-                                  step.isCompleted
+                                className={`text-xs font-bold ${step.isCompleted
                                     ? 'text-blue-900'
                                     : step.isCurrent
-                                    ? 'text-blue-800'
-                                    : 'text-slate-400'
-                                }`}
+                                      ? 'text-blue-800'
+                                      : 'text-slate-400'
+                                  }`}
                               >
                                 {step.label}
                               </h4>
@@ -518,7 +598,7 @@ export default function OpdTrackingPage() {
             {/* TAB 2: DETAIL INFORMASI USULAN */}
             {activeTab === 'DETAIL' && (
               <div className="space-y-4">
-                
+
                 {/* Meta summary */}
                 <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 p-3.5 bg-slate-50 rounded-xl text-2xs border border-black">
                   <div>
@@ -532,7 +612,7 @@ export default function OpdTrackingPage() {
                   <div>
                     <span className="text-slate-500 block font-semibold text-3xs uppercase">Estimasi Kebutuhan Anggaran</span>
                     <span className="font-black text-blue-900 block font-mono text-xs">
-                      {selectedProposal.estimatedBudget 
+                      {selectedProposal.estimatedBudget
                         ? new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(selectedProposal.estimatedBudget)
                         : 'Tidak Ditentukan / Menyesuaikan APBD'}
                     </span>
@@ -695,12 +775,41 @@ export default function OpdTrackingPage() {
               </div>
             )}
 
-            {/* Footer Close */}
-            <div className="flex justify-end pt-3 border-t dark:border-gray-800">
+            {/* Footer Actions */}
+            <div className="flex flex-wrap items-center justify-between gap-3 pt-3 border-t border-slate-200">
+              <div className="flex items-center gap-2">
+                {selectedProposal.status === 'DRAFT' && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsDetailOpen(false);
+                      router.push(`/opd/proposals/${selectedProposal.id}/edit`);
+                    }}
+                    className="px-3.5 py-2 bg-amber-500 hover:bg-amber-600 text-white rounded text-2xs font-bold transition flex items-center gap-1.5 shadow-xs border border-amber-600"
+                  >
+                    <FileEdit className="h-3.5 w-3.5" />
+                    <span>Lanjutkan Pengisian Draf</span>
+                  </button>
+                )}
+                {selectedProposal.status === 'RETURNED' && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsDetailOpen(false);
+                      router.push(`/opd/proposals/${selectedProposal.id}/edit`);
+                    }}
+                    className="px-3.5 py-2 bg-red-600 hover:bg-red-700 text-white rounded text-2xs font-bold transition flex items-center gap-1.5 shadow-xs border border-red-700"
+                  >
+                    <RotateCcw className="h-3.5 w-3.5" />
+                    <span>Perbaiki Usulan Sekarang</span>
+                  </button>
+                )}
+              </div>
+
               <button
                 type="button"
                 onClick={() => setIsDetailOpen(false)}
-                className="px-4 py-2 border border-gray-300 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg text-xs font-semibold text-gray-600 transition-all"
+                className="px-4 py-2 border border-slate-300 hover:bg-slate-50 rounded text-xs font-semibold text-slate-700 transition-all"
               >
                 Tutup
               </button>

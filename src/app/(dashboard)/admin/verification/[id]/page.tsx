@@ -3,16 +3,19 @@
 import React, { useState, use, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { useOpdStore } from '@/store/useOpdStore';
+import { useOpdStore, OpdProposal } from '@/store/useOpdStore';
 import { useAuthStore } from '@/store/useAuthStore';
 import { useToast } from '@/components/ui/toast';
 import { PageHeader } from '@/components/ui/page-header';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { DocumentViewerModal, DocumentReviewState } from '@/components/ui/document-viewer-modal';
+import { openOrDownloadFile, isPdfDocument } from '@/lib/file-viewer';
 import {
   ArrowLeft,
   CheckCircle2,
   Clock,
   AlertTriangle,
+  AlertCircle,
   FileText,
   Building2,
   Calendar,
@@ -25,6 +28,15 @@ import {
   DollarSign,
   Layers,
   HelpCircle,
+  User,
+  Phone,
+  Mail,
+  Target,
+  Download,
+  ExternalLink,
+  Eye,
+  BadgeAlert,
+  Flame,
 } from 'lucide-react';
 import { cn } from '@/lib/utils/cn';
 
@@ -37,59 +49,78 @@ export default function AdminVerificationDetailPage({ params }: PageProps) {
   const router = useRouter();
   const { toast } = useToast();
   const { user } = useAuthStore();
-  const { proposals, verifyProposal, fetchProposals, isLoadingProposals } = useOpdStore();
+  const { proposals, verifyProposal, fetchProposalById } = useOpdStore();
 
   const proposalId = resolvedParams.id;
-  const proposal = proposals.find((p) => p.id === proposalId);
-
-  useEffect(() => {
-    if (!proposal) {
-      fetchProposals();
-    }
-  }, [proposal, fetchProposals]);
+  const [proposal, setProposal] = useState<OpdProposal | null>(
+    () => proposals.find((p) => p.id === proposalId) || null
+  );
+  const [isLoading, setIsLoading] = useState(!proposal);
+  const [documentReview, setDocumentReview] = useState<DocumentReviewState | null>(null);
 
   // 5 Pilar Validasi State
-  const [isProblemClear, setIsProblemClear] = useState(
-    proposal?.adminVerification?.isProblemClear ?? true
-  );
-  const [isNotDuplicated, setIsNotDuplicated] = useState(
-    proposal?.adminVerification?.isNotDuplicated ?? true
-  );
-  const [isUrgencyRelevant, setIsUrgencyRelevant] = useState(
-    proposal?.adminVerification?.isUrgencyRelevant ?? true
-  );
-  const [isStrategicAligned, setIsStrategicAligned] = useState(
-    proposal?.adminVerification?.isStrategicAligned ?? true
-  );
-  const [isResearchFeasible, setIsResearchFeasible] = useState(
-    proposal?.adminVerification?.isResearchFeasible ?? true
-  );
+  const [isProblemClear, setIsProblemClear] = useState(true);
+  const [isNotDuplicated, setIsNotDuplicated] = useState(true);
+  const [isUrgencyRelevant, setIsUrgencyRelevant] = useState(true);
+  const [isStrategicAligned, setIsStrategicAligned] = useState(true);
+  const [isResearchFeasible, setIsResearchFeasible] = useState(true);
 
   const [verificationNotes, setVerificationNotes] = useState(
-    proposal?.adminVerification?.verificationNotes ||
-      'Usulan telah ditelaah berdasarkan 5 pilar validasi BRIDA dan memenuhi kriteria kelayakan riset daerah.'
+    'Usulan telah ditelaah berdasarkan 5 pilar validasi BRIDA dan memenuhi kriteria kelayakan riset daerah.'
   );
 
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  if (isLoadingProposals && !proposal) {
+  // Fetch complete proposal details directly from backend API
+  useEffect(() => {
+    let isMounted = true;
+    setIsLoading(true);
+
+    fetchProposalById(proposalId)
+      .then((data) => {
+        if (!isMounted) return;
+        setProposal(data);
+        if (data.adminVerification) {
+          setIsProblemClear(data.adminVerification.isProblemClear ?? true);
+          setIsNotDuplicated(data.adminVerification.isNotDuplicated ?? true);
+          setIsUrgencyRelevant(data.adminVerification.isUrgencyRelevant ?? true);
+          setIsStrategicAligned(data.adminVerification.isStrategicAligned ?? true);
+          setIsResearchFeasible(data.adminVerification.isResearchFeasible ?? true);
+          if (data.adminVerification.verificationNotes) {
+            setVerificationNotes(data.adminVerification.verificationNotes);
+          }
+        }
+        setIsLoading(false);
+      })
+      .catch((err) => {
+        if (!isMounted) return;
+        console.error('Failed to load proposal detail:', err);
+        setIsLoading(false);
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [proposalId, fetchProposalById]);
+
+  if (isLoading) {
     return (
       <div className="max-w-4xl mx-auto py-20 text-center space-y-4 font-sans">
         <Loader2 className="w-10 h-10 text-[#0f2c59] animate-spin mx-auto" />
-        <p className="text-xs text-slate-600 font-semibold">Memuat rincian berkas usulan riset...</p>
+        <p className="text-xs text-slate-600 font-semibold">Memuat rincian lengkap berkas usulan riset...</p>
       </div>
     );
   }
 
   if (!proposal) {
     return (
-      <div className="max-w-4xl mx-auto py-16 text-center space-y-4 font-sans">
+      <div className="max-w-4xl mx-auto py-16 text-center space-y-4 font-sans bg-white border border-slate-200 p-8">
         <AlertTriangle className="w-12 h-12 text-[#0f2c59] mx-auto" />
-        <h2 className="text-xl font-bold text-slate-900">Usulan Tidak Ditemukan</h2>
+        <h2 className="text-base font-bold text-slate-900">Usulan Tidak Ditemukan</h2>
         <p className="text-xs text-slate-500">Data usulan dengan ID tersebut tidak ditemukan dalam sistem.</p>
         <Link
           href="/admin/verification"
-          className="inline-flex items-center gap-2 px-4 py-2 bg-[#0f2c59] text-white text-xs font-semibold border border-black"
+          className="inline-flex items-center gap-2 px-4 py-2 bg-[#0f2c59] text-white text-xs font-semibold border border-blue-900"
         >
           <ArrowLeft className="w-4 h-4" />
           Kembali ke Antrean Validasi
@@ -139,15 +170,37 @@ export default function AdminVerificationDetailPage({ params }: PageProps) {
     }
   };
 
-  const allPillarsChecked =
-    isProblemClear && isNotDuplicated && isUrgencyRelevant && isStrategicAligned && isResearchFeasible;
+  const getUrgencyBadge = (level?: string) => {
+    switch (level) {
+      case 'TINGGI':
+        return (
+          <span className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-bold bg-rose-50 text-rose-800 border border-rose-300">
+            <Flame className="h-3.5 w-3.5 text-rose-600" />
+            Tinggi (Mendesak)
+          </span>
+        );
+      case 'SEDANG':
+        return (
+          <span className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-bold bg-amber-50 text-amber-800 border border-amber-300">
+            <Clock className="h-3.5 w-3.5 text-amber-600" />
+            Sedang (Tahunan)
+          </span>
+        );
+      default:
+        return (
+          <span className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-bold bg-slate-100 text-slate-700 border border-slate-300">
+            Rendah
+          </span>
+        );
+    }
+  };
 
   return (
     <div className="space-y-6 max-w-5xl mx-auto pb-20 font-sans">
       {/* HEADER */}
       <PageHeader
         title="Validasi Substansi & Kelayakan Riset OPD"
-        description={`Pemeriksaan kelayakan usulan riset kode ${proposal.code} dari ${proposal.opdName} berdasarkan 5 pilar instrumen validasi BRIDA.`}
+        description={`Pemeriksaan kelayakan komprehensif usulan riset kode ${proposal.code} dari ${proposal.opdName} berdasarkan 5 pilar instrumen validasi BRIDA.`}
         action={
           <Link
             href="/admin/verification"
@@ -167,8 +220,8 @@ export default function AdminVerificationDetailPage({ params }: PageProps) {
             proposal.status === 'APPROVED' || proposal.status === 'IN_PROGRESS' || proposal.status === 'COMPLETED'
               ? 'bg-blue-600 text-white border-blue-700'
               : proposal.status === 'RETURNED'
-              ? 'bg-slate-100 text-slate-900 border-black'
-              : 'bg-slate-900 text-white border-black'
+              ? 'bg-slate-100 text-slate-900 border-slate-300'
+              : 'bg-slate-900 text-white border-slate-800'
           )}
         >
           <div className="flex items-center gap-2.5">
@@ -201,8 +254,8 @@ export default function AdminVerificationDetailPage({ params }: PageProps) {
         </div>
       )}
 
-      {/* SECTION 1: PROPOSAL OVERVIEW CARD */}
-      <Card className="bg-white border-black shadow-sm">
+      {/* ================= SECTION 1: PROPOSAL OVERVIEW CARD ================= */}
+      <Card className="bg-white border-slate-200 shadow-xs">
         <CardHeader className="border-b border-slate-200 pb-4">
           <div className="flex flex-wrap items-center justify-between gap-2">
             <div className="flex items-center gap-2">
@@ -212,86 +265,279 @@ export default function AdminVerificationDetailPage({ params }: PageProps) {
               <span className="px-2.5 py-1 text-xs font-semibold bg-blue-50 text-blue-900 border border-blue-300">
                 Usulan Perangkat Daerah
               </span>
+              {getUrgencyBadge(proposal.urgencyLevel)}
             </div>
-            <span className="text-xs text-slate-500 font-medium">
-              Diajukan: {proposal.submittedAt || proposal.createdAt || '2026-09-01'}
-            </span>
+            <div className="flex items-center gap-1.5 text-xs text-slate-500 font-medium">
+              <Calendar className="h-3.5 w-3.5 text-slate-400" />
+              <span>Diajukan: {proposal.submittedAt || proposal.createdAt || '2026-09-01'}</span>
+            </div>
           </div>
           <CardTitle className="text-base font-bold text-slate-900 mt-2 leading-snug">
             {proposal.title}
           </CardTitle>
         </CardHeader>
-        <CardContent className="p-5 space-y-4 text-xs">
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 p-3.5 bg-slate-50 border border-slate-300">
-            <div>
-              <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 block">
-                OPD Pengusul
+
+        <CardContent className="p-5 space-y-5 text-xs">
+          
+          {/* Card 1.1: Identitas OPD & Kontak Pengusul */}
+          <div className="p-4 bg-slate-50 border border-slate-200 space-y-3">
+            <div className="flex items-center justify-between border-b border-slate-200 pb-2">
+              <span className="text-xs font-bold text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
+                <Building2 className="h-4 w-4 text-[#0f2c59]" />
+                Identitas Instansi Pengusul & Penanggung Jawab
               </span>
-              <span className="font-bold text-slate-800 mt-0.5 block">{proposal.opdName}</span>
-            </div>
-            <div>
-              <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 block">
-                Bidang / Kategori
+              <span className="text-3xs text-slate-500 bg-white px-2 py-0.5 border border-slate-200">
+                {proposal.opd?.category || 'Badan / Dinas Daerah'}
               </span>
-              <span className="font-bold text-slate-800 mt-0.5 block">{proposal.category}</span>
             </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 pt-1">
+              <div>
+                <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 block">
+                  Perangkat Daerah (OPD)
+                </span>
+                <span className="font-bold text-slate-900 mt-0.5 block">{proposal.opdName}</span>
+              </div>
+
+              <div>
+                <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 block">
+                  Penanggung Jawab / Staf
+                </span>
+                <span className="font-bold text-slate-900 mt-0.5 flex items-center gap-1">
+                  <User className="h-3.5 w-3.5 text-slate-400" />
+                  {proposal.createdBy?.name || 'Staf OPD Pengusul'}
+                </span>
+                {proposal.createdBy?.nip && (
+                  <span className="text-3xs text-slate-500 block font-mono">NIP: {proposal.createdBy.nip}</span>
+                )}
+              </div>
+
+              <div>
+                <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 block">
+                  Email Kontak
+                </span>
+                <span className="font-medium text-slate-800 mt-0.5 flex items-center gap-1 truncate">
+                  <Mail className="h-3.5 w-3.5 text-slate-400 shrink-0" />
+                  <span className="truncate">{proposal.createdBy?.email || proposal.opd?.email || '-'}</span>
+                </span>
+              </div>
+
+              <div>
+                <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 block">
+                  Nomor Kontak / Telepon
+                </span>
+                <span className="font-medium text-slate-800 mt-0.5 flex items-center gap-1">
+                  <Phone className="h-3.5 w-3.5 text-slate-400 shrink-0" />
+                  {proposal.createdBy?.phone || proposal.opd?.phone || '-'}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* Card 1.2: Parameter Riset, Target Luaran & Anggaran */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 p-4 bg-blue-50/40 border border-blue-200">
             <div>
-              <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 block">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-blue-900 block">
+                Bidang / Kategori Riset
+              </span>
+              <span className="font-bold text-slate-900 mt-1 block">{proposal.category}</span>
+            </div>
+
+            <div>
+              <span className="text-[10px] font-bold uppercase tracking-wider text-blue-900 block flex items-center gap-1">
+                <Target className="h-3 w-3 text-blue-700" />
+                Target Luaran Akhir
+              </span>
+              <span className="font-bold text-blue-900 mt-1 block">{proposal.expectedOutput}</span>
+            </div>
+
+            <div>
+              <span className="text-[10px] font-bold uppercase tracking-wider text-blue-900 block flex items-center gap-1">
+                <DollarSign className="h-3 w-3 text-blue-700" />
                 Estimasi Pagu Anggaran
               </span>
-              <span className="font-bold text-blue-900 mt-0.5 block font-mono">
-                Rp {Number(proposal.estimatedBudget || 0).toLocaleString('id-ID')}
+              <span className="font-extrabold text-blue-950 mt-1 block font-mono text-sm">
+                {proposal.estimatedBudget
+                  ? `Rp ${Number(proposal.estimatedBudget).toLocaleString('id-ID')}`
+                  : 'Menyesuaikan APBD'}
+              </span>
+            </div>
+
+            <div>
+              <span className="text-[10px] font-bold uppercase tracking-wider text-blue-900 block flex items-center gap-1">
+                <Clock className="h-3 w-3 text-blue-700" />
+                Estimasi Durasi Kajian
+              </span>
+              <span className="font-bold text-slate-900 mt-1 block">
+                {proposal.estimatedDuration ? `${proposal.estimatedDuration} Bulan` : '3 Bulan'}
               </span>
             </div>
           </div>
 
-          <div className="space-y-1.5">
-            <span className="font-bold text-slate-800 block text-xs">
-              Rumusan Masalah yang Dihadapi OPD:
-            </span>
-            <div className="p-3 bg-slate-50 rounded-lg border border-slate-200 text-slate-700 leading-relaxed whitespace-pre-wrap">
-              {proposal.problemStatement}
-            </div>
-          </div>
-
-          {proposal.urgencyReason && (
+          {/* Card 1.3: Substansi Masalah & Urgensi Kebijakan */}
+          <div className="space-y-4">
             <div className="space-y-1.5">
-              <span className="font-bold text-slate-800 block text-xs">
-                Alasan Urgensi & Kebutuhan Solusi Riset:
+              <span className="font-bold text-slate-900 block text-xs flex items-center gap-1.5">
+                <FileText className="h-4 w-4 text-[#0f2c59]" />
+                <span>1. Rumusan Masalah / Latar Belakang Lapangan (Fakta Empiris):</span>
               </span>
-              <div className="p-3 bg-slate-50 rounded-lg border border-slate-200 text-slate-700 leading-relaxed whitespace-pre-wrap">
+              <div className="p-4 bg-slate-50 border border-slate-200 text-slate-800 leading-relaxed whitespace-pre-wrap text-xs">
+                {proposal.problemStatement}
+              </div>
+            </div>
+
+            <div className="space-y-1.5">
+              <span className="font-bold text-slate-900 block text-xs flex items-center gap-1.5">
+                <Flame className="h-4 w-4 text-rose-600" />
+                <span>2. Alasan Urgensi Riset bagi Pembuatan Kebijakan Daerah:</span>
+              </span>
+              <div className="p-4 bg-slate-50 border border-slate-200 text-slate-800 leading-relaxed whitespace-pre-wrap text-xs">
                 {proposal.urgencyReason}
               </div>
             </div>
-          )}
 
-          {proposal.supportingDocuments && proposal.supportingDocuments.length > 0 && (
-            <div className="space-y-1.5 pt-1">
-              <span className="font-bold text-slate-800 block text-xs">
-                Dokumen Lampiran TOR / Data Awal ({proposal.supportingDocuments.length}):
-              </span>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                {proposal.supportingDocuments.map((doc, idx) => (
-                  <div
-                    key={idx}
-                    className="flex items-center justify-between p-2.5 bg-slate-50 rounded-lg border border-slate-200 text-xs"
-                  >
-                    <div className="flex items-center gap-2 truncate">
-                      <FileText className="h-4 w-4 text-[#0f2c59] shrink-0" />
-                      <span className="truncate font-medium text-slate-800">{doc.name}</span>
-                    </div>
-                    <span className="text-[10px] text-slate-400 shrink-0 ml-2">{doc.size}</span>
-                  </div>
-                ))}
+            {proposal.strategicImpact && (
+              <div className="space-y-1.5">
+                <span className="font-bold text-slate-900 block text-xs flex items-center gap-1.5">
+                  <Sparkles className="h-4 w-4 text-blue-600" />
+                  <span>3. Dampak Strategis Kebijakan (Keterkaitan RPJMD / Layanan Publik):</span>
+                </span>
+                <div className="p-4 bg-slate-50 border border-slate-200 text-slate-800 leading-relaxed whitespace-pre-wrap text-xs">
+                  {proposal.strategicImpact}
+                </div>
               </div>
+            )}
+          </div>
+
+          {/* Card 1.4: Berkas KAK / TOR Awal & Dokumen Pendukung */}
+          <div className="space-y-3 pt-2 border-t border-slate-200">
+            <div className="flex items-center justify-between">
+              <span className="font-bold text-slate-900 block text-xs flex items-center gap-1.5">
+                <FileText className="h-4 w-4 text-[#0f2c59]" />
+                <span>Dokumen Kerangka Acuan Kerja (KAK / TOR) & Berkas Pendukung</span>
+              </span>
+              <span className="text-3xs text-slate-500">
+                Total:{' '}
+                {(proposal.torDocument ? 1 : 0) + (proposal.supportingDocuments?.length || 0)} Berkas
+              </span>
             </div>
-          )}
+
+            {/* TOR Document Box */}
+            {proposal.torDocument ? (
+              <div className="p-3.5 bg-blue-50/70 border border-blue-300 rounded flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className="p-2 bg-blue-600 text-white rounded shrink-0">
+                    <FileText className="h-5 w-5" />
+                  </div>
+                  <div className="truncate">
+                    <div className="flex items-center gap-2">
+                      <span className="font-bold text-slate-900 block truncate">{proposal.torDocument.name}</span>
+                      <span className="text-3xs font-extrabold uppercase px-1.5 py-0.2 bg-blue-200 text-blue-900 rounded shrink-0">
+                        KAK / TOR Resmi
+                      </span>
+                    </div>
+                    <span className="text-3xs text-slate-500 block mt-0.5">
+                      {proposal.torDocument.size} • Diunggah {proposal.torDocument.uploadDate}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2 shrink-0">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      openOrDownloadFile(
+                        {
+                          name: proposal.torDocument!.name,
+                          type: 'TOR_DOCUMENT',
+                          proposalCode: proposal.code,
+                          proposalTitle: proposal.title,
+                          opdName: proposal.opdName,
+                          uploadDate: proposal.torDocument!.uploadDate,
+                          size: proposal.torDocument!.size,
+                          url: proposal.torDocument!.url,
+                          content: `KERANGKA ACUAN KERJA (KAK / TOR)\nJudul: ${proposal.title}\nInstansi: ${proposal.opdName}\nKode: ${proposal.code}\nPagu Anggaran: Rp ${Number(proposal.estimatedBudget || 0).toLocaleString('id-ID')}\nTarget Luaran: ${proposal.expectedOutput}\n\nLatar Belakang Masalah:\n${proposal.problemStatement}\n\nUrgensi Riset:\n${proposal.urgencyReason}`,
+                        },
+                        toast
+                      );
+                    }}
+                    className="px-3 py-1.5 bg-white hover:bg-blue-600 hover:text-white rounded text-2xs font-bold transition flex items-center gap-1.5 border border-blue-300 shadow-xs"
+                  >
+                    <Eye className="h-3.5 w-3.5" />
+                    <span>Buka / Pratinjau KAK</span>
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div className="p-3 bg-amber-50 border border-amber-200 rounded text-xs text-amber-900 flex items-center gap-2">
+                <AlertCircle className="h-4 w-4 text-amber-700 shrink-0" />
+                <span>OPD belum melampirkan berkas KAK/TOR awal terpisah pada formulir pengajuan ini.</span>
+              </div>
+            )}
+
+            {/* Supporting Documents List */}
+            {proposal.supportingDocuments && proposal.supportingDocuments.length > 0 && (
+              <div className="space-y-1.5 pt-1">
+                <span className="text-2xs font-bold text-slate-700 block uppercase tracking-wider">
+                  Berkas Data Pendukung Tambahan ({proposal.supportingDocuments.length}):
+                </span>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  {proposal.supportingDocuments.map((doc, idx) => (
+                    <div
+                      key={idx}
+                      className="flex items-center justify-between p-2.5 bg-slate-50 border border-slate-200 text-xs"
+                    >
+                      <div className="flex items-center gap-2 min-w-0 pr-2">
+                        <FileText className="h-4 w-4 text-slate-500 shrink-0" />
+                        <div className="truncate">
+                          <span className="truncate font-medium text-slate-800 block">{doc.name}</span>
+                          <span className="text-3xs text-slate-400">{doc.size}</span>
+                        </div>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          openOrDownloadFile(
+                            {
+                              name: doc.name,
+                              type: 'DATA_DUKUNG',
+                              proposalCode: proposal.code,
+                              proposalTitle: proposal.title,
+                              opdName: proposal.opdName,
+                              uploadDate: doc.uploadDate || proposal.createdAt,
+                              size: doc.size,
+                              url: doc.url,
+                              content: `LAMPIRAN DOKUMEN PENDUKUNG\nNama Berkas: ${doc.name}\nUsulan: ${proposal.title} (${proposal.code})\nInstansi: ${proposal.opdName}`,
+                            },
+                            toast
+                          );
+                        }}
+                        className="px-2.5 py-1 bg-white hover:bg-slate-100 text-slate-800 rounded text-3xs font-semibold transition flex items-center gap-1 border border-slate-300 shrink-0 shadow-xs"
+                      >
+                        {isPdfDocument(doc.name) ? (
+                          <>
+                            <ExternalLink className="h-3 w-3 text-blue-600" />
+                            <span>Lihat PDF</span>
+                          </>
+                        ) : (
+                          <>
+                            <Download className="h-3 w-3 text-slate-600" />
+                            <span>Unduh</span>
+                          </>
+                        )}
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
         </CardContent>
       </Card>
 
-      {/* SECTION 2: 5 PILAR VALIDASI FORM */}
-      <Card className="bg-white border-black shadow-sm overflow-hidden">
-        <CardHeader className="bg-[#0f2c59] text-white p-5 border-b border-black">
+      {/* ================= SECTION 2: 5 PILAR VALIDASI FORM ================= */}
+      <Card className="bg-white border-slate-200 shadow-xs overflow-hidden">
+        <CardHeader className="bg-[#0f2c59] text-white p-5 border-b border-slate-200">
           <div className="flex items-center gap-2.5">
             <ShieldCheck className="h-6 w-6 text-sky-400" />
             <div>
@@ -360,7 +606,7 @@ export default function AdminVerificationDetailPage({ params }: PageProps) {
               <div className="space-y-1 flex-1 text-xs">
                 <div className="flex items-center justify-between">
                   <strong className="text-slate-900 font-bold text-sm">
-                    Pilar 2: Kebaruan & Pemeriksaan Riwayat Riset (Bebas Duplikasi)
+                    Pilar 2: Kebaruan & Pemeriksaan Duplikasi
                   </strong>
                   {isNotDuplicated && (
                     <span className="text-[10px] font-bold uppercase tracking-wider text-white bg-blue-600 px-2 py-0.5 border border-blue-700">
@@ -369,7 +615,7 @@ export default function AdminVerificationDetailPage({ params }: PageProps) {
                   )}
                 </div>
                 <p className="text-slate-600 leading-relaxed">
-                  Telah diverifikasi bahwa riset atau penyelesaian masalah serupa <strong>belum pernah dilakukan sebelumnya</strong> dalam repositori SIM-RIDA, atau usulan ini memberikan kebaruan (novelty) serta kelanjutan yang signifikan.
+                  Topik riset belum pernah diteliti sebelumnya oleh instansi manapun di Kabupaten Mimika dalam 3 tahun terakhir dan bukan merupakan duplikasi kajian OPD lain.
                 </p>
               </div>
             </label>
@@ -393,7 +639,7 @@ export default function AdminVerificationDetailPage({ params }: PageProps) {
               <div className="space-y-1 flex-1 text-xs">
                 <div className="flex items-center justify-between">
                   <strong className="text-slate-900 font-bold text-sm">
-                    Pilar 3: Tingkat Urgensi Masalah
+                    Pilar 3: Tingkat Urgensi Kebijakan Daerah
                   </strong>
                   {isUrgencyRelevant && (
                     <span className="text-[10px] font-bold uppercase tracking-wider text-white bg-blue-600 px-2 py-0.5 border border-blue-700">
@@ -505,7 +751,7 @@ export default function AdminVerificationDetailPage({ params }: PageProps) {
                   type="button"
                   disabled={isSubmitting}
                   onClick={() => handleDecision('REJECT')}
-                  className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-2 px-4 py-2.5 text-xs font-semibold text-white bg-slate-900 border border-black hover:bg-black transition-colors cursor-pointer"
+                  className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-2 px-4 py-2.5 text-xs font-semibold text-white bg-slate-900 border border-slate-800 hover:bg-black transition-colors cursor-pointer"
                 >
                   <XCircle className="h-4 w-4" />
                   Tolak Usulan
@@ -515,7 +761,7 @@ export default function AdminVerificationDetailPage({ params }: PageProps) {
                   type="button"
                   disabled={isSubmitting}
                   onClick={() => handleDecision('RETURN')}
-                  className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-2 px-4 py-2.5 text-xs font-semibold text-slate-900 bg-white border border-black hover:bg-slate-100 transition-colors cursor-pointer"
+                  className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-2 px-4 py-2.5 text-xs font-semibold text-slate-900 bg-white border border-slate-300 hover:bg-slate-100 transition-colors cursor-pointer"
                 >
                   <RotateCcw className="h-4 w-4" />
                   Kembalikan ke OPD (Perlu Revisi)
@@ -539,7 +785,7 @@ export default function AdminVerificationDetailPage({ params }: PageProps) {
               </span>
               <Link
                 href="/admin/verification"
-                className="px-4 py-2 text-xs font-semibold text-white bg-[#0f2c59] hover:bg-[#1a3d70] border border-black transition-colors"
+                className="px-4 py-2 text-xs font-semibold text-white bg-[#0f2c59] hover:bg-[#1a3d70] border border-blue-900 transition-colors"
               >
                 Kembali ke Daftar Antrean
               </Link>
@@ -547,6 +793,15 @@ export default function AdminVerificationDetailPage({ params }: PageProps) {
           )}
         </CardContent>
       </Card>
+
+      {/* Document Review & Viewer Modal */}
+      {documentReview && (
+        <DocumentViewerModal
+          isOpen={!!documentReview}
+          onClose={() => setDocumentReview(null)}
+          document={documentReview}
+        />
+      )}
     </div>
   );
 }

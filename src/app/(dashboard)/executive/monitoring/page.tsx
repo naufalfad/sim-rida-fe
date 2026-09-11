@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import { 
   useOpdStore, 
@@ -21,11 +21,12 @@ import {
   ArrowRight,
   ShieldCheck,
   TrendingUp,
-  AlertCircle
+  AlertCircle,
+  Loader2
 } from 'lucide-react';
 
 export default function ExecutiveMonitoringPage() {
-  const { proposals, addExecutiveGuidance } = useOpdStore();
+  const { proposals, studies, fetchStudies, fetchProposals, addExecutiveGuidance, isLoadingStudies } = useOpdStore();
 
   const [searchQuery, setSearchQuery] = useState('');
   const [filterHealth, setFilterHealth] = useState<'ALL' | 'ON_TRACK' | 'OVERDUE'>('ALL');
@@ -36,15 +37,47 @@ export default function ExecutiveMonitoringPage() {
   const [guidanceStage, setGuidanceStage] = useState('Pengumpulan Data & Survei');
   const [isGuidanceSuccess, setIsGuidanceSuccess] = useState(false);
 
-  // Active running studies
-  const runningStudies = proposals.filter(p => p.status === 'IN_PROGRESS' || p.status === 'COMPLETED' || !!p.studyData);
+  useEffect(() => {
+    fetchStudies();
+    fetchProposals();
+  }, [fetchStudies, fetchProposals]);
 
-  // Mock health check calculation: (e.g. if progress < 40 and milestone is late -> Overdue flag)
+  // Active running studies derived from live database records
+  const runningStudies = useMemo(() => {
+    const activeFromProposals = proposals.filter(
+      (p) => p.status === 'IN_PROGRESS' || p.status === 'COMPLETED' || !!p.studyData || !!p.researchStudy
+    );
+
+    const proposalIds = new Set(activeFromProposals.map((p) => p.id));
+    const additionalFromStudies: OpdProposal[] = (studies || [])
+      .filter((s) => !proposalIds.has(s.proposalId || s.id))
+      .map((s) => ({
+        id: s.proposalId || s.id,
+        code: s.proposal?.code || `RIS-${s.fiscalYear || new Date().getFullYear()}`,
+        title: s.title || s.proposal?.title || 'Kajian Riset BRIDA',
+        opdName: s.proposal?.opd?.name || 'Perangkat Daerah',
+        category: s.proposal?.category || 'Kelitbangan',
+        problemStatement: '',
+        urgencyReason: '',
+        urgencyLevel: 'TINGGI' as any,
+        expectedOutput: 'Rekomendasi Teknis' as any,
+        supportingDocuments: [],
+        status: (s.status as any) || 'IN_PROGRESS',
+        createdAt: s.createdAt ? new Date(s.createdAt).toISOString().split('T')[0] : '',
+        lastUpdated: s.updatedAt ? new Date(s.updatedAt).toISOString().split('T')[0] : '',
+        researchStudy: s,
+      }));
+
+    return [...activeFromProposals, ...additionalFromStudies];
+  }, [proposals, studies]);
+
   const getStudyHealth = (prop: OpdProposal) => {
-    const progress = prop.studyData?.percentProgress || (prop.status === 'COMPLETED' ? 100 : 30);
-    if (prop.status === 'COMPLETED') return { status: 'COMPLETED', label: 'Selesai', color: 'blue' };
+    const isFinished = prop.status === 'COMPLETED' || prop.researchStudy?.status === 'COMPLETED';
+    if (isFinished) return { status: 'COMPLETED', label: 'Selesai', color: 'blue', warning: null };
+
+    const progress = prop.studyData?.percentProgress || (prop.researchStudy?.kakStatus === 'FINAL' ? 50 : 25);
     if (progress < 30) {
-      return { status: 'OVERDUE', label: 'Terlambat (Overdue)', color: 'slate', warning: 'Progres di bawah 30% mendekati batas target triwulan.' };
+      return { status: 'OVERDUE', label: 'Perlu Akselerasi', color: 'slate', warning: 'Tahap persiapan awal mendekati batas waktu triwulan.' };
     }
     if (progress < 60) {
       return { status: 'WARNING', label: 'Perlu Perhatian', color: 'slate', warning: 'Perlu akselerasi analisis data lapangan.' };
@@ -62,6 +95,16 @@ export default function ExecutiveMonitoringPage() {
     if (filterHealth === 'OVERDUE') return (health.status === 'OVERDUE' || health.status === 'WARNING') && matchesSearch;
     return matchesSearch;
   });
+
+  useEffect(() => {
+    if (filteredStudies.length > 0) {
+      if (!selectedProposal || !filteredStudies.find((p) => p.id === selectedProposal.id)) {
+        setSelectedProposal(filteredStudies[0]);
+      }
+    } else {
+      setSelectedProposal(null);
+    }
+  }, [filteredStudies, selectedProposal]);
 
   const handleSendGuidance = (e: React.FormEvent) => {
     e.preventDefault();
@@ -192,61 +235,76 @@ export default function ExecutiveMonitoringPage() {
             Daftar Riset Dalam Pengawasan ({filteredStudies.length})
           </h2>
 
-          {filteredStudies.map((prop) => {
-            const health = getStudyHealth(prop);
-            const isSelected = selectedProposal?.id === prop.id;
-            const progress = prop.studyData?.percentProgress || (prop.status === 'COMPLETED' ? 100 : 25);
+          {isLoadingStudies ? (
+            <div className="bg-white p-8 rounded-2xl border border-black text-center text-slate-400">
+              <Loader2 className="w-8 h-8 mx-auto text-blue-600 animate-spin mb-2" />
+              <p className="font-bold text-slate-700 text-xs">Memuat data kajian riset...</p>
+            </div>
+          ) : filteredStudies.length === 0 ? (
+            <div className="bg-white p-8 rounded-2xl border border-black text-center text-slate-400 space-y-2">
+              <Activity className="w-10 h-10 mx-auto text-slate-300 mb-2" />
+              <p className="font-bold text-slate-700 text-xs">Belum ada riset dalam pengawasan</p>
+              <p className="text-[11px] text-slate-400 leading-relaxed max-w-xs mx-auto">
+                Kajian riset yang telah disetujui dan diinisiasi akan otomatis terpantau di sini secara real-time.
+              </p>
+            </div>
+          ) : (
+            filteredStudies.map((prop) => {
+              const health = getStudyHealth(prop);
+              const isSelected = selectedProposal?.id === prop.id;
+              const progress = prop.studyData?.percentProgress || (prop.status === 'COMPLETED' || prop.researchStudy?.status === 'COMPLETED' ? 100 : 25);
 
-            return (
-              <div
-                key={prop.id}
-                onClick={() => setSelectedProposal(prop)}
-                className={`cursor-pointer bg-white p-5 rounded-2xl border transition shadow-sm hover:shadow-md ${
-                  isSelected ? 'border-blue-600 ring-2 ring-blue-500/20' : 'border-black'
-                }`}
-              >
-                <div className="flex items-center justify-between gap-2 mb-2">
-                  <span className="font-mono text-xs font-bold text-blue-900 bg-blue-50 px-2 py-0.5 rounded border border-blue-200">
-                    {prop.code}
-                  </span>
-                  <span className={`text-[10px] font-black px-2.5 py-0.5 rounded-full uppercase border ${
-                    health.status === 'OVERDUE' 
-                      ? 'bg-slate-900 text-white border-black animate-pulse' 
-                      : health.status === 'WARNING'
-                      ? 'bg-slate-100 text-slate-900 border-slate-300'
-                      : 'bg-blue-600 text-white border-blue-800'
-                  }`}>
-                    {health.label}
-                  </span>
+              return (
+                <div
+                  key={prop.id}
+                  onClick={() => setSelectedProposal(prop)}
+                  className={`cursor-pointer bg-white p-5 rounded-2xl border transition shadow-sm hover:shadow-md ${
+                    isSelected ? 'border-blue-600 ring-2 ring-blue-500/20' : 'border-black'
+                  }`}
+                >
+                  <div className="flex items-center justify-between gap-2 mb-2">
+                    <span className="font-mono text-xs font-bold text-blue-900 bg-blue-50 px-2 py-0.5 rounded border border-blue-200">
+                      {prop.code}
+                    </span>
+                    <span className={`text-[10px] font-black px-2.5 py-0.5 rounded-full uppercase border ${
+                      health.status === 'OVERDUE' 
+                        ? 'bg-slate-900 text-white border-black animate-pulse' 
+                        : health.status === 'WARNING'
+                        ? 'bg-slate-100 text-slate-900 border-slate-300'
+                        : 'bg-blue-600 text-white border-blue-800'
+                    }`}>
+                      {health.label}
+                    </span>
+                  </div>
+
+                  <h3 className="font-bold text-slate-900 text-sm line-clamp-2">{prop.title}</h3>
+                  <p className="text-xs text-slate-500 mt-1 mb-3">{prop.opdName}</p>
+
+                  {/* Flag warning callout if any */}
+                  {health.warning && (
+                    <div className="p-2 mb-3 bg-slate-100 rounded-lg text-[11px] font-bold text-slate-900 flex items-center gap-1.5 border border-black">
+                      <AlertTriangle className="w-3.5 h-3.5 shrink-0 text-blue-600" />
+                      <span>{health.warning}</span>
+                    </div>
+                  )}
+
+                  {/* Progress bar */}
+                  <div className="space-y-1.5">
+                    <div className="flex justify-between items-center text-xs font-bold">
+                      <span className="text-slate-600">Milestone: {prop.studyData?.currentMilestone || (prop.status === 'COMPLETED' || prop.researchStudy?.status === 'COMPLETED' ? 'SELESAI' : 'PELAKSANAAN')}</span>
+                      <span className="text-blue-900">{progress}%</span>
+                    </div>
+                    <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden border border-slate-200">
+                      <div 
+                        className="h-full transition-all duration-500 bg-blue-600"
+                        style={{ width: `${progress}%` }}
+                      />
+                    </div>
+                  </div>
                 </div>
-
-                <h3 className="font-bold text-slate-900 text-sm line-clamp-2">{prop.title}</h3>
-                <p className="text-xs text-slate-500 mt-1 mb-3">{prop.opdName}</p>
-
-                {/* Flag warning callout if any */}
-                {health.warning && (
-                  <div className="p-2 mb-3 bg-slate-100 rounded-lg text-[11px] font-bold text-slate-900 flex items-center gap-1.5 border border-black">
-                    <AlertTriangle className="w-3.5 h-3.5 shrink-0 text-blue-600" />
-                    <span>{health.warning}</span>
-                  </div>
-                )}
-
-                {/* Progress bar */}
-                <div className="space-y-1.5">
-                  <div className="flex justify-between items-center text-xs font-bold">
-                    <span className="text-slate-600">Milestone: {prop.studyData?.currentMilestone || 'PERSIAPAN'}</span>
-                    <span className="text-blue-900">{progress}%</span>
-                  </div>
-                  <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden border border-slate-200">
-                    <div 
-                      className="h-full transition-all duration-500 bg-blue-600"
-                      style={{ width: `${progress}%` }}
-                    />
-                  </div>
-                </div>
-              </div>
-            );
-          })}
+              );
+            })
+          )}
         </div>
 
         {/* Right Column: Supervision & Arahan Pimpinan Panel (7 cols) */}
@@ -260,7 +318,12 @@ export default function ExecutiveMonitoringPage() {
                   </span>
                   <span className="text-xs text-slate-500 font-semibold flex items-center gap-1">
                     <Calendar className="w-3.5 h-3.5 text-slate-400" />
-                    Target Selesai: {selectedProposal.studyData?.targetCompletionDate || '30 November 2026'}
+                    Target Selesai: {
+                      selectedProposal.studyData?.targetCompletionDate ||
+                      (selectedProposal.researchStudy?.endDate 
+                        ? new Date(selectedProposal.researchStudy.endDate).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })
+                        : 'Sesuai Linimasa Pelaksanaan')
+                    }
                   </span>
                 </div>
                 <h3 className="text-lg font-black text-slate-900 mt-2">{selectedProposal.title}</h3>

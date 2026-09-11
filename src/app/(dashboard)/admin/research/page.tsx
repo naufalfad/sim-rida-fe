@@ -160,7 +160,7 @@ export default function AdminResearchPage() {
   return (
     <div className="space-y-8 max-w-7xl mx-auto pb-16">
       {/* Top Banner Header */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6 bg-[#0f2c59] border border-black p-8 text-white shadow-xl">
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6 bg-[#0f2c59] border border-slate-200 p-8 text-white">
         <div className="space-y-2">
           <div className="flex items-center gap-2 text-sky-300 text-xs font-bold tracking-wider uppercase">
             <FlaskConical className="w-4 h-4" />
@@ -176,7 +176,7 @@ export default function AdminResearchPage() {
         <div className="flex flex-wrap items-center gap-3 shrink-0">
           <button
             onClick={() => { fetchStudies(); fetchProposals(); }}
-            className="flex items-center gap-2 bg-[#1b3b6f] hover:bg-[#15325b] text-white font-semibold px-4 py-2.5 transition text-xs border border-[#264978] shadow-sm"
+            className="flex items-center gap-2 bg-[#1b3b6f] hover:bg-[#15325b] text-white font-semibold px-4 py-2.5 transition text-xs border border-[#264978]"
             title="Muat Ulang Data Riset"
           >
             <RefreshCw className={cn('w-4 h-4 text-sky-300', isLoadingStudies && 'animate-spin')} />
@@ -184,14 +184,14 @@ export default function AdminResearchPage() {
           </button>
           <Link
             href="/admin/kak-builder"
-            className="flex items-center gap-2 bg-white hover:bg-slate-50 text-slate-900 font-bold px-4 py-2.5 transition shadow text-xs border border-slate-300"
+            className="flex items-center gap-2 bg-white hover:bg-slate-50 text-slate-900 font-bold px-4 py-2.5 transition text-xs border border-slate-200"
           >
             <Layers className="w-4 h-4 text-blue-700" />
             <span>Tahap 3 (Penyusunan KAK)</span>
           </Link>
           <Link
             href="/admin/recommendation-builder"
-            className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-bold px-4 py-2.5 transition shadow-lg text-xs border border-blue-700"
+            className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-bold px-4 py-2.5 transition text-xs border border-blue-700"
           >
             <BookOpen className="w-4 h-4" />
             <span>Tahap 5 (Rekomendasi)</span>
@@ -202,7 +202,7 @@ export default function AdminResearchPage() {
 
       {/* KPI Metric Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-        <div className="bg-white p-6 border border-black shadow-xs flex items-center gap-4">
+        <div className="bg-white p-6 border border-slate-200 flex items-center gap-4">
           <div className="w-12 h-12 bg-blue-50 border border-blue-200 text-[#0f2c59] flex items-center justify-center font-bold">
             <Layers className="w-6 h-6" />
           </div>
@@ -212,7 +212,7 @@ export default function AdminResearchPage() {
           </div>
         </div>
 
-        <div className="bg-white p-6 border border-black shadow-xs flex items-center gap-4">
+        <div className="bg-white p-6 border border-slate-200 flex items-center gap-4">
           <div className="w-12 h-12 bg-blue-50 border border-blue-200 text-blue-700 flex items-center justify-center font-bold">
             <Clock className="w-6 h-6" />
           </div>
@@ -222,7 +222,7 @@ export default function AdminResearchPage() {
           </div>
         </div>
 
-        <div className="bg-white p-6 border border-black shadow-xs flex items-center gap-4">
+        <div className="bg-white p-6 border border-slate-200 flex items-center gap-4">
           <div className="w-12 h-12 bg-blue-50 border border-blue-200 text-[#0f2c59] flex items-center justify-center font-bold">
             <CheckCircle2 className="w-6 h-6" />
           </div>
@@ -232,7 +232,7 @@ export default function AdminResearchPage() {
           </div>
         </div>
 
-        <div className="bg-white p-6 border border-black shadow-xs flex items-center gap-4">
+        <div className="bg-white p-6 border border-slate-200 flex items-center gap-4">
           <div className="w-12 h-12 bg-blue-50 border border-blue-200 text-blue-700 flex items-center justify-center font-bold">
             <DollarSign className="w-6 h-6" />
           </div>

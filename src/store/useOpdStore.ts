@@ -39,6 +39,17 @@ export const mapFrontendExpectedOutputToBackend = (output: string): string => {
   return map[output] || output || 'REKOMENDASI_KEBIJAKAN';
 };
 
+export const mapBackendExpectedOutputToFrontend = (output: string): ExpectedOutput => {
+  const map: Record<string, ExpectedOutput> = {
+    'NASKAH_AKADEMIK': 'Naskah Akademik Perda',
+    'REKOMENDASI_KEBIJAKAN': 'Rekomendasi Teknis',
+    'PROTOTIPE_SISTEM': 'Solusi Teknologi',
+    'DOKUMEN_MASTERPLAN': 'Model / Blueprint',
+    'STUDI_KELAYAKAN': 'Studi Kelayakan',
+  };
+  return map[output] || (output as ExpectedOutput) || 'Rekomendasi Teknis';
+};
+
 export const mapFieldToBackend = (field: string): 'EKONOMI_PEMBANGUNAN' | 'TATA_KELOLA_PEMERINTAHAN' | 'SOSIAL_BUDAYA' | 'INOVASI_TEKNOLOGI' => {
   const map: Record<string, 'EKONOMI_PEMBANGUNAN' | 'TATA_KELOLA_PEMERINTAHAN' | 'SOSIAL_BUDAYA' | 'INOVASI_TEKNOLOGI'> = {
     'Ekonomi': 'EKONOMI_PEMBANGUNAN',
@@ -163,6 +174,22 @@ export const normalizeProposal = (p: any): OpdProposal => {
       submittedAt: p.followUp.submittedAt ? new Date(p.followUp.submittedAt).toISOString().split('T')[0] : '',
     } : p.followUpReport,
     researchStudy: p.researchStudy || undefined,
+    createdBy: p.createdBy ? {
+      id: p.createdBy.id,
+      name: p.createdBy.name,
+      nip: p.createdBy.nip,
+      email: p.createdBy.email,
+      phone: p.createdBy.phone,
+    } : undefined,
+    opd: p.opd ? {
+      id: p.opd.id,
+      code: p.opd.code,
+      name: p.opd.name,
+      category: p.opd.category,
+      address: p.opd.address,
+      phone: p.opd.phone,
+      email: p.opd.email,
+    } : undefined,
   };
 };
 
@@ -524,6 +551,22 @@ export interface OpdProposal {
     feedbackNotes: string;
   };
   researchStudy?: ResearchStudyItem | any;
+  createdBy?: {
+    id: string;
+    name: string;
+    nip?: string | null;
+    email: string;
+    phone?: string | null;
+  };
+  opd?: {
+    id: string;
+    code: string;
+    name: string;
+    category?: string;
+    address?: string | null;
+    phone?: string | null;
+    email?: string | null;
+  };
 }
 
 export interface KepalaDashboardData {
@@ -559,6 +602,7 @@ export interface KepalaDashboardData {
     id: string;
     title: string;
     kapanewon: string;
+    distrik?: string;
     coordinates: [number, number];
     field: string;
     status: string;
@@ -707,6 +751,7 @@ interface OpdState {
 
   // Proposal API Actions
   fetchProposals: (params?: { search?: string; status?: string; category?: string; opdId?: string; source?: string; page?: number; limit?: number }) => Promise<OpdProposal[]>;
+  fetchProposalById: (id: string) => Promise<OpdProposal>;
   fetchVerificationInbox: (params?: { search?: string; page?: number; limit?: number }) => Promise<OpdProposal[]>;
   fetchScoringQueue: (params?: { search?: string; status?: string; researchField?: string; opdId?: string; page?: number; limit?: number }) => Promise<OpdProposal[]>;
   fetchApprovalInbox: (params?: { search?: string; status?: string; researchField?: string; opdId?: string; page?: number; limit?: number }) => Promise<OpdProposal[]>;
@@ -714,9 +759,9 @@ interface OpdState {
 
   // OPD Actions
   addProposal: (data: Omit<OpdProposal, 'id' | 'code' | 'createdAt' | 'lastUpdated' | 'opdName'> & { opdName?: string; opdId?: string }, isDraft: boolean) => Promise<string>;
-  updateProposal: (id: string, data: Partial<OpdProposal>) => void;
-  submitDraft: (id: string) => void;
-  deleteProposal: (id: string) => void;
+  updateProposal: (id: string, data: Partial<OpdProposal> & { isSubmit?: boolean }) => Promise<OpdProposal>;
+  submitDraft: (id: string) => Promise<OpdProposal>;
+  deleteProposal: (id: string) => Promise<void>;
   selectProposal: (id: string | null) => void;
   submitFollowUp: (id: string, followUp: NonNullable<OpdProposal['followUpReport']>) => void;
   getProposalById: (id: string) => OpdProposal | undefined;
@@ -829,258 +874,6 @@ interface OpdState {
   toggleBudgetYear: (id: string) => void;
 }
 
-const INITIAL_PROPOSALS: OpdProposal[] = [
-  {
-    id: 'prop-opd-001',
-    code: 'USUL-2026-001',
-    opdName: 'Dinas Kesehatan Kab. Mimika',
-    title: 'Strategi Penurunan Angka Stunting Balita Berbasis Intervensi Gizi Spesifik Lokal',
-    category: 'Kesehatan',
-    problemStatement: 'Meskipun angka stunting mengalami penurunan, prevalensi di beberapa kantong desa masih berada di atas 15%. Diperlukan identifikasi pola konsumsi pangan lokal dan integrasi layanan posyandu terpadu untuk percepatan eliminasi stunting.',
-    urgencyReason: 'Target nasional penurunan stunting di bawah 14% mendesak untuk diakselerasi dalam penyusunan RKPD tahun mendatang.',
-    urgencyLevel: 'TINGGI',
-    expectedOutput: 'Rekomendasi Teknis',
-    estimatedBudget: 85000000,
-    torDocument: {
-      name: 'KAK_Kajian_Stunting_Dinkes_2026.pdf',
-      size: '1.4 MB',
-      uploadDate: '02 Feb 2026'
-    },
-    supportingDocuments: [
-      { name: 'Data_Prevalensi_Stunting_Kecamatan_2025.xlsx', size: '2.4 MB', uploadDate: '02 Feb 2026' },
-      { name: 'Surat_Permohonan_Kajian_Dinkes.pdf', size: '1.1 MB', uploadDate: '02 Feb 2026' }
-    ],
-    status: 'COMPLETED',
-    createdAt: '2026-02-02',
-    submittedAt: '2026-02-03',
-    lastUpdated: '2026-03-01',
-    scoringData: {
-      visionAlignmentScore: 95,
-      urgencyScore: 92,
-      budgetFeasibilityScore: 88,
-      totalScore: 92,
-      fieldClassification: 'Sosial Budaya & Kesejahteraan',
-      executionMethod: 'SWAKELOLA',
-      researchScheme: 'INTERNAL_BRIDA',
-      evaluatorNotes: 'Sangat selaras dengan program prioritas Mimika Sehat 2026.',
-      scoredAt: '2026-02-05',
-      scoredBy: 'Admin Litbang BRIDA'
-    },
-    studyData: {
-      currentMilestone: 'FINALISASI',
-      percentProgress: 100,
-      milestoneNotes: 'Kajian empiris dan uji lab pangan lokal telah selesai dipublikasikan.',
-      targetCompletionDate: '2026-02-28',
-      kakDocument: {
-        name: 'KAK_Pelaksanaan_Kajian_Stunting_BRIDA_2026.pdf',
-        size: '2.1 MB',
-        uploadDate: '08 Feb 2026'
-      },
-      rkaDocument: {
-        name: 'RKA_Belanja_Kajian_Stunting_Dinkes.xlsx',
-        size: '1.4 MB',
-        uploadDate: '08 Feb 2026',
-        budgetNominal: 85000000
-      },
-      internalWorkingDocuments: [
-        { id: 'doc-w1', title: 'Hasil Olah Tabulasi Data Gizi Posyandu 18 Distrik', type: 'Olah Data Statistik', uploadDate: '12 Feb 2026', fileSize: '3.4 MB' },
-        { id: 'doc-w2', title: 'Draf Laporan Antara Kajian Stunting Mimika', type: 'Laporan Antara', uploadDate: '20 Feb 2026', fileSize: '5.1 MB' }
-      ]
-    },
-    recommendationDoc: {
-      title: 'Policy Brief: Formula Intervensi Pangan Lokal dan Skema Posyandu Presisi untuk Eliminasi Stunting',
-      type: 'Policy Brief',
-      date: '01 Mar 2026',
-      fileSize: '4.8 MB',
-      tteStatus: 'TERVERIFIKASI_TTE',
-      signedBy: 'Kepala BRIDA Kabupaten Mimika (TTE BSrE Bersertifikat)'
-    },
-    followUpReport: {
-      utilizationSummary: 'Hasil rekomendasi intervensi pangan lokal telah diadopsi ke dalam Rencana Kerja (Renja) Dinas Kesehatan Kab. Mimika 2027 pada program PMT (Pemberian Makanan Tambahan) Posyandu.',
-      utilizationType: 'Rencana Kerja (Renja)',
-      submittedAt: '03 Mar 2026',
-      satisfactionRating: 5,
-      feedbackNotes: 'Kajian sangat tajam, solutif, dan data empirisnya mudah diaplikasikan langsung oleh tim teknis lapangan.'
-    }
-  },
-  {
-    id: 'prop-opd-002',
-    code: 'USUL-2026-002',
-    opdName: 'Dinas Komunikasi dan Informatika Kab. Mimika',
-    title: 'Model Sistem Peringatan Dini Bencana Banjir dan Pasang Pesisir Berbasis Sensor IoT dan AI',
-    category: 'Infrastruktur & Teknologi',
-    problemStatement: 'Sistem pemantauan debit air di sungai aliran Wania dan Kamoro serta pasang air laut di pesisir Mimika saat ini masih mengandalkan pos manual, sehingga rentan terjadi keterlambatan evakuasi warga bantaran sungai saat curah hujan ekstrem.',
-    urgencyReason: 'Menjelang musim hujan dengan intensitas tinggi, keselamatan puluhan ribu warga di sepanjang bantaran sungai dan pesisir Mimika menjadi prioritas utama.',
-    urgencyLevel: 'TINGGI',
-    expectedOutput: 'Solusi Teknologi',
-    estimatedBudget: 150000000,
-    torDocument: {
-      name: 'TOR_Smart_EWS_Banjir_Pesisir_Diskominfo.pdf',
-      size: '2.8 MB',
-      uploadDate: '15 Feb 2026'
-    },
-    supportingDocuments: [
-      { name: 'Peta_Titik_Rentan_Banjir_Pesisir_Mimika.pdf', size: '5.2 MB', uploadDate: '15 Feb 2026' }
-    ],
-    status: 'IN_PROGRESS',
-    createdAt: '2026-02-15',
-    submittedAt: '2026-02-16',
-    lastUpdated: '2026-02-25',
-    scoringData: {
-      visionAlignmentScore: 90,
-      urgencyScore: 96,
-      budgetFeasibilityScore: 85,
-      totalScore: 91,
-      fieldClassification: 'Inovasi & Teknologi',
-      executionMethod: 'E_KATALOG',
-      researchScheme: 'KERJASAMA',
-      evaluatorNotes: 'Urgensi keselamatan warga sangat tinggi, rekomendasi pengadaan teknologi via E-Katalog.',
-      scoredAt: '2026-02-18',
-      scoredBy: 'Admin Litbang BRIDA'
-    },
-    studyData: {
-      currentMilestone: 'PENGUMPULAN_DATA',
-      percentProgress: 45,
-      milestoneNotes: 'Pemasangan prototipe sensor telemetry di 3 pos pemantau hulu Sungai Wania dan Sungai Kamoro.',
-      targetCompletionDate: '2026-04-30',
-      kakDocument: {
-        name: 'KAK_Implementasi_EWS_Banjir_Pesisir_IoT.pdf',
-        size: '3.2 MB',
-        uploadDate: '20 Feb 2026'
-      },
-      rkaDocument: {
-        name: 'RKA_Pengembangan_Sensor_IoT_AI.xlsx',
-        size: '2.1 MB',
-        uploadDate: '20 Feb 2026',
-        budgetNominal: 150000000
-      },
-      internalWorkingDocuments: [
-        { id: 'doc-w3', title: 'Data Mentah Sensor Telemetry Curah Hujan & Debit Mimika', type: 'Data Mentah', uploadDate: '24 Feb 2026', fileSize: '8.2 MB' }
-      ]
-    },
-    policyBriefDraft: {
-      title: 'Policy Brief: Integrasi Sensor IoT dan Algoritma AI untuk Early Warning System Banjir Pesisir Mimika',
-      executiveSummary: 'Penerapan jaringan sensor cerdas berbiaya terjangkau mampu memangkas waktu respons peringatan dini evakuasi dari 45 menit menjadi kurang dari 5 menit.',
-      problemAnalysis: 'Ketergantungan pada pemantauan visual pos pantau manual berisiko tinggi saat malam hari atau cuaca kabut tebal.',
-      policyOptions: 'Opsi 1: Pemasangan sensor mandiri oleh Pemkab Mimika. Opsi 2: Kolaborasi multi-sektor BPBD, Diskominfo, dan BWS Papua.',
-      actionRecommendations: 'Penerbitan Perbup tentang Standar Integrasi Data Telemetri Kebencanaan ke Mimika Command Center.',
-      officialDraftNumber: '005/BRIDA-MMK/PB-EWS/2026',
-      draftLetterSubject: 'Penyampaian Rekomendasi Teknis Sistem Peringatan Dini Banjir Berbasis IoT',
-      tteStatus: 'DRAFT'
-    }
-  },
-  {
-    id: 'prop-opd-003',
-    code: 'USUL-2026-003',
-    opdName: 'Dinas Pendidikan Kab. Mimika',
-    title: 'Kajian Evaluasi Efektivitas Kurikulum Muatan Lokal Kebudayaan Daerah pada Sekolah Dasar',
-    category: 'Pendidikan',
-    problemStatement: 'Belum ada standarisasi modul ajar dan instrumen penilaian kecakapan budaya daerah untuk siswa SD, sehingga capaian pelestarian nilai kearifan lokal belum terukur optimal.',
-    urgencyReason: 'Dinas Pendidikan merencanakan revisi silabus muatan lokal untuk tahun ajaran baru mendatang.',
-    urgencyLevel: 'SEDANG',
-    expectedOutput: 'Naskah Akademik Perda',
-    estimatedBudget: 60000000,
-    torDocument: {
-      name: 'KAK_Evaluasi_Mulok_Disdik.pdf',
-      size: '1.1 MB',
-      uploadDate: '28 Feb 2026'
-    },
-    supportingDocuments: [
-      { name: 'Hasil_Survei_Literasi_Budaya_Siswa_Mimika.pdf', size: '1.8 MB', uploadDate: '28 Feb 2026' }
-    ],
-    status: 'APPROVED',
-    createdAt: '2026-02-28',
-    submittedAt: '2026-03-01',
-    lastUpdated: '2026-03-02',
-    scoringData: {
-      visionAlignmentScore: 88,
-      urgencyScore: 82,
-      budgetFeasibilityScore: 90,
-      totalScore: 86,
-      fieldClassification: 'Sosial Budaya & Kesejahteraan',
-      executionMethod: 'PENUNJUKAN_LANGSUNG',
-      researchScheme: 'KERJASAMA',
-      evaluatorNotes: 'Layak diteliti, rekomendasi penunjukan langsung kepada pakar kebudayaan & kurikulum daerah.',
-      scoredAt: '2026-03-02',
-      scoredBy: 'Admin Litbang BRIDA'
-    },
-    studyData: {
-      currentMilestone: 'PERSIAPAN',
-      percentProgress: 15,
-      milestoneNotes: 'Penyusunan instrumen kuesioner dan penentuan sampel 40 SD percontohan.',
-      targetCompletionDate: '2026-05-30',
-      internalWorkingDocuments: []
-    }
-  },
-  {
-    id: 'prop-opd-004',
-    code: 'USUL-2026-004',
-    opdName: 'Dinas Koperasi dan UKM Kab. Mimika',
-    title: 'Analisis Rantai Pasok dan Digitalisasi Pemasaran Produk UMKM Olahan Sagu dan Kopi Amungme',
-    category: 'Ekonomi & Pariwisata',
-    problemStatement: 'Petani dan pelaku UMKM olahan sagu dan kopi Amungme kerap mengalami kendala keterbatasan akses pasar luar daerah dan sistem logistik rantai pasok.',
-    urgencyReason: 'Potensi pemberdayaan ekonomi masyarakat adat Amungme dan Kamoro sangat besar untuk meningkatkan taraf hidup keluarga.',
-    urgencyLevel: 'SEDANG',
-    expectedOutput: 'Kajian Kebijakan / Policy Brief',
-    estimatedBudget: 50000000,
-    torDocument: {
-      name: 'KAK_Rantai_Pasok_Sagu_Kopi_Dinkop.pdf',
-      size: '950 KB',
-      uploadDate: '04 Mar 2026'
-    },
-    supportingDocuments: [],
-    status: 'IN_REVIEW',
-    createdAt: '2026-03-04',
-    submittedAt: '2026-03-04',
-    lastUpdated: '2026-03-04',
-    adminVerification: {
-      isDocumentsComplete: true,
-      verificationNotes: 'Dokumen dan uraian masalah terverifikasi lengkap.',
-      verifiedAt: '2026-03-04',
-      verifiedBy: 'Admin Litbang BRIDA'
-    }
-  },
-  {
-    id: 'prop-opd-005',
-    code: 'USUL-2026-005',
-    opdName: 'Dinas Lingkungan Hidup Kab. Mimika',
-    title: 'Optimalisasi Pengelolaan Sampah Organik Terdesentralisasi Melalui Biokonversi Maggot BSF',
-    category: 'Lingkungan Hidup & Bencana',
-    problemStatement: 'Kapasitas TPST regional hampir melampaui ambang batas operasional. Diperlukan skema operasional maggot BSF di tingkat kelurahan dan kampung yang ekonomis dan berkelanjutan.',
-    urgencyReason: 'Penumpukan volume sampah harian mencapai 200 ton/hari tanpa pengolahan reduksi di hulu.',
-    urgencyLevel: 'TINGGI',
-    expectedOutput: 'Rekomendasi Teknis',
-    estimatedBudget: 110000000,
-    torDocument: {
-      name: 'TOR_Kajian_Maggot_BSF_DLH.pdf',
-      size: '2.1 MB',
-      uploadDate: '05 Mar 2026'
-    },
-    supportingDocuments: [
-      { name: 'Laporan_Volume_Sampah_TPST_2025.pdf', size: '3.1 MB', uploadDate: '05 Mar 2026' }
-    ],
-    status: 'PENDING',
-    createdAt: '2026-03-05',
-    submittedAt: '2026-03-05',
-    lastUpdated: '2026-03-05'
-  },
-  {
-    id: 'prop-opd-006',
-    code: 'USUL-2026-006',
-    opdName: 'Dinas Pariwisata Kab. Mimika',
-    title: 'Studi Kelayakan Pengembangan Ekowisata Mangrove dan Desa Wisata Pesisir Mimika',
-    category: 'Ekonomi & Pariwisata',
-    problemStatement: 'Konsep awal ekowisata pesisir belum memiliki indikator daya dukung lingkungan dan standardisasi pemandu wisata lokal.',
-    urgencyReason: 'Menangkap potensi pariwisata berkelanjutan dan pelestarian ekosistem pesisir.',
-    urgencyLevel: 'RENDAH',
-    expectedOutput: 'Model / Blueprint',
-    supportingDocuments: [],
-    status: 'DRAFT',
-    createdAt: '2026-03-06',
-    lastUpdated: '2026-03-06'
-  }
-];
-
 const INITIAL_OPDS: OpdMaster[] = [
   { id: 'opd-1', code: 'BAPPEDA', name: 'Badan Perencanaan Pembangunan Daerah Kab. Mimika', category: 'Badan Daerah', isActive: true },
   { id: 'opd-2', code: 'DINKES', name: 'Dinas Kesehatan Kab. Mimika', category: 'Dinas Daerah', isActive: true },
@@ -1118,7 +911,7 @@ const INITIAL_CATEGORIES = [
 ];
 
 export const useOpdStore = create<OpdState>((set, get) => ({
-  proposals: INITIAL_PROPOSALS,
+  proposals: [],
   activeOpdName: 'BAPPEDA & Perangkat Daerah Kab. Mimika',
   selectedProposalId: null,
   opds: INITIAL_OPDS,
@@ -1276,6 +1069,29 @@ export const useOpdStore = create<OpdState>((set, get) => ({
     }
   },
 
+  fetchProposalById: async (id: string) => {
+    try {
+      set({ isLoadingProposals: true, errorProposals: null });
+      const res = await axiosInstance.get(`/proposals/${id}`);
+      const data = res.data?.data || res.data;
+      const normalized = normalizeProposal(data);
+      set((state) => ({
+        proposals: [
+          normalized,
+          ...state.proposals.filter((p) => p.id !== normalized.id),
+        ],
+        selectedProposalId: normalized.id,
+        isLoadingProposals: false,
+      }));
+      return normalized;
+    } catch (err: any) {
+      console.error('Failed to fetch proposal detail:', err);
+      const errMsg = err.response?.data?.message || err.message || 'Gagal memuat detail usulan';
+      set({ errorProposals: errMsg, isLoadingProposals: false });
+      throw new Error(errMsg);
+    }
+  },
+
   fetchVerificationInbox: async (params = {}) => {
     try {
       set({ isLoadingProposals: true, errorProposals: null });
@@ -1348,12 +1164,12 @@ export const useOpdStore = create<OpdState>((set, get) => ({
         return normalized;
       }
       set({ isLoadingProposals: false });
-      return get().proposals.filter((p) => ['SCORED', 'APPROVED', 'REJECTED', 'IN_PROGRESS'].includes(p.status));
+      return [];
     } catch (err: any) {
       console.error('Failed to fetch approval inbox:', err);
       const errMsg = err.response?.data?.message || err.message || 'Gagal memuat antrean persetujuan';
       set({ errorProposals: errMsg, isLoadingProposals: false });
-      return get().proposals.filter((p) => ['SCORED', 'APPROVED', 'REJECTED', 'IN_PROGRESS'].includes(p.status));
+      return [];
     }
   },
 
@@ -1448,36 +1264,121 @@ export const useOpdStore = create<OpdState>((set, get) => ({
     }
   },
 
-  updateProposal: (id, data) => {
-    const today = new Date().toISOString().split('T')[0];
-    set((state) => ({
-      proposals: state.proposals.map((p) =>
-        p.id === id ? { ...p, ...data, lastUpdated: today } : p
-      ),
-    }));
+  updateProposal: async (id, data) => {
+    try {
+      set({ isLoadingProposals: true, errorProposals: null });
+
+      const docs: Array<{ name: string; size: string; fileUrl?: string }> = [];
+      if (data.torDocument) {
+        docs.push({
+          name: data.torDocument.name,
+          size: data.torDocument.size,
+          fileUrl: data.torDocument.url,
+        });
+      }
+      if (Array.isArray(data.supportingDocuments)) {
+        data.supportingDocuments.forEach((doc) => {
+          if (doc.name !== data.torDocument?.name) {
+            docs.push({
+              name: doc.name,
+              size: doc.size,
+              fileUrl: doc.url,
+            });
+          }
+        });
+      }
+
+      const backendExpectedOutput = data.expectedOutput
+        ? mapFrontendExpectedOutputToBackend(data.expectedOutput)
+        : undefined;
+
+      const payload: any = {
+        title: data.title,
+        category: data.category,
+        problemStatement: data.problemStatement,
+        urgencyReason: data.urgencyReason,
+        strategicImpact: data.strategicImpact !== undefined ? data.strategicImpact : null,
+        urgencyLevel: data.urgencyLevel,
+        expectedOutput: backendExpectedOutput,
+        estimatedBudget:
+          data.estimatedBudget !== undefined && data.estimatedBudget !== null && !isNaN(Number(data.estimatedBudget))
+            ? Number(data.estimatedBudget)
+            : null,
+        estimatedDuration:
+          data.estimatedDuration !== undefined && data.estimatedDuration !== null && !isNaN(Number(data.estimatedDuration))
+            ? Number(data.estimatedDuration)
+            : 3,
+        supportingDocuments: docs,
+        isSubmit: !!data.isSubmit,
+      };
+
+      const res = await axiosInstance.put(`/proposals/${id}`, payload);
+      const updatedData = res.data?.data || res.data;
+      const normalized = normalizeProposal(updatedData);
+
+      set((state) => ({
+        proposals: state.proposals.map((p) => (p.id === id ? normalized : p)),
+        selectedProposalId: id,
+        isLoadingProposals: false,
+      }));
+
+      return normalized;
+    } catch (err: any) {
+      console.error('Failed to update proposal:', err);
+      const errMsg =
+        err.response?.data?.message ||
+        err.response?.data?.errors?.[0]?.message ||
+        err.message ||
+        'Gagal memperbarui usulan riset';
+      set({ errorProposals: errMsg, isLoadingProposals: false });
+      throw new Error(errMsg);
+    }
   },
 
-  submitDraft: (id) => {
-    const today = new Date().toISOString().split('T')[0];
-    set((state) => ({
-      proposals: state.proposals.map((p) =>
-        p.id === id
-          ? {
-              ...p,
-              status: 'PENDING',
-              submittedAt: today,
-              lastUpdated: today,
-            }
-          : p
-      ),
-    }));
+  submitDraft: async (id) => {
+    try {
+      set({ isLoadingProposals: true, errorProposals: null });
+      const res = await axiosInstance.post(`/proposals/${id}/submit`);
+      const updatedData = res.data?.data || res.data;
+      const normalized = normalizeProposal(updatedData);
+
+      set((state) => ({
+        proposals: state.proposals.map((p) => (p.id === id ? normalized : p)),
+        isLoadingProposals: false,
+      }));
+
+      return normalized;
+    } catch (err: any) {
+      console.error('Failed to submit proposal draft:', err);
+      const errMsg =
+        err.response?.data?.message ||
+        err.response?.data?.errors?.[0]?.message ||
+        err.message ||
+        'Gagal mengirimkan usulan ke BRIDA';
+      set({ errorProposals: errMsg, isLoadingProposals: false });
+      throw new Error(errMsg);
+    }
   },
 
-  deleteProposal: (id) => {
-    set((state) => ({
-      proposals: state.proposals.filter((p) => p.id !== id),
-      selectedProposalId: state.selectedProposalId === id ? null : state.selectedProposalId,
-    }));
+  deleteProposal: async (id) => {
+    try {
+      set({ isLoadingProposals: true, errorProposals: null });
+      await axiosInstance.delete(`/proposals/${id}`);
+      set((state) => ({
+        proposals: state.proposals.filter((p) => p.id !== id),
+        selectedProposalId: state.selectedProposalId === id ? null : state.selectedProposalId,
+        isLoadingProposals: false,
+      }));
+    } catch (err: any) {
+      console.error('Failed to delete proposal:', err);
+      const errMsg =
+        err.response?.data?.message ||
+        err.response?.data?.errors?.[0]?.message ||
+        err.message ||
+        'Gagal menghapus usulan draf';
+      set({ errorProposals: errMsg, isLoadingProposals: false });
+      throw new Error(errMsg);
+    }
   },
 
   selectProposal: (id) => {
@@ -1946,13 +1847,10 @@ export const useOpdStore = create<OpdState>((set, get) => ({
     try {
       set({ isLoadingStudies: true, errorStudies: null });
       const res = await axiosInstance.get('/studies', { params });
-      const data = res.data?.data || res.data || [];
-      if (Array.isArray(data)) {
-        set({ studies: data, isLoadingStudies: false });
-        return data;
-      }
-      set({ isLoadingStudies: false });
-      return get().studies;
+      const raw = res.data?.data || res.data;
+      const data = Array.isArray(raw) ? raw : (Array.isArray(raw?.studies) ? raw.studies : []);
+      set({ studies: data, isLoadingStudies: false });
+      return data;
     } catch (err: any) {
       console.error('Failed to fetch studies:', err);
       const errMsg = err.response?.data?.message || err.message || 'Gagal memuat daftar kajian';
@@ -2352,6 +2250,16 @@ export const useOpdStore = create<OpdState>((set, get) => ({
 
   addExecutiveGuidance: (id: string, guidanceText: string, stage = 'Monitoring Kajian') => {
     const today = new Date().toISOString().split('T')[0];
+    let createdBy = 'Kepala BRIDA';
+    if (typeof window !== 'undefined') {
+      try {
+        const stored = localStorage.getItem('user');
+        if (stored) {
+          const u = JSON.parse(stored);
+          if (u?.name) createdBy = `Kepala BRIDA (${u.name})`;
+        }
+      } catch {}
+    }
     set((state) => ({
       proposals: state.proposals.map((p) => {
         if (p.id !== id) return p;
@@ -2359,7 +2267,7 @@ export const useOpdStore = create<OpdState>((set, get) => ({
           id: `gd-${Date.now()}`,
           text: guidanceText,
           createdAt: today,
-          createdBy: 'Kepala BRIDA (Dr. H. Bambang Suherman, M.Si.)',
+          createdBy,
           stage,
         };
         return {

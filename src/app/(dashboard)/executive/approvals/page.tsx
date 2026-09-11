@@ -78,7 +78,7 @@ export default function ExecutiveApprovalsPage() {
   const handleOpenDecisionModal = (type: 'APPROVE' | 'REJECT' | 'RETURN', prop: OpdProposal) => {
     setSelectedProposal(prop);
     setDecisionType(type);
-    setApprovedBudget(prop.estimatedBudget || 75000000);
+    setApprovedBudget(prop.estimatedBudget || 0);
     setFiscalYear(new Date().getFullYear());
 
     const defaultScheme = (prop.scoringData?.executionMethod || 
@@ -248,7 +248,9 @@ export default function ExecutiveApprovalsPage() {
           </div>
         ) : (
           filteredProposals.map((prop) => {
-            const score = prop.scoringData?.totalScore || 85;
+            const score = prop.scoringData?.totalScore !== undefined && prop.scoringData?.totalScore !== null
+              ? prop.scoringData.totalScore
+              : null;
             const isApproved = prop.executiveDecision?.decision === 'APPROVED' || prop.status === 'APPROVED' || prop.status === 'IN_PROGRESS' || prop.status === 'COMPLETED';
             const isRejected = prop.executiveDecision?.decision === 'REJECTED' || prop.status === 'REJECTED';
             const isReturned = prop.executiveDecision?.decision === 'RETURNED' || prop.executiveDecision?.decision === 'REVISION_REQUIRED' || prop.status === 'REVISION_REQUIRED';
@@ -265,9 +267,9 @@ export default function ExecutiveApprovalsPage() {
                       {prop.code}
                     </span>
                     <div className="flex items-center gap-1.5">
-                      <span className="text-[11px] font-bold text-slate-500">Skor Staff:</span>
-                      <span className="text-sm font-black text-blue-900 bg-blue-50 border border-blue-300 px-2 py-0.5 rounded-md">
-                        {score} / 100
+                      <span className="text-[11px] font-bold text-slate-500">Skor Review:</span>
+                      <span className="text-xs font-black text-blue-900 bg-blue-50 border border-blue-300 px-2 py-0.5 rounded-md font-mono">
+                        {score !== null ? `${score} / 100` : 'Belum diskor'}
                       </span>
                     </div>
                   </div>

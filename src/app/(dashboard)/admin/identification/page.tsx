@@ -168,61 +168,52 @@ export default function AdminIdentificationPage() {
 
       {/* STATS METRIC CARDS */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card className="bg-white border-black shadow-sm relative overflow-hidden">
-          <div className="absolute top-0 left-0 h-1 w-full bg-[#0f2c59]" />
-          <CardContent className="p-5 flex items-center justify-between">
-            <div className="space-y-1">
-              <span className="text-xs font-semibold uppercase tracking-wider text-slate-600">
-                Analisis Mandiri BRIDA
-              </span>
-              <div className="text-2xl font-bold text-[#0f2c59]">{bridaAnalyses.length}</div>
-              <p className="text-xs text-slate-500">Inisiatif Top-Down (By-pass validasi)</p>
-            </div>
-            <div className="h-12 w-12 border border-blue-200 bg-blue-50 flex items-center justify-center text-[#0f2c59]">
-              <Sparkles className="h-6 w-6" />
-            </div>
-          </CardContent>
-        </Card>
+        <div className="bg-white p-5 border border-slate-200 flex items-center gap-4">
+          <div className="w-12 h-12 border border-blue-200 bg-blue-50 flex items-center justify-center text-[#0f2c59] font-bold shrink-0">
+            <Sparkles className="w-6 h-6" />
+          </div>
+          <div className="space-y-0.5 min-w-0">
+            <p className="text-xs font-semibold uppercase tracking-wider text-slate-500 truncate">
+              Analisis Mandiri BRIDA
+            </p>
+            <p className="text-2xl font-black text-[#0f2c59] font-mono">{bridaAnalyses.length}</p>
+            <p className="text-xs text-slate-500 truncate">Inisiatif Top-Down (By-pass validasi)</p>
+          </div>
+        </div>
 
-        <Card className="bg-white border-black shadow-sm relative overflow-hidden">
-          <div className="absolute top-0 left-0 h-1 w-full bg-blue-600" />
-          <CardContent className="p-5 flex items-center justify-between">
-            <div className="space-y-1">
-              <span className="text-xs font-semibold uppercase tracking-wider text-slate-600">
-                Usulan Masuk dari OPD
-              </span>
-              <div className="text-2xl font-bold text-blue-900">{opdProposals.length}</div>
-              <p className="text-xs text-slate-500">
-                {opdProposals.filter((p) => p.status === 'PENDING').length} menunggu validasi BRIDA
-              </p>
-            </div>
-            <div className="h-12 w-12 border border-blue-200 bg-blue-50 flex items-center justify-center text-blue-700">
-              <Inbox className="h-6 w-6" />
-            </div>
-          </CardContent>
-        </Card>
+        <div className="bg-white p-5 border border-slate-200 flex items-center gap-4">
+          <div className="w-12 h-12 border border-blue-200 bg-blue-50 flex items-center justify-center text-blue-700 font-bold shrink-0">
+            <Inbox className="w-6 h-6" />
+          </div>
+          <div className="space-y-0.5 min-w-0">
+            <p className="text-xs font-semibold uppercase tracking-wider text-slate-500 truncate">
+              Usulan Masuk dari OPD
+            </p>
+            <p className="text-2xl font-black text-blue-900 font-mono">{opdProposals.length}</p>
+            <p className="text-xs text-slate-500 truncate">
+              {opdProposals.filter((p) => p.status === 'PENDING').length} menunggu validasi BRIDA
+            </p>
+          </div>
+        </div>
 
-        <Card className="bg-white border-black shadow-sm relative overflow-hidden">
-          <div className="absolute top-0 left-0 h-1 w-full bg-[#0f2c59]" />
-          <CardContent className="p-5 flex items-center justify-between">
-            <div className="space-y-1">
-              <span className="text-xs font-semibold uppercase tracking-wider text-slate-600">
-                Siap Masuk Tahap KAK
-              </span>
-              <div className="text-2xl font-bold text-[#0f2c59]">
-                {proposals.filter((p) => p.status === 'APPROVED').length}
-              </div>
-              <p className="text-xs text-slate-500">Siap disusun KAK & didukung AI</p>
-            </div>
-            <div className="h-12 w-12 border border-blue-200 bg-blue-50 flex items-center justify-center text-[#0f2c59]">
-              <CheckCircle2 className="h-6 w-6" />
-            </div>
-          </CardContent>
-        </Card>
+        <div className="bg-white p-5 border border-slate-200 flex items-center gap-4">
+          <div className="w-12 h-12 border border-blue-200 bg-blue-50 flex items-center justify-center text-[#0f2c59] font-bold shrink-0">
+            <CheckCircle2 className="w-6 h-6" />
+          </div>
+          <div className="space-y-0.5 min-w-0">
+            <p className="text-xs font-semibold uppercase tracking-wider text-slate-500 truncate">
+              Siap Masuk Tahap KAK
+            </p>
+            <p className="text-2xl font-black text-[#0f2c59] font-mono">
+              {proposals.filter((p) => p.status === 'APPROVED').length}
+            </p>
+            <p className="text-xs text-slate-500 truncate">Siap disusun KAK & didukung AI</p>
+          </div>
+        </div>
       </div>
 
       {/* INFORMATIONAL BANNER */}
-      <div className="border border-black bg-blue-50 p-4 text-xs text-blue-950 flex items-start gap-3.5 shadow-sm">
+      <div className="border border-slate-200 bg-blue-50/70 p-4 text-xs text-blue-950 flex items-start gap-3.5">
         <div className="p-2 bg-[#0f2c59] text-white shrink-0 mt-0.5">
           <TrendingUp className="h-4 w-4 text-sky-300" />
         </div>
@@ -240,17 +231,17 @@ export default function AdminIdentificationPage() {
       </div>
 
       {/* MAIN CONTENT CARD */}
-      <Card className="bg-white border-black shadow-sm">
+      <Card className="bg-white border-slate-200">
         {/* TABS & CONTROLS */}
         <div className="p-4 border-b border-slate-200 flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4">
           {/* TABS */}
-          <div className="flex items-center gap-1.5 p-1 bg-slate-100 shrink-0 border border-slate-300">
+          <div className="flex items-center gap-1.5 p-1 bg-slate-100 shrink-0 border border-slate-200">
             <button
               onClick={() => setActiveTab('BRIDA')}
               className={cn(
                 'px-3.5 py-1.5 text-xs font-semibold transition-all flex items-center gap-2 cursor-pointer',
                 activeTab === 'BRIDA'
-                  ? 'bg-[#0f2c59] text-white border border-black'
+                  ? 'bg-[#0f2c59] text-white'
                   : 'text-slate-700 hover:text-slate-900'
               )}
             >
@@ -266,7 +257,7 @@ export default function AdminIdentificationPage() {
               className={cn(
                 'px-3.5 py-1.5 text-xs font-semibold transition-all flex items-center gap-2 cursor-pointer',
                 activeTab === 'OPD'
-                  ? 'bg-[#0f2c59] text-white border border-black'
+                  ? 'bg-[#0f2c59] text-white'
                   : 'text-slate-700 hover:text-slate-900'
               )}
             >
@@ -282,7 +273,7 @@ export default function AdminIdentificationPage() {
               className={cn(
                 'px-3.5 py-1.5 text-xs font-semibold transition-all flex items-center gap-2 cursor-pointer',
                 activeTab === 'ALL'
-                  ? 'bg-[#0f2c59] text-white border border-black'
+                  ? 'bg-[#0f2c59] text-white'
                   : 'text-slate-700 hover:text-slate-900'
               )}
             >

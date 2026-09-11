@@ -179,7 +179,7 @@ export default function NewAdminIdentificationPage() {
       />
 
       {/* HIGHLIGHT BANNER */}
-      <div className="border border-black bg-blue-50 p-4.5 text-xs text-blue-950 flex items-start gap-3.5 shadow-sm">
+      <div className="border border-slate-200 bg-blue-50/70 p-4.5 text-xs text-blue-950 flex items-start gap-3.5">
         <div className="p-2 bg-[#0f2c59] text-white shrink-0 mt-0.5">
           <Sparkles className="h-4 w-4 text-sky-300" />
         </div>
@@ -196,7 +196,7 @@ export default function NewAdminIdentificationPage() {
       {/* FORM SECTIONS */}
       <div className="space-y-6">
         {/* CARD 1: TARGET OPD & KLASIFIKASI */}
-        <Card className="bg-white border-black shadow-sm">
+        <Card className="bg-white border-slate-200">
           <CardHeader className="border-b border-slate-200 pb-4">
             <CardTitle className="text-sm font-bold text-slate-900 flex items-center gap-2">
               <Building2 className="h-4 w-4 text-[#0f2c59]" />
@@ -249,7 +249,7 @@ export default function NewAdminIdentificationPage() {
         </Card>
 
         {/* CARD 2: URAIAN MASALAH & ANALISIS STRATEGIS */}
-        <Card className="bg-white border-black shadow-sm">
+        <Card className="bg-white border-slate-200">
           <CardHeader className="border-b border-slate-200 pb-4">
             <CardTitle className="text-sm font-bold text-slate-900 flex items-center gap-2">
               <FileText className="h-4 w-4 text-[#0f2c59]" />
@@ -318,8 +318,8 @@ export default function NewAdminIdentificationPage() {
           </CardContent>
         </Card>
 
-        {/* CARD 3: TARGET OUTPUT, ANGGARAN & DURASI */}
-        <Card className="bg-white border-black shadow-sm">
+        {/* CARD 3: URGENSI & JUSTIFIKASI KEBIJAKAN */}
+        <Card className="bg-white border-slate-200">
           <CardHeader className="border-b border-slate-200 pb-4">
             <CardTitle className="text-sm font-bold text-slate-900 flex items-center gap-2">
               <DollarSign className="h-4 w-4 text-blue-600" />
@@ -389,8 +389,8 @@ export default function NewAdminIdentificationPage() {
           </CardContent>
         </Card>
 
-        {/* CARD 4: DOKUMEN PENDUKUNG */}
-        <Card className="bg-white border-black shadow-sm">
+        {/* CARD 4: DATA DUKUNG & DOKUMEN PENDUKUNG */}
+        <Card className="bg-white border-slate-200">
           <CardHeader className="border-b border-slate-200 pb-4">
             <CardTitle className="text-sm font-bold text-slate-900 flex items-center gap-2">
               <UploadCloud className="h-4 w-4 text-[#0f2c59]" />
@@ -458,7 +458,7 @@ export default function NewAdminIdentificationPage() {
         </Card>
 
         {/* BOTTOM SUBMIT BUTTONS */}
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 p-4 bg-white border border-black shadow-sm">
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 p-4 bg-white border border-slate-200">
           <Link
             href="/admin/identification"
             className="px-4 py-2 text-xs font-semibold text-slate-700 hover:text-black border border-slate-300 bg-white"
@@ -481,7 +481,7 @@ export default function NewAdminIdentificationPage() {
               type="button"
               disabled={isSubmitting}
               onClick={() => handleSubmit(false)}
-              className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-2 px-5 py-2.5 text-xs font-semibold text-white bg-[#0f2c59] hover:bg-[#1a3d70] border border-black shadow-sm transition-colors cursor-pointer"
+              className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-2 px-5 py-2.5 text-xs font-semibold text-white bg-[#0f2c59] hover:bg-[#1a3d70] border border-blue-900 transition-colors cursor-pointer"
             >
               <Sparkles className="h-3.5 w-3.5 text-sky-400" />
               {isSubmitting ? 'Memproses...' : 'Terbitkan Analisis (Siap KAK)'}

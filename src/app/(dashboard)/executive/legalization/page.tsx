@@ -7,6 +7,7 @@ import {
   TteInboxItem,
   DigitalSignatureLogItem
 } from '@/store/useOpdStore';
+import { useAuthStore } from '@/store/useAuthStore';
 import { 
   FileCheck, 
   ShieldCheck, 
@@ -33,6 +34,7 @@ import {
 } from 'lucide-react';
 
 export default function ExecutiveLegalizationPage() {
+  const { user } = useAuthStore();
   const { 
     tteInbox,
     tteHistory,
@@ -150,8 +152,9 @@ export default function ExecutiveLegalizationPage() {
       });
 
       setSignSuccessInfo(result);
-      fetchTteInbox();
-      fetchTteHistory();
+      setSelectedInboxItem(null);
+      await fetchTteInbox();
+      await fetchTteHistory();
     } catch (err: any) {
       setSigningError(err.message || 'Passphrase salah atau gagal menandatangani dokumen.');
     } finally {
@@ -487,8 +490,14 @@ export default function ExecutiveLegalizationPage() {
                         </div>
                       )}
 
-                      <p className="text-[11px] font-black text-slate-900 pt-1">Dr. H. Bambang Suherman, M.Si.</p>
-                      <p className="text-[9px] font-mono text-slate-400">NIP. 19740512 199903 1 002</p>
+                      <p className="text-[11px] font-black text-slate-900 pt-1">
+                        {selectedHistoryItem?.signerName || user?.name || 'Dr. Petrus Renyaan, M.Si.'}
+                      </p>
+                      <p className="text-[9px] font-mono text-slate-400">
+                        {selectedHistoryItem?.signerNip
+                          ? `NIP. ${selectedHistoryItem.signerNip}`
+                          : (user?.nip ? `NIP. ${user.nip}` : 'NIP. 197304121998031001')}
+                      </p>
                     </div>
                   </div>
                 </div>
@@ -553,8 +562,12 @@ export default function ExecutiveLegalizationPage() {
 
                 <button
                   onClick={() => {
+                    const signedItem = signSuccessInfo;
                     setIsSignModalOpen(false);
                     setFilterTab('SIGNED');
+                    if (signedItem) {
+                      handleSelectHistoryItem(signedItem);
+                    }
                   }}
                   className="w-full py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow transition"
                 >

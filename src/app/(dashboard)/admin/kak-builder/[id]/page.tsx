@@ -283,18 +283,20 @@ export default function KakLiveEditorPage() {
 
       {/* LIVE AI GENERATING STATUS BANNER */}
       {isGeneratingAi && (
-        <div className="p-4 rounded-xl bg-[#0f2c59] text-white shadow-md border border-black flex items-center justify-between animate-pulse">
+        <div className="p-4 rounded-xl bg-gradient-to-r from-blue-50 via-white to-sky-50 border border-blue-200 text-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-xs animate-pulse">
           <div className="flex items-center gap-3">
-            <Sparkles className="h-6 w-6 animate-spin text-sky-300 shrink-0" />
+            <div className="p-2.5 bg-blue-600 text-white rounded-lg shrink-0">
+              <Sparkles className="h-5 w-5 animate-spin text-white" />
+            </div>
             <div>
-              <h4 className="font-bold text-sm">AI Assistant sedang merumuskan dokumen KAK...</h4>
-              <p className="text-xs text-slate-200 mt-0.5">
-                Menganalisis uraian masalah, menyintesis landasan yuridis, merumuskan 5 bab narasi KAK, dan menghitung estimasi pagu plafon.
+              <h4 className="font-bold text-xs text-slate-900">AI Assistant sedang merumuskan draf KAK...</h4>
+              <p className="text-3xs text-slate-600 mt-0.5 leading-relaxed">
+                Menganalisis uraian masalah, menyintesis landasan yuridis, merumuskan 5 bab narasi KAK, dan menyimulasikan plafon anggaran.
               </p>
             </div>
           </div>
-          <span className="text-xs px-3 py-1 bg-blue-600 rounded-md font-bold uppercase tracking-wider shrink-0 border border-blue-500">
-            Sedang Memproses...
+          <span className="text-3xs px-2.5 py-1 bg-blue-600 text-white rounded font-bold uppercase tracking-wider shrink-0 border border-blue-700 self-start sm:self-auto">
+            Memproses Otomatis...
           </span>
         </div>
       )}
@@ -357,7 +359,7 @@ export default function KakLiveEditorPage() {
       )}
 
       {/* METADATA INFO CARD */}
-      <Card className="bg-slate-50 border-slate-300 shadow-2xs">
+      <Card className="bg-slate-50 border-slate-200">
         <CardContent className="p-4 grid grid-cols-1 md:grid-cols-3 gap-4 text-xs text-slate-700">
           <div className="space-y-1">
             <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500">Instansi Pengusul</span>
@@ -390,7 +392,7 @@ export default function KakLiveEditorPage() {
         {/* Left Column: 5 Main KAK Chapters (8 cols) */}
         <div className="lg:col-span-8 space-y-6">
           {/* Chapter 1: Latar Belakang & Urgensi */}
-          <div className="bg-white p-6 rounded-xl border border-slate-300 shadow-xs space-y-3">
+          <div className="bg-white p-6 rounded-xl border border-slate-200 space-y-3">
             <div className="flex items-center justify-between border-b border-slate-200 pb-3">
               <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
                 <span className="w-6 h-6 rounded-md bg-blue-50 text-blue-900 border border-blue-200 flex items-center justify-center font-black text-xs">
@@ -413,7 +415,7 @@ export default function KakLiveEditorPage() {
           </div>
 
           {/* Chapter 2: Maksud, Tujuan & Sasaran */}
-          <div className="bg-white p-6 rounded-xl border border-slate-300 shadow-xs space-y-3">
+          <div className="bg-white p-6 rounded-xl border border-slate-200 space-y-3">
             <div className="flex items-center justify-between border-b border-slate-200 pb-3">
               <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
                 <span className="w-6 h-6 rounded-md bg-blue-50 text-blue-900 border border-blue-200 flex items-center justify-center font-black text-xs">
@@ -436,7 +438,7 @@ export default function KakLiveEditorPage() {
           </div>
 
           {/* Chapter 3: Ruang Lingkup & Metodologi */}
-          <div className="bg-white p-6 rounded-xl border border-slate-300 shadow-xs space-y-3">
+          <div className="bg-white p-6 rounded-xl border border-slate-200 space-y-3">
             <div className="flex items-center justify-between border-b border-slate-200 pb-3">
               <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
                 <span className="w-6 h-6 rounded-md bg-blue-50 text-blue-900 border border-blue-200 flex items-center justify-center font-black text-xs">
@@ -459,7 +461,7 @@ export default function KakLiveEditorPage() {
           </div>
 
           {/* Chapter 4: Target Output & Luaran */}
-          <div className="bg-white p-6 rounded-xl border border-slate-300 shadow-xs space-y-3">
+          <div className="bg-white p-6 rounded-xl border border-slate-200 space-y-3">
             <div className="flex items-center justify-between border-b border-slate-200 pb-3">
               <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
                 <span className="w-6 h-6 rounded-md bg-blue-50 text-blue-900 border border-blue-200 flex items-center justify-center font-black text-xs">
@@ -485,7 +487,7 @@ export default function KakLiveEditorPage() {
         {/* Right Column: Parameters (Plafon Pagu & Durasi dari Identifikasi Masalah) (4 cols) */}
         <div className="lg:col-span-4 space-y-6">
           {/* Card Rujukan Anggaran & Durasi Usulan */}
-          <div className="bg-white p-6 rounded-xl border border-slate-300 shadow-xs space-y-5 sticky top-6">
+          <div className="bg-white p-6 rounded-xl border border-slate-200 space-y-5 sticky top-6">
             <div className="border-b border-slate-200 pb-3">
               <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
                 <DollarSign className="h-4 w-4 text-blue-700" />

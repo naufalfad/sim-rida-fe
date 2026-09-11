@@ -160,12 +160,12 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       {/* ================= SIDEBAR (DESKTOP) ================= */}
       <aside
         className={cn(
-          'hidden md:flex flex-col border-r border-[#1b3b6f] bg-[#0f2c59] text-white transition-all duration-200 relative shrink-0 z-30',
+          'hidden md:flex flex-col border-r border-[#1b3b6f] bg-[#0f2c59] text-white transition-all duration-200 sticky top-0 h-screen shrink-0 z-30',
           isSidebarCollapsed ? 'w-16' : 'w-64'
         )}
       >
         {/* Brand Header */}
-        <div className="h-16 flex items-center px-4 border-b border-[#1b3b6f] justify-between">
+        <div className="h-16 flex items-center px-4 border-b border-[#1b3b6f] justify-between shrink-0">
           <div className="flex items-center gap-3 overflow-hidden">
             <div className="p-2 bg-[#0a1e3f] text-white border border-[#264978] shrink-0">
               <ShieldCheck className="h-5 w-5 text-sky-400" />
@@ -184,7 +184,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         </div>
 
         {/* Navigation Menu */}
-        <nav className="flex-1 py-4 space-y-0.5 overflow-y-auto">
+        <nav className="flex-1 py-4 space-y-0.5 overflow-y-auto min-h-0">
           {navLinks.map((link) => {
             const isActive = pathname === link.path || pathname.startsWith(link.path + '/');
 
@@ -217,10 +217,13 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           {isSidebarCollapsed ? <ChevronRight className="h-3.5 w-3.5" /> : <ChevronLeft className="h-3.5 w-3.5" />}
         </button>
 
-        {/* Sidebar Footer User Card */}
-        <div className="border-t border-[#1b3b6f] p-4 bg-[#0a1e3f]">
-          <div className="flex items-center gap-3 overflow-hidden">
-            <div className="h-8 w-8 bg-[#1b3b6f] border border-[#264978] flex items-center justify-center text-xs font-bold text-sky-300 uppercase shrink-0">
+        {/* Sidebar Footer User Card & Logout (Dynamic & Always Visible) */}
+        <div className="border-t border-[#1b3b6f] p-3.5 bg-[#0a1e3f] shrink-0 mt-auto">
+          <div className={cn('flex items-center gap-3 overflow-hidden', isSidebarCollapsed && 'justify-center')}>
+            <div
+              className="h-8 w-8 bg-[#1b3b6f] border border-[#264978] flex items-center justify-center text-xs font-bold text-sky-300 uppercase shrink-0"
+              title={currentUser.name}
+            >
               {currentUser.name.charAt(0)}
             </div>
             {!isSidebarCollapsed && (
@@ -228,16 +231,24 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 <p className="text-xs font-bold text-white truncate leading-none mb-1">
                   {currentUser.name}
                 </p>
-                <span className="text-[10px] text-slate-300 uppercase tracking-wider font-semibold">
+                <span className="text-[10px] text-slate-300 uppercase tracking-wider font-semibold truncate block">
                   {ROLE_LABELS[currentUser.role] || currentUser.role}
                 </span>
               </div>
             )}
           </div>
-          {!isSidebarCollapsed && (
+          {isSidebarCollapsed ? (
             <button
               onClick={handleLogout}
-              className="w-full mt-3 flex items-center justify-center gap-2 px-3 py-1.5 border border-[#264978] hover:bg-[#1b3b6f] text-slate-300 hover:text-white text-xs font-semibold tracking-wider uppercase transition-colors"
+              className="w-full mt-2.5 flex items-center justify-center p-2 border border-[#264978] hover:bg-[#1b3b6f] text-slate-300 hover:text-white text-xs transition-colors"
+              title="Keluar / Logout"
+            >
+              <LogOut className="h-4 w-4" />
+            </button>
+          ) : (
+            <button
+              onClick={handleLogout}
+              className="w-full mt-3 flex items-center justify-center gap-2 px-3 py-2 border border-[#264978] hover:bg-[#1b3b6f] text-slate-300 hover:text-white text-xs font-semibold tracking-wider uppercase transition-colors"
             >
               <LogOut className="h-3.5 w-3.5" />
               <span>Keluar</span>

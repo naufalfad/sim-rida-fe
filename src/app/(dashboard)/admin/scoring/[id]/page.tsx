@@ -213,7 +213,7 @@ export default function AdminScoringDetailPage({ params }: PageProps) {
       </div>
 
       {/* Header Banner */}
-      <div className="bg-[#0f2c59] border border-black p-8 text-white shadow-xl flex flex-col md:flex-row md:items-center justify-between gap-6">
+      <div className="bg-[#0f2c59] border border-slate-200 p-8 text-white flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div className="space-y-2">
           <div className="flex flex-wrap items-center gap-2.5">
             <span className="font-mono text-xs font-black bg-[#1b3b6f] text-sky-300 border border-[#264978] px-3 py-1">
@@ -254,7 +254,7 @@ export default function AdminScoringDetailPage({ params }: PageProps) {
         <div className="lg:col-span-7 space-y-6">
           
           {/* 1. Key Metrics Card */}
-          <div className="bg-white p-6 border border-black shadow-sm grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div className="bg-white p-6 border border-slate-200 grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div className="space-y-1">
               <span className="text-3xs font-bold text-slate-500 uppercase tracking-wider block">Estimasi Pagu Anggaran:</span>
               <span className="text-base font-black text-blue-900 font-mono block">
@@ -280,7 +280,7 @@ export default function AdminScoringDetailPage({ params }: PageProps) {
           </div>
 
           {/* 2. Uraian Masalah & Latar Belakang Lapangan */}
-          <div className="bg-white p-6 border border-black shadow-sm space-y-3">
+          <div className="bg-white p-6 border border-slate-200 space-y-3">
             <h3 className="font-black text-slate-900 text-sm uppercase tracking-wider flex items-center gap-2 border-b border-slate-200 pb-3">
               <FileText className="w-4 h-4 text-[#0f2c59]" />
               1. Identifikasi Masalah & Latar Belakang Lapangan
@@ -291,7 +291,7 @@ export default function AdminScoringDetailPage({ params }: PageProps) {
           </div>
 
           {/* 3. Urgensi & Justifikasi Kebijakan */}
-          <div className="bg-white p-6 border border-black shadow-sm space-y-3">
+          <div className="bg-white p-6 border border-slate-200 space-y-3">
             <h3 className="font-black text-slate-900 text-sm uppercase tracking-wider flex items-center gap-2 border-b border-slate-200 pb-3">
               <AlertTriangle className="w-4 h-4 text-[#0f2c59]" />
               2. Urgensi Penelitian (Mengapa Harus Diteliti Sekarang?)
@@ -302,7 +302,7 @@ export default function AdminScoringDetailPage({ params }: PageProps) {
           </div>
 
           {/* 4. Dokumen Lampiran Data Dukung */}
-          <div className="bg-white p-6 border border-black shadow-sm space-y-4">
+          <div className="bg-white p-6 border border-slate-200 space-y-4">
             <div className="flex items-center justify-between border-b border-slate-200 pb-3">
               <h3 className="font-black text-slate-900 text-sm uppercase tracking-wider flex items-center gap-2">
                 <Paperclip className="w-4 h-4 text-[#0f2c59]" />
@@ -371,7 +371,7 @@ export default function AdminScoringDetailPage({ params }: PageProps) {
 
           {/* 5. Catatan Verifikasi Gatekeeper Sebelumnya */}
           {proposal.adminVerification && (
-            <div className="bg-white p-6 border border-black shadow-sm space-y-2">
+            <div className="bg-white p-6 border border-slate-200 space-y-2">
               <h3 className="font-black text-slate-900 text-sm uppercase tracking-wider flex items-center gap-2 border-b border-slate-200 pb-3">
                 <ShieldCheck className="w-4 h-4 text-[#0f2c59]" />
                 5. Hasil Verifikasi Administrasi (Gatekeeper)
@@ -389,7 +389,7 @@ export default function AdminScoringDetailPage({ params }: PageProps) {
 
         {/* RIGHT COLUMN: Digital Scoring Instrument & Formulation Panel (5 cols, Sticky) */}
         <div className="lg:col-span-5 space-y-6">
-          <div className="bg-white p-6 border border-black shadow-sm space-y-6 sticky top-6">
+          <div className="bg-white p-6 border border-slate-200 space-y-6 sticky top-6">
             
             {/* Header Box */}
             <div className="border-b border-slate-200 pb-4">
@@ -402,7 +402,7 @@ export default function AdminScoringDetailPage({ params }: PageProps) {
             </div>
 
             {/* Total Weighted Score Banner */}
-            <div className="p-4 bg-[#0f2c59] border border-black text-white shadow-md space-y-2">
+            <div className="p-4 bg-[#0f2c59] border border-slate-200 text-white space-y-2">
               <div className="flex items-center justify-between">
                 <div>
                   <span className="text-[10px] font-extrabold uppercase tracking-wider text-sky-200 block">
@@ -418,7 +418,7 @@ export default function AdminScoringDetailPage({ params }: PageProps) {
                       ? 'bg-blue-600 text-white border-blue-400' 
                       : totalScore >= 65 
                       ? 'bg-blue-100 text-blue-950 border-blue-400' 
-                      : 'bg-slate-100 text-slate-900 border-black'
+                      : 'bg-slate-100 text-slate-900 border-slate-300'
                   }`}>
                     {totalScore >= 80 ? 'Prioritas Utama' : totalScore >= 65 ? 'Prioritas Kedua' : 'Tidak Prioritas'}
                   </span>
@@ -688,7 +688,7 @@ export default function AdminScoringDetailPage({ params }: PageProps) {
                 type="button"
                 disabled={isSubmitting}
                 onClick={handleFinalizeAndApprove}
-                className="w-full py-3 bg-[#0f2c59] hover:bg-[#1a3d70] text-white font-black text-xs border border-black shadow-md transition flex items-center justify-center gap-2"
+                className="w-full py-3 bg-[#0f2c59] hover:bg-[#1a3d70] text-white font-black text-xs border border-blue-900 transition flex items-center justify-center gap-2"
               >
                 <CheckCircle2 className="w-4 h-4 text-sky-400" />
                 <span>Finalisasi Scoring & Teruskan ke Agenda Riset</span>

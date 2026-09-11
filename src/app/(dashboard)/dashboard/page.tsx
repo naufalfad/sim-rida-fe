@@ -33,6 +33,8 @@ import {
   ChevronRight,
   ExternalLink,
   Sparkles,
+  FileEdit,
+  RotateCcw,
 } from 'lucide-react';
 
 export default function UnifiedDashboardPage() {
@@ -74,27 +76,38 @@ export default function UnifiedDashboardPage() {
   // GIS Mimika Interactive Points for Kepala BRIDA
   const [selectedGisPoint, setSelectedGisPoint] = useState<any>(null);
 
-  // Fallback / Preset coordinates for Mimika GIS visualization
-  const defaultGisPoints = [
-    { id: 'gis-1', kapanewon: 'Distrik Mimika Timur & Distrik Jita', distrik: 'Distrik Mimika Timur & Distrik Jita', title: 'Kajian Pengembangan Ekowisata Bahari dan Budaya Pesisir Mimika', leadAgency: 'Dinas Pariwisata, Kebudayaan, Pemuda dan Olahraga', scheme: 'Kerjasama PT', progress: 85, allocatedBudget: 105000000, category: 'Sosial Budaya', coords: { x: '72%', y: '22%' } },
-    { id: 'gis-2', kapanewon: 'Distrik Mimika Baru & Distrik Wania', distrik: 'Distrik Mimika Baru & Distrik Wania', title: 'Intervensi Percepatan Penurunan Stunting & Pelayanan Gizi Terpadu', leadAgency: 'Dinas Kesehatan', scheme: 'Swakelola BRIDA', progress: 100, allocatedBudget: 85000000, category: 'Sosial Budaya', coords: { x: '35%', y: '38%' } },
-    { id: 'gis-3', kapanewon: 'Distrik Kuala Kencana & Distrik Iwaka', distrik: 'Distrik Kuala Kencana & Distrik Iwaka', title: 'Smart Water Management & Drainase Pertanian Dataran Rendah', leadAgency: 'Dinas Pertanian', scheme: 'Kerjasama PT', progress: 65, allocatedBudget: 95000000, category: 'Inovasi Teknologi', coords: { x: '82%', y: '75%' } },
-    { id: 'gis-4', kapanewon: 'Distrik Tembagapura & Distrik Kwamki Narama', distrik: 'Distrik Tembagapura & Distrik Kwamki Narama', title: 'Pemberdayaan Ekonomi Masyarakat Adat Amungme dan Kamoro', leadAgency: 'BAPPEDA Kab. Mimika', scheme: 'Swakelola BRIDA', progress: 40, allocatedBudget: 120000000, category: 'Ekonomi Pembangunan', coords: { x: '58%', y: '68%' } },
-  ];
+  // Posisi koordinat representatif distrik Mimika pada canvas peta vektor
+  const districtMapPositions: Record<string, { x: string; y: string }> = {
+    'Distrik Mimika Baru': { x: '48%', y: '42%' },
+    'Distrik Kuala Kencana': { x: '60%', y: '35%' },
+    'Distrik Wania': { x: '52%', y: '48%' },
+    'Distrik Mimika Timur': { x: '70%', y: '58%' },
+    'Distrik Iwaka': { x: '38%', y: '40%' },
+    'Distrik Kwamki Narama': { x: '54%', y: '32%' },
+    'Distrik Tembagapura': { x: '65%', y: '20%' },
+    'Distrik Agimuga': { x: '82%', y: '30%' },
+  };
 
   const currentGisLocations = useMemo(() => {
     if (kepalaDashboard?.gisLocations && kepalaDashboard.gisLocations.length > 0) {
       return kepalaDashboard.gisLocations.map((item, idx) => ({
         ...item,
-        coords: defaultGisPoints[idx % defaultGisPoints.length]?.coords || { x: `${30 + idx * 15}%`, y: `${40 + idx * 10}%` },
+        coords: districtMapPositions[item.distrik || item.kapanewon] || {
+          x: `${25 + (idx % 4) * 20}%`,
+          y: `${30 + Math.floor(idx / 4) * 25}%`,
+        },
       }));
     }
-    return defaultGisPoints;
+    return [];
   }, [kepalaDashboard]);
 
   useEffect(() => {
-    if (currentGisLocations.length > 0 && !selectedGisPoint) {
-      setSelectedGisPoint(currentGisLocations[0]);
+    if (currentGisLocations.length > 0) {
+      if (!selectedGisPoint || !currentGisLocations.find((g: any) => g.id === selectedGisPoint.id)) {
+        setSelectedGisPoint(currentGisLocations[0]);
+      }
+    } else {
+      setSelectedGisPoint(null);
     }
   }, [currentGisLocations, selectedGisPoint]);
 
@@ -312,28 +325,38 @@ export default function UnifiedDashboardPage() {
               </div>
 
               {/* GIS Markers */}
-              {currentGisLocations.map((item: any, idx: number) => {
-                const isSelected = selectedGisPoint?.distrik === item.distrik || selectedGisPoint?.kapanewon === item.kapanewon || selectedGisPoint?.id === item.id;
-                return (
-                  <button
-                    key={item.id || idx}
-                    onClick={() => setSelectedGisPoint(item)}
-                    style={{ left: item.coords?.x || '50%', top: item.coords?.y || '50%' }}
-                    className={`absolute -translate-x-1/2 -translate-y-1/2 group transition-transform ${isSelected ? 'scale-125 z-20' : 'hover:scale-110 z-10'}`}
-                  >
-                    <div className={`w-6 h-6 flex items-center justify-center text-xs font-bold border ${
-                      isSelected
-                        ? 'bg-sky-400 text-[#0a1e3f] border-white font-mono shadow-md'
-                        : 'bg-[#0f2c59] hover:bg-sky-600 text-white border-sky-300'
-                    }`}>
-                      <span>{idx + 1}</span>
-                    </div>
-                    <span className="absolute left-1/2 -translate-x-1/2 top-7 whitespace-nowrap bg-[#0a1e3f] text-2xs font-semibold text-white px-2 py-0.5 border border-[#1b3b6f] pointer-events-none opacity-0 group-hover:opacity-100 transition z-30">
-                      {item.distrik || item.kapanewon}
-                    </span>
-                  </button>
-                );
-              })}
+              {currentGisLocations.length === 0 ? (
+                <div className="z-10 text-center p-6 space-y-2 max-w-sm">
+                  <MapPin className="w-8 h-8 mx-auto text-sky-400/60" />
+                  <p className="text-xs font-semibold text-white">Belum Ada Riset Aktif yang Terpetakan</p>
+                  <p className="text-2xs text-sky-200/60 leading-relaxed">
+                    Titik spasial riset akan otomatis muncul setelah usulan disahkan oleh Kepala BRIDA dan diinisiasi menjadi kajian litbang daerah.
+                  </p>
+                </div>
+              ) : (
+                currentGisLocations.map((item: any, idx: number) => {
+                  const isSelected = selectedGisPoint?.distrik === item.distrik || selectedGisPoint?.kapanewon === item.kapanewon || selectedGisPoint?.id === item.id;
+                  return (
+                    <button
+                      key={item.id || idx}
+                      onClick={() => setSelectedGisPoint(item)}
+                      style={{ left: item.coords?.x || '50%', top: item.coords?.y || '50%' }}
+                      className={`absolute -translate-x-1/2 -translate-y-1/2 group transition-transform ${isSelected ? 'scale-125 z-20' : 'hover:scale-110 z-10'}`}
+                    >
+                      <div className={`w-6 h-6 flex items-center justify-center text-xs font-bold border ${
+                        isSelected
+                          ? 'bg-sky-400 text-[#0a1e3f] border-white font-mono shadow-md'
+                          : 'bg-[#0f2c59] hover:bg-sky-600 text-white border-sky-300'
+                      }`}>
+                        <span>{idx + 1}</span>
+                      </div>
+                      <span className="absolute left-1/2 -translate-x-1/2 top-7 whitespace-nowrap bg-[#0a1e3f] text-2xs font-semibold text-white px-2 py-0.5 border border-[#1b3b6f] pointer-events-none opacity-0 group-hover:opacity-100 transition z-30">
+                        {item.distrik || item.kapanewon}
+                      </span>
+                    </button>
+                  );
+                })
+              )}
             </div>
 
             {/* Selected Location Info */}
@@ -950,7 +973,25 @@ export default function UnifiedDashboardPage() {
                 )}
               </div>
 
-              <div className="shrink-0 self-start sm:self-center">
+              <div className="shrink-0 self-start sm:self-center flex flex-wrap items-center gap-2">
+                {item.status === 'DRAFT' && (
+                  <button
+                    onClick={() => router.push(`/opd/proposals/${item.id}/edit`)}
+                    className="px-3 py-1.5 bg-amber-500 hover:bg-amber-600 text-white text-xs font-semibold uppercase tracking-wider transition flex items-center gap-1.5 shadow-xs"
+                  >
+                    <FileEdit className="h-3.5 w-3.5" />
+                    <span>Lanjutkan Draf</span>
+                  </button>
+                )}
+                {item.status === 'RETURNED' && (
+                  <button
+                    onClick={() => router.push(`/opd/proposals/${item.id}/edit`)}
+                    className="px-3 py-1.5 bg-red-600 hover:bg-red-700 text-white text-xs font-semibold uppercase tracking-wider transition flex items-center gap-1.5 shadow-xs"
+                  >
+                    <RotateCcw className="h-3.5 w-3.5" />
+                    <span>Revisi Usulan</span>
+                  </button>
+                )}
                 <button
                   onClick={() => {
                     selectProposal(item.id);

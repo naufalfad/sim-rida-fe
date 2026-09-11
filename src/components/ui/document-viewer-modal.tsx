@@ -1,17 +1,17 @@
 'use client';
 
 import React, { useState } from 'react';
-import { 
-  X, 
-  Download, 
-  ExternalLink, 
-  FileText, 
-  CheckCircle2, 
-  Calendar, 
-  Building2, 
-  ShieldCheck, 
-  Eye, 
-  FileSpreadsheet, 
+import {
+  X,
+  Download,
+  ExternalLink,
+  FileText,
+  CheckCircle2,
+  Calendar,
+  Building2,
+  ShieldCheck,
+  Eye,
+  FileSpreadsheet,
   Printer,
   Copy,
   Sparkles
@@ -209,7 +209,7 @@ Portal SIM-RIDA (Sistem Informasi Riset dan Inovasi Daerah) Kabupaten Mimika.
   return (
     <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
       <div className="bg-white rounded-2xl max-w-4xl w-full max-h-[90vh] flex flex-col shadow-2xl border border-slate-200 animate-in fade-in zoom-in-95 duration-200 overflow-hidden font-sans">
-        
+
         {/* Modal Header */}
         <div className="px-6 py-4 bg-slate-900 text-white flex items-center justify-between border-b border-slate-800 shrink-0">
           <div className="flex items-center gap-3 min-w-0">
@@ -261,11 +261,10 @@ Portal SIM-RIDA (Sistem Informasi Riset dan Inovasi Daerah) Kabupaten Mimika.
         <div className="flex border-b border-slate-200 bg-slate-50 px-6 pt-2 gap-4 shrink-0 text-xs">
           <button
             onClick={() => setActiveTab('PREVIEW')}
-            className={`pb-3 font-bold transition flex items-center gap-1.5 border-b-2 ${
-              activeTab === 'PREVIEW'
+            className={`pb-3 font-bold transition flex items-center gap-1.5 border-b-2 ${activeTab === 'PREVIEW'
                 ? 'border-[#0f2c59] text-[#0f2c59]'
                 : 'border-transparent text-slate-500 hover:text-slate-800'
-            }`}
+              }`}
           >
             <Eye className="w-3.5 h-3.5" />
             <span>Pratinjau Isi Dokumen</span>
@@ -273,11 +272,10 @@ Portal SIM-RIDA (Sistem Informasi Riset dan Inovasi Daerah) Kabupaten Mimika.
 
           <button
             onClick={() => setActiveTab('METADATA')}
-            className={`pb-3 font-bold transition flex items-center gap-1.5 border-b-2 ${
-              activeTab === 'METADATA'
+            className={`pb-3 font-bold transition flex items-center gap-1.5 border-b-2 ${activeTab === 'METADATA'
                 ? 'border-[#0f2c59] text-[#0f2c59]'
                 : 'border-transparent text-slate-500 hover:text-slate-800'
-            }`}
+              }`}
           >
             <ShieldCheck className="w-3.5 h-3.5" />
             <span>Metadata & Verifikasi File</span>
@@ -286,10 +284,10 @@ Portal SIM-RIDA (Sistem Informasi Riset dan Inovasi Daerah) Kabupaten Mimika.
 
         {/* Modal Body (Scrollable) */}
         <div className="p-6 overflow-y-auto flex-1 space-y-6 bg-slate-100/50">
-          
+
           {activeTab === 'PREVIEW' && (
             <div className="bg-white p-8 border border-slate-200 shadow-sm rounded-xl space-y-6 max-w-3xl mx-auto">
-              
+
               {/* Document Header in Preview */}
               <div className="border-b border-slate-200 pb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <div>

@@ -95,14 +95,14 @@ export default function AdminVerificationPage() {
         );
       case 'RETURNED':
         return (
-          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-semibold bg-slate-100 text-slate-900 border border-black">
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-semibold bg-slate-100 text-slate-900 border border-slate-300">
             <AlertTriangle className="h-3 w-3 text-slate-800" />
             Dikembalikan (Perlu Revisi)
           </span>
         );
       case 'REJECTED':
         return (
-          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-semibold bg-slate-900 text-white border border-black">
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-semibold bg-slate-900 text-white border border-slate-800">
             <XCircle className="h-3 w-3 text-white" />
             Ditolak (Tidak Layak)
           </span>
@@ -145,75 +145,63 @@ export default function AdminVerificationPage() {
 
       {/* STATS CARDS */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card className="bg-white border-black shadow-sm relative overflow-hidden">
-          <div className="absolute top-0 left-0 h-1 w-full bg-blue-600" />
-          <CardContent className="p-4.5 flex items-center justify-between">
-            <div className="space-y-1">
-              <span className="text-[11px] font-bold uppercase tracking-wider text-slate-600">
-                Menunggu Validasi
-              </span>
-              <div className="text-2xl font-bold text-blue-900">{pendingList.length}</div>
-              <p className="text-[11px] text-slate-500">Usulan OPD masuk</p>
-            </div>
-            <div className="h-10 w-10 border border-blue-200 bg-blue-50 flex items-center justify-center text-blue-600">
-              <Clock className="h-5 w-5" />
-            </div>
-          </CardContent>
-        </Card>
+        <div className="bg-white p-5 border border-slate-200 flex items-center gap-4">
+          <div className="w-12 h-12 bg-blue-50 border border-blue-200 text-blue-600 flex items-center justify-center font-bold shrink-0">
+            <Clock className="w-6 h-6" />
+          </div>
+          <div className="space-y-0.5 min-w-0">
+            <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider truncate">
+              Menunggu Validasi
+            </p>
+            <p className="text-2xl font-black text-blue-900 font-mono">{pendingList.length}</p>
+            <p className="text-xs text-slate-500 truncate">Usulan OPD masuk</p>
+          </div>
+        </div>
 
-        <Card className="bg-white border-black shadow-sm relative overflow-hidden">
-          <div className="absolute top-0 left-0 h-1 w-full bg-[#0f2c59]" />
-          <CardContent className="p-4.5 flex items-center justify-between">
-            <div className="space-y-1">
-              <span className="text-[11px] font-bold uppercase tracking-wider text-slate-600">
-                Lolos Validasi (Siap KAK)
-              </span>
-              <div className="text-2xl font-bold text-[#0f2c59]">{approvedList.length}</div>
-              <p className="text-[11px] text-slate-500">Memenuhi 5 pilar</p>
-            </div>
-            <div className="h-10 w-10 border border-blue-200 bg-blue-50 flex items-center justify-center text-[#0f2c59]">
-              <CheckCircle2 className="h-5 w-5" />
-            </div>
-          </CardContent>
-        </Card>
+        <div className="bg-white p-5 border border-slate-200 flex items-center gap-4">
+          <div className="w-12 h-12 bg-blue-50 border border-blue-200 text-[#0f2c59] flex items-center justify-center font-bold shrink-0">
+            <CheckCircle2 className="w-6 h-6" />
+          </div>
+          <div className="space-y-0.5 min-w-0">
+            <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider truncate">
+              Lolos Validasi (Siap KAK)
+            </p>
+            <p className="text-2xl font-black text-[#0f2c59] font-mono">{approvedList.length}</p>
+            <p className="text-xs text-slate-500 truncate">Memenuhi 5 pilar</p>
+          </div>
+        </div>
 
-        <Card className="bg-white border-black shadow-sm relative overflow-hidden">
-          <div className="absolute top-0 left-0 h-1 w-full bg-blue-800" />
-          <CardContent className="p-4.5 flex items-center justify-between">
-            <div className="space-y-1">
-              <span className="text-[11px] font-bold uppercase tracking-wider text-slate-600">
-                Perlu Revisi OPD
-              </span>
-              <div className="text-2xl font-bold text-blue-950">
-                {opdProposals.filter((p) => p.status === 'RETURNED').length}
-              </div>
-              <p className="text-[11px] text-slate-500">Menunggu perbaikan</p>
-            </div>
-            <div className="h-10 w-10 border border-blue-200 bg-blue-50 flex items-center justify-center text-blue-800">
-              <AlertTriangle className="h-5 w-5" />
-            </div>
-          </CardContent>
-        </Card>
+        <div className="bg-white p-5 border border-slate-200 flex items-center gap-4">
+          <div className="w-12 h-12 bg-blue-50 border border-blue-200 text-blue-800 flex items-center justify-center font-bold shrink-0">
+            <AlertTriangle className="w-6 h-6" />
+          </div>
+          <div className="space-y-0.5 min-w-0">
+            <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider truncate">
+              Perlu Revisi OPD
+            </p>
+            <p className="text-2xl font-black text-blue-950 font-mono">
+              {opdProposals.filter((p) => p.status === 'RETURNED').length}
+            </p>
+            <p className="text-xs text-slate-500 truncate">Menunggu perbaikan</p>
+          </div>
+        </div>
 
-        <Card className="bg-white border-black shadow-sm relative overflow-hidden">
-          <div className="absolute top-0 left-0 h-1 w-full bg-slate-400" />
-          <CardContent className="p-4.5 flex items-center justify-between">
-            <div className="space-y-1">
-              <span className="text-[11px] font-bold uppercase tracking-wider text-slate-600">
-                Total Usulan OPD
-              </span>
-              <div className="text-2xl font-bold text-slate-900">{opdProposals.length}</div>
-              <p className="text-[11px] text-slate-500">Seluruh perangkat daerah</p>
-            </div>
-            <div className="h-10 w-10 border border-slate-300 bg-slate-100 flex items-center justify-center text-slate-700">
-              <Building2 className="h-5 w-5" />
-            </div>
-          </CardContent>
-        </Card>
+        <div className="bg-white p-5 border border-slate-200 flex items-center gap-4">
+          <div className="w-12 h-12 bg-slate-100 border border-slate-300 text-slate-700 flex items-center justify-center font-bold shrink-0">
+            <Building2 className="w-6 h-6" />
+          </div>
+          <div className="space-y-0.5 min-w-0">
+            <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider truncate">
+              Total Usulan OPD
+            </p>
+            <p className="text-2xl font-black text-slate-900 font-mono">{opdProposals.length}</p>
+            <p className="text-xs text-slate-500 truncate">Seluruh perangkat daerah</p>
+          </div>
+        </div>
       </div>
 
       {/* INFORMATIONAL 5 PILARS BANNER */}
-      <div className="border border-black bg-blue-50 p-4 text-xs text-blue-950 flex items-start gap-3.5 shadow-sm">
+      <div className="border border-slate-200 bg-blue-50/60 p-4 text-xs text-blue-950 flex items-start gap-3.5">
         <div className="p-2 bg-[#0f2c59] text-white shrink-0 mt-0.5">
           <ShieldCheck className="h-4 w-4 text-sky-300" />
         </div>
@@ -242,16 +230,16 @@ export default function AdminVerificationPage() {
       </div>
 
       {/* TABLE CONTAINER */}
-      <Card className="bg-white border-black shadow-sm">
+      <Card className="bg-white border-slate-200">
         {/* TABS & SEARCH */}
         <div className="p-4 border-b border-slate-200 flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4">
-          <div className="flex items-center gap-1.5 p-1 bg-slate-100 shrink-0 border border-slate-300">
+          <div className="flex items-center gap-1.5 p-1 bg-slate-100 shrink-0 border border-slate-200">
             <button
               onClick={() => setActiveTab('PENDING')}
               className={cn(
                 'px-3.5 py-1.5 text-xs font-semibold transition-all flex items-center gap-2 cursor-pointer',
                 activeTab === 'PENDING'
-                  ? 'bg-[#0f2c59] text-white border border-black'
+                  ? 'bg-[#0f2c59] text-white'
                   : 'text-slate-700 hover:text-slate-900'
               )}
             >
@@ -267,7 +255,7 @@ export default function AdminVerificationPage() {
               className={cn(
                 'px-3.5 py-1.5 text-xs font-semibold transition-all flex items-center gap-2 cursor-pointer',
                 activeTab === 'APPROVED'
-                  ? 'bg-[#0f2c59] text-white border border-black'
+                  ? 'bg-[#0f2c59] text-white'
                   : 'text-slate-700 hover:text-slate-900'
               )}
             >
@@ -283,7 +271,7 @@ export default function AdminVerificationPage() {
               className={cn(
                 'px-3.5 py-1.5 text-xs font-semibold transition-all flex items-center gap-2 cursor-pointer',
                 activeTab === 'RETURNED'
-                  ? 'bg-[#0f2c59] text-white border border-black'
+                  ? 'bg-[#0f2c59] text-white'
                   : 'text-slate-700 hover:text-slate-900'
               )}
             >
@@ -298,7 +286,7 @@ export default function AdminVerificationPage() {
               className={cn(
                 'px-3.5 py-1.5 text-xs font-semibold transition-all flex items-center gap-2 cursor-pointer',
                 activeTab === 'ALL'
-                  ? 'bg-[#0f2c59] text-white border border-black'
+                  ? 'bg-[#0f2c59] text-white'
                   : 'text-slate-700 hover:text-slate-900'
               )}
             >

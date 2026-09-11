@@ -90,7 +90,7 @@ export const Dialog: React.FC<DialogProps> = ({
         </div>
 
         {/* Footer */}
-        {footer ? (
+        {/* {footer ? (
           <div className="mt-6 flex flex-row-reverse gap-2 border-t border-slate-100 pt-4 dark:border-slate-800">
             {footer}
           </div>
@@ -100,7 +100,7 @@ export const Dialog: React.FC<DialogProps> = ({
               Tutup
             </Button>
           </div>
-        )}
+        )} */}
       </div>
     </div>,
     document.body
