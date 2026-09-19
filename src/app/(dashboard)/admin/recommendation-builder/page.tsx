@@ -80,11 +80,13 @@ function RecommendationBuilderContent() {
   const [catalogStatusFilter, setCatalogStatusFilter] = useState<'ALL' | 'UNTOUCHED' | 'DRAFT' | 'SUBMITTED' | 'FINALIZED'>('ALL');
   const [catalogOpdFilter, setCatalogOpdFilter] = useState('');
 
-  // Form states
+  // Form states (4 Bagian Baku Policy Brief + Dokumen Terkorelasi)
   const [recTitle, setRecTitle] = useState('');
   const [executiveSummary, setExecutiveSummary] = useState('');
-  const [keyFindings, setKeyFindings] = useState('');
-  const [policyActions, setPolicyActions] = useState('');
+  const [background, setBackground] = useState('');
+  const [policyRecommendations, setPolicyRecommendations] = useState('');
+  const [conclusion, setConclusion] = useState('');
+  const [correlatedDocs, setCorrelatedDocs] = useState('');
   const [targetPolicyType, setTargetPolicyType] = useState<string>('DRAFT_PERBUP');
   const [impactLevel, setImpactLevel] = useState<string>('STRATEGIS_DAERAH');
   const [targetOpdNames, setTargetOpdNames] = useState('');
@@ -205,8 +207,10 @@ function RecommendationBuilderContent() {
       setActiveRecId(existingRec.id);
       setRecTitle(existingRec.title);
       setExecutiveSummary(existingRec.executiveSummary || '');
-      setKeyFindings(existingRec.keyFindings || '');
-      setPolicyActions(existingRec.policyActions || '');
+      setBackground(existingRec.background || '');
+      setPolicyRecommendations(existingRec.policyRecommendations || '');
+      setConclusion(existingRec.conclusion || '');
+      setCorrelatedDocs(existingRec.correlatedDocs || '');
       setTargetPolicyType(existingRec.targetPolicyType || 'DRAFT_PERBUP');
       setImpactLevel(existingRec.impactLevel || 'STRATEGIS_DAERAH');
       setTargetOpdNames(existingRec.targetOpdNames || study?.proposal?.opd?.name || '');
@@ -217,8 +221,10 @@ function RecommendationBuilderContent() {
       const opdName = study.proposal?.opd?.name || '';
       setRecTitle('');
       setExecutiveSummary('');
-      setKeyFindings('');
-      setPolicyActions('');
+      setBackground('');
+      setPolicyRecommendations('');
+      setConclusion('');
+      setCorrelatedDocs('');
       setTargetPolicyType('DRAFT_PERBUP');
       setImpactLevel('STRATEGIS_DAERAH');
       setTargetOpdNames(opdName);
@@ -247,8 +253,10 @@ function RecommendationBuilderContent() {
     const opdName = currentStudy.proposal?.opd?.name || '';
     setRecTitle('');
     setExecutiveSummary('');
-    setKeyFindings('');
-    setPolicyActions('');
+    setBackground('');
+    setPolicyRecommendations('');
+    setConclusion('');
+    setCorrelatedDocs('');
     setTargetPolicyType('DRAFT_PERBUP');
     setImpactLevel('STRATEGIS_DAERAH');
     setTargetOpdNames(opdName);
@@ -287,8 +295,10 @@ function RecommendationBuilderContent() {
       if (result) {
         setRecTitle(result.title || '');
         setExecutiveSummary(result.executiveSummary || '');
-        setKeyFindings(result.keyFindings || '');
-        setPolicyActions(result.policyActions || '');
+        setBackground(result.background || '');
+        setPolicyRecommendations(result.policyRecommendations || '');
+        setConclusion(result.conclusion || '');
+        setCorrelatedDocs(result.correlatedDocs || '');
         if (result.targetPolicyType) setTargetPolicyType(result.targetPolicyType);
         if (result.impactLevel) setImpactLevel(result.impactLevel);
         if (result.targetOpdNames) setTargetOpdNames(result.targetOpdNames);
@@ -296,7 +306,7 @@ function RecommendationBuilderContent() {
 
         setFeedbackMessage({
           type: 'success',
-          text: '✨ Naskah Policy Brief berhasil disusun oleh AI berdasarkan hasil riset & KAK! Silakan periksa dan simpan draf.',
+          text: '✨ Naskah Policy Brief (4 Bagian Baku) berhasil disusun oleh AI berdasarkan integrasi seluruh berkas riset! Silakan periksa dan simpan draf.',
         });
       }
     } catch (err: any) {
@@ -331,10 +341,10 @@ function RecommendationBuilderContent() {
       return;
     }
 
-    if (executiveSummary.length < 20 || keyFindings.length < 20 || policyActions.length < 20) {
+    if (executiveSummary.length < 20 || background.length < 20 || policyRecommendations.length < 20 || conclusion.length < 20) {
       setFeedbackMessage({
         type: 'error',
-        text: 'Setiap butir substansi (Ringkasan, Temuan, Rekomendasi Aksi) minimal 20 karakter.',
+        text: 'Setiap 4 bagian baku naskah (Ringkasan, Latar Belakang, Rekomendasi, Kesimpulan) minimal 20 karakter.',
       });
       return;
     }
@@ -347,8 +357,10 @@ function RecommendationBuilderContent() {
         await updateRecommendation(activeRecId, {
           title: recTitle,
           executiveSummary,
-          keyFindings,
-          policyActions,
+          background,
+          policyRecommendations,
+          conclusion,
+          correlatedDocs: correlatedDocs || null,
           targetPolicyType: targetPolicyType as any,
           impactLevel: impactLevel as any,
           targetOpdNames,
@@ -359,8 +371,10 @@ function RecommendationBuilderContent() {
           studyId: selectedStudyId,
           title: recTitle,
           executiveSummary,
-          keyFindings,
-          policyActions,
+          background,
+          policyRecommendations,
+          conclusion,
+          correlatedDocs: correlatedDocs || null,
           targetPolicyType: targetPolicyType as any,
           impactLevel: impactLevel as any,
           targetOpdNames,
@@ -386,10 +400,10 @@ function RecommendationBuilderContent() {
       return;
     }
 
-    if (recTitle.length < 10 || executiveSummary.length < 20 || keyFindings.length < 20 || policyActions.length < 20) {
+    if (recTitle.length < 10 || executiveSummary.length < 20 || background.length < 20 || policyRecommendations.length < 20 || conclusion.length < 20) {
       setFeedbackMessage({
         type: 'error',
-        text: 'Lengkapi seluruh isi naskah rekomendasi sebelum mengajukan ke Kepala BRIDA.',
+        text: 'Lengkapi seluruh isi 4 bagian baku naskah rekomendasi sebelum mengajukan ke Kepala BRIDA.',
       });
       return;
     }
@@ -411,8 +425,10 @@ function RecommendationBuilderContent() {
             studyId: selectedStudyId,
             title: recTitle,
             executiveSummary,
-            keyFindings,
-            policyActions,
+            background,
+            policyRecommendations,
+            conclusion,
+            correlatedDocs: correlatedDocs || null,
             targetPolicyType: targetPolicyType as any,
             impactLevel: impactLevel as any,
             targetOpdNames,
@@ -424,8 +440,10 @@ function RecommendationBuilderContent() {
           await updateRecommendation(recIdToSubmit, {
             title: recTitle,
             executiveSummary,
-            keyFindings,
-            policyActions,
+            background,
+            policyRecommendations,
+            conclusion,
+            correlatedDocs: correlatedDocs || null,
             targetPolicyType: targetPolicyType as any,
             impactLevel: impactLevel as any,
             targetOpdNames,
@@ -490,26 +508,96 @@ function RecommendationBuilderContent() {
 
   return (
     <div className="space-y-6 max-w-7xl mx-auto pb-16 font-sans">
-      {/* Print CSS to ensure only official document is printed */}
+      {/* Print CSS: Tata Letak Cetak Multi-Halaman Resmi Policy Brief (A4, Header Halaman 1 Saja, TTE Utuh di Halaman Akhir) */}
       <style jsx global>{`
         @media print {
-          body * {
-            visibility: hidden !important;
+          @page {
+            size: A4 portrait;
+            margin: 20mm 18mm 20mm 20mm;
           }
+
+          * {
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+          }
+
+          html,
+          body {
+            margin: 0 !important;
+            padding: 0 !important;
+            background: #ffffff !important;
+            color: #000000 !important;
+            height: auto !important;
+            min-height: 100% !important;
+            overflow: visible !important;
+          }
+
+          /* Sembunyikan seluruh elemen dashboard luar */
+          body * {
+            visibility: hidden;
+          }
+
+          /* Tampilkan dokumen naskah rekomendasi resmi */
           #printable-recommendation-doc,
           #printable-recommendation-doc * {
             visibility: visible !important;
           }
+
           #printable-recommendation-doc {
-            position: absolute !important;
-            left: 0 !important;
-            top: 0 !important;
+            position: static !important;
+            display: block !important;
             width: 100% !important;
+            max-width: 100% !important;
             margin: 0 !important;
-            padding: 20mm !important;
+            padding: 0 !important;
             box-shadow: none !important;
             border: none !important;
-            background: white !important;
+            border-radius: 0 !important;
+            background: #ffffff !important;
+          }
+
+          /* Header & Kop Surat resmi: HANYA muncul di Halaman 1 */
+          .rec-header-block {
+            page-break-inside: avoid !important;
+            break-inside: avoid !important;
+            page-break-after: avoid;
+            break-after: avoid;
+            margin-bottom: 24px !important;
+          }
+
+          .rec-body-block {
+            display: block !important;
+          }
+
+          .rec-chapter-item {
+            page-break-inside: auto;
+            margin-bottom: 20px !important;
+          }
+
+          .rec-chapter-title {
+            page-break-after: avoid !important;
+            break-after: avoid !important;
+            font-weight: bold !important;
+          }
+
+          /* TTE: Disimpan di halaman paling akhir tepat di bawah paragraf, utuh tanpa terpotong */
+          .rec-tte-block {
+            page-break-inside: avoid !important;
+            break-inside: avoid !important;
+            break-before: auto;
+            margin-top: 24px !important;
+            padding-top: 0 !important;
+            border-top: none !important;
+            display: flex !important;
+            justify-content: flex-end !important;
+            float: none !important;
+            clear: both !important;
+          }
+
+          button,
+          nav,
+          .no-print {
+            display: none !important;
           }
         }
       `}</style>
@@ -1240,20 +1328,53 @@ function RecommendationBuilderContent() {
                     </div>
                   </div>
 
-                  <div className="p-4 bg-blue-50 border border-blue-200 text-xs text-blue-950 space-y-2">
+                  <div className="p-4 bg-blue-50 border border-blue-200 text-xs text-blue-950 space-y-2.5">
                     <span className="font-bold flex items-center gap-1.5 text-blue-900">
                       <Sparkles className="w-4 h-4 text-blue-700" />
-                      Sistematika Policy Brief
+                      4 Bagian Baku Policy Brief
                     </span>
-                    <p className="text-2xs leading-relaxed text-blue-900/90">
-                      Naskah ringkas berbasis bukti empiris hasil riset. Berisi latar belakang strategis, temuan kunci, dan rumusan aksi taktis yang dapat segera diadopsi OPD pemohon menjadi regulasi atau Renja dinas.
-                    </p>
+                    <ol className="text-2xs space-y-1 text-slate-700 list-decimal pl-4">
+                      <li><strong>Ringkasan Eksekutif</strong> (Executive Summary)</li>
+                      <li><strong>Latar Belakang</strong> (Background)</li>
+                      <li><strong>Rekomendasi Kebijakan</strong> (Policy Recommendations)</li>
+                      <li><strong>Kesimpulan</strong> (Conclusion)</li>
+                    </ol>
+                  </div>
+
+                  {/* Dokumen Terkorelasikan di Sistem */}
+                  <div className="p-4 bg-slate-50 border border-slate-200 text-xs space-y-2.5">
+                    <span className="font-bold flex items-center gap-1.5 text-slate-900 uppercase text-3xs tracking-wider">
+                      <FileCheck className="w-3.5 h-3.5 text-emerald-600" />
+                      Berkas Rujukan Terintegrasi
+                    </span>
+                    <div className="space-y-1.5 text-3xs text-slate-600">
+                      <div className="flex items-center justify-between">
+                        <span>Lampiran Usulan OPD:</span>
+                        <strong className="text-slate-800">{currentStudy?.proposal?.supportingDocuments?.length || 0} File</strong>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span>Kerangka Acuan Kerja (KAK):</span>
+                        <strong className="text-slate-800">{currentStudy?.kakDocument ? 'Terverifikasi' : 'Belum ada'}</strong>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span>Legalitas / SK Kerjasama:</span>
+                        <strong className="text-slate-800">{currentStudy?.cooperationDocName ? 'Terlampir' : 'SK BRIDA'}</strong>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span>Berkas Kerja / Lapangan:</span>
+                        <strong className="text-slate-800">{currentStudy?.workingDocuments?.length || 0} Berkas</strong>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span>Laporan Akhir:</span>
+                        <strong className="text-slate-800">{currentStudy?.finalReportName ? 'Tersedia' : 'Draf Akhir'}</strong>
+                      </div>
+                    </div>
                   </div>
                 </div>
 
-                {/* Right Column: 3 Core Policy Brief Content Sections (2 cols) */}
+                {/* Right Column: 4 Core Policy Brief Content Sections (2 cols) */}
                 <div className="lg:col-span-2 space-y-6">
-                  {/* Section 1: Title */}
+                  {/* Section 1: Title & Ringkasan Eksekutif */}
                   <div className="bg-white p-6 border border-slate-300 shadow-sm space-y-4">
                     <div>
                       <label className="block text-xs font-black text-slate-800 uppercase tracking-wider mb-1">
@@ -1287,39 +1408,78 @@ function RecommendationBuilderContent() {
                     </div>
                   </div>
 
-                  {/* Section 2: Key Findings */}
+                  {/* Section 2: Latar Belakang */}
                   <div className="bg-white p-6 border border-slate-300 shadow-sm space-y-4">
                     <div className="flex items-center justify-between">
                       <label className="text-xs font-black text-slate-800 uppercase tracking-wider">
-                        2. Temuan Utama Riset & Fakta Lapangan (Key Findings):
+                        2. Latar Belakang (Background):
                       </label>
-                      <span className="text-2xs text-slate-500">Bukti empiris dan analisis data</span>
+                      <span className="text-2xs text-slate-500">Konteks masalah, dasar regulasi, & urgensi daerah</span>
                     </div>
                     <textarea
                       rows={5}
-                      value={keyFindings}
+                      value={background}
                       disabled={isFinalized}
-                      onChange={(e) => setKeyFindings(e.target.value)}
-                      placeholder="1. Temuan fakta data di lapangan...\n2. Hambatan struktural atau regulasi saat ini...\n3. Peluang intervensi berbasis kearifan lokal..."
-                      className="w-full p-3 bg-slate-50 border border-slate-300 text-xs leading-relaxed focus:ring-2 focus:ring-blue-600 focus:bg-white focus:outline-none font-mono disabled:bg-slate-100 disabled:text-slate-500 disabled:cursor-not-allowed"
+                      onChange={(e) => setBackground(e.target.value)}
+                      placeholder="1. Latar belakang persoalan riil dan kondisi di Kabupaten Mimika...\n2. Landasan yuridis dan keterkaitan dengan RPJMD...\n3. Urgensi intervensi kebijakan oleh pemerintah daerah..."
+                      className="w-full p-3 bg-slate-50 border border-slate-300 text-xs leading-relaxed focus:ring-2 focus:ring-blue-600 focus:bg-white focus:outline-none disabled:bg-slate-100 disabled:text-slate-500 disabled:cursor-not-allowed"
                     />
                   </div>
 
-                  {/* Section 3: Policy Actions */}
+                  {/* Section 3: Rekomendasi Kebijakan */}
+                  <div className="bg-white p-6 border border-slate-300 shadow-sm space-y-4">
+                    <div className="flex items-center justify-between flex-wrap gap-2">
+                      <label className="text-xs font-black text-slate-800 uppercase tracking-wider">
+                        3. Rekomendasi Kebijakan (Policy Recommendations):
+                      </label>
+                      <span className="text-2xs text-blue-700 font-bold">Langkah konkret bagi OPD</span>
+                    </div>
+                    <textarea
+                      rows={8}
+                      value={policyRecommendations}
+                      disabled={isFinalized}
+                      onChange={(e) => setPolicyRecommendations(e.target.value)}
+                      placeholder="Uraikan butir-butir arahan rekomendasi kebijakan konkret, terukur, dan operasional bagi perangkat daerah (misal: arahan regulasi daerah, penyesuaian SOP pelayanan, pembagian peran antar-OPD, atau alokasi program prioritas)..."
+                      className="w-full p-3 bg-slate-50 border border-slate-300 text-xs leading-relaxed focus:ring-2 focus:ring-blue-600 focus:bg-white focus:outline-none disabled:bg-slate-100 disabled:text-slate-500 disabled:cursor-not-allowed"
+                    />
+                  </div>
+
+                  {/* Section 4: Kesimpulan */}
                   <div className="bg-white p-6 border border-slate-300 shadow-sm space-y-4">
                     <div className="flex items-center justify-between">
                       <label className="text-xs font-black text-slate-800 uppercase tracking-wider">
-                        3. Butir-butir Rekomendasi Kebijakan & Rencana Aksi (Policy Actions):
+                        4. Kesimpulan (Conclusion):
                       </label>
-                      <span className="text-2xs text-blue-700 font-bold">Harus aplikatif dan terukur</span>
+                      <span className="text-2xs text-slate-500">Simpulan arah tindak lanjut pimpinan</span>
                     </div>
                     <textarea
-                      rows={6}
-                      value={policyActions}
+                      rows={4}
+                      value={conclusion}
                       disabled={isFinalized}
-                      onChange={(e) => setPolicyActions(e.target.value)}
-                      placeholder="1. JANGKA PENDEK (0-6 Bulan): Penerbitan payung regulasi atau Surat Edaran...\n2. JANGKA MENENGAH (6-18 Bulan): Alokasi belanja modal Renja OPD...\n3. JANGKA PANJANG: Kelembagaan terpadu lintas sektor..."
-                      className="w-full p-3 bg-slate-50 border border-slate-300 text-xs leading-relaxed focus:ring-2 focus:ring-blue-600 focus:bg-white focus:outline-none font-mono disabled:bg-slate-100 disabled:text-slate-500 disabled:cursor-not-allowed"
+                      onChange={(e) => setConclusion(e.target.value)}
+                      placeholder="Kesimpulan akhir telaah kebijakan, sintesis dampak positif bagi masyarakat Mimika, dan harapan tindak lanjut oleh OPD..."
+                      className="w-full p-3 bg-slate-50 border border-slate-300 text-xs leading-relaxed focus:ring-2 focus:ring-blue-600 focus:bg-white focus:outline-none disabled:bg-slate-100 disabled:text-slate-500 disabled:cursor-not-allowed"
+                    />
+                  </div>
+
+                  {/* Section 5: Dokumen Bukti yang Dikorelasikan ke Sistem */}
+                  <div className="bg-blue-50/40 p-6 border border-blue-200 shadow-sm space-y-4">
+                    <div className="flex items-center justify-between">
+                      <label className="text-xs font-black text-blue-950 uppercase tracking-wider flex items-center gap-1.5">
+                        <FileText className="w-4 h-4 text-blue-700" />
+                        Dokumen Bukti Rujukan Terkorelasi:
+                      </label>
+                      <span className="text-3xs text-blue-700 font-bold bg-blue-100/70 px-2 py-0.5 rounded">
+                        Korelasi Otomatis AI & Sistem
+                      </span>
+                    </div>
+                    <textarea
+                      rows={3}
+                      value={correlatedDocs}
+                      disabled={isFinalized}
+                      onChange={(e) => setCorrelatedDocs(e.target.value)}
+                      placeholder="Dokumen KAK, Laporan Riset Lapangan, SK/PKS, Lampiran OPD yang dikorelasikan sebagai dasar ilmiah..."
+                      className="w-full p-3 bg-white border border-blue-200 text-xs leading-relaxed focus:ring-2 focus:ring-blue-600 focus:outline-none disabled:bg-slate-100 disabled:text-slate-500 disabled:cursor-not-allowed"
                     />
                   </div>
                 </div>
@@ -1331,114 +1491,140 @@ function RecommendationBuilderContent() {
           {viewMode === 'PREVIEW' && (
             <div
               id="printable-recommendation-doc"
-              className="bg-white border border-slate-200 shadow-xs rounded-xl p-6 sm:p-12 max-w-4xl mx-auto space-y-8 font-sans"
+              className="bg-white border border-slate-200 shadow-xs rounded-xl p-6 sm:p-12 max-w-4xl mx-auto font-sans text-slate-900"
             >
-              {/* Official Letterhead */}
-              <div className="border-b-4 border-double border-black pb-6 text-center">
-                <div className="flex items-center justify-center gap-3 mb-2">
-                  <Award className="w-10 h-10 text-[#0f2c59]" />
+              {/* 1. Official Header Block (Hanya di Halaman 1) */}
+              <div className="rec-header-block space-y-4 mb-6">
+                {/* Official Letterhead */}
+                <div className="border-b-4 border-double border-black pb-5 text-center">
+                  <div className="flex items-center justify-center gap-3 mb-2">
+                    <Award className="w-10 h-10 text-[#0f2c59]" />
+                    <div>
+                      <h2 className="text-lg font-black tracking-wide uppercase text-slate-900">
+                        Pemerintah Daerah Kabupaten Mimika
+                      </h2>
+                      <h3 className="text-sm font-extrabold tracking-wider uppercase text-[#0f2c59]">
+                        Badan Riset dan Inovasi Daerah (BRIDA)
+                      </h3>
+                    </div>
+                  </div>
+                  <p className="text-2xs text-slate-600">
+                    Jl. Cenderawasih, SP 3, Distrik Kuala Kencana, Kabupaten Mimika, Papua Tengah
+                  </p>
+                </div>
+
+                {/* Letter Info */}
+                <div className="grid grid-cols-2 gap-4 text-xs pt-1">
                   <div>
-                    <h2 className="text-lg font-black tracking-wide uppercase text-slate-900">
-                      Pemerintah Daerah Kabupaten Mimika
-                    </h2>
-                    <h3 className="text-sm font-extrabold tracking-wider uppercase text-[#0f2c59]">
-                      Badan Riset dan Inovasi Daerah (BRIDA)
-                    </h3>
+                    <p>
+                      <span className="font-bold">Nomor :</span> {officialDraftNumber || '070/BRIDA-MMK/2026/042'}
+                    </p>
+                    <p>
+                      <span className="font-bold">Sifat :</span> Penting / Naskah Rekomendasi Kebijakan
+                    </p>
+                    <p>
+                      <span className="font-bold">Perihal :</span> {draftLetterSubject || recTitle}
+                    </p>
+                  </div>
+                  <div className="text-right">
+                    <p>
+                      Mimika,{' '}
+                      {new Date().toLocaleDateString('id-ID', {
+                        day: 'numeric',
+                        month: 'long',
+                        year: 'numeric',
+                      })}
+                    </p>
+                    <p className="mt-2 font-bold">Kepada Yth:</p>
+                    <p className="text-slate-900 font-bold">
+                      {targetOpdNames || currentStudy?.proposal?.opd?.name || 'Kepala Perangkat Daerah Terkait'}
+                    </p>
+                    <p className="text-slate-600">di Tempat</p>
                   </div>
                 </div>
-                <p className="text-2xs text-slate-600">
-                  Jl. Cenderawasih, SP 3, Distrik Kuala Kencana, Kabupaten Mimika, Papua Tengah
-                </p>
-              </div>
 
-              {/* Letter Info */}
-              <div className="grid grid-cols-2 gap-4 text-xs">
-                <div>
+                {/* Meta Info */}
+                <div className="flex flex-wrap items-center gap-4 text-xs text-slate-700 pt-1 border-b border-slate-200 pb-3">
                   <p>
-                    <span className="font-bold">Nomor :</span> {officialDraftNumber || '070/BRIDA-MMK/2026/042'}
+                    <strong className="text-slate-900">Bentuk Regulasi Sasaran:</strong>{' '}
+                    {TARGET_POLICY_TYPES.find((t) => t.value === targetPolicyType)?.label || targetPolicyType}
                   </p>
+                  <span className="text-slate-400">•</span>
                   <p>
-                    <span className="font-bold">Sifat :</span> Penting / Naskah Rekomendasi Kebijakan
-                  </p>
-                  <p>
-                    <span className="font-bold">Perihal :</span> {draftLetterSubject || recTitle}
+                    <strong className="text-slate-900">Tingkat Dampak Kebijakan:</strong>{' '}
+                    {IMPACT_LEVELS.find((i) => i.value === impactLevel)?.label || impactLevel}
                   </p>
                 </div>
-                <div className="text-right">
-                  <p>
-                    Mimika,{' '}
-                    {new Date().toLocaleDateString('id-ID', {
-                      day: 'numeric',
-                      month: 'long',
-                      year: 'numeric',
-                    })}
-                  </p>
-                  <p className="mt-2 font-bold">Kepada Yth:</p>
-                  <p className="text-slate-900 font-bold">
-                    {targetOpdNames || currentStudy?.proposal?.opd?.name || 'Kepala Perangkat Daerah Terkait'}
-                  </p>
-                  <p className="text-slate-600">di Tempat</p>
-                </div>
-              </div>
 
-              {/* Meta Badges */}
-              <div className="flex flex-wrap items-center gap-2 pt-2">
-                <span className="text-2xs font-bold uppercase px-2.5 py-1 bg-slate-100 text-slate-900 border border-slate-300">
-                  Bentuk:{' '}
-                  {TARGET_POLICY_TYPES.find((t) => t.value === targetPolicyType)?.label || targetPolicyType}
-                </span>
-                <span className="text-2xs font-bold uppercase px-2.5 py-1 bg-blue-50 text-blue-900 border border-blue-300">
-                  Dampak: {IMPACT_LEVELS.find((i) => i.value === impactLevel)?.label || impactLevel}
-                </span>
-              </div>
-
-              {/* Document Body */}
-              <div className="space-y-6 pt-2 text-slate-900 text-xs leading-relaxed">
-                <div className="text-center py-3 bg-slate-50 border-y border-slate-300">
-                  <h4 className="font-black text-sm text-slate-900 uppercase">
+                {/* Document Title */}
+                <div className="text-center py-2">
+                  <h4 className="font-bold text-sm sm:text-base text-slate-900 uppercase tracking-wide">
                     {recTitle || 'Naskah Rekomendasi Kebijakan'}
                   </h4>
-                  <p className="text-2xs text-slate-600 mt-0.5">
+                  <p className="text-2xs text-slate-500 mt-0.5">
                     Naskah Rekomendasi Hasil Riset dan Inovasi Daerah (SIM-RIDA)
                   </p>
                 </div>
+              </div>
 
-                <div>
-                  <h5 className="font-black text-xs uppercase text-slate-900 mb-1">
+              {/* 2. Document Body (Word-like, NO box frames, NO border lines) */}
+              <div className="rec-body-block space-y-6 pt-1 text-slate-900 text-xs leading-relaxed font-sans">
+                <div className="rec-chapter-item space-y-1.5">
+                  <h5 className="rec-chapter-title font-bold text-xs uppercase text-slate-900">
                     A. Ringkasan Eksekutif (Executive Summary)
                   </h5>
-                  <p className="whitespace-pre-line text-slate-800 text-justify">
+                  <p className="whitespace-pre-line text-slate-800 text-justify leading-relaxed">
                     {executiveSummary || '(Belum ada ringkasan eksekutif)'}
                   </p>
                 </div>
 
-                <div>
-                  <h5 className="font-black text-xs uppercase text-slate-900 mb-1">
-                    B. Temuan Utama Riset & Telaah Masalah
+                <div className="rec-chapter-item space-y-1.5">
+                  <h5 className="rec-chapter-title font-bold text-xs uppercase text-slate-900">
+                    B. Latar Belakang (Background)
                   </h5>
-                  <div className="p-3.5 bg-slate-50 border border-slate-300 font-mono text-2xs whitespace-pre-line text-slate-900">
-                    {keyFindings || '(Belum ada uraian temuan riset)'}
-                  </div>
+                  <p className="whitespace-pre-line text-slate-800 text-justify leading-relaxed">
+                    {background || '(Belum ada uraian latar belakang masalah)'}
+                  </p>
                 </div>
 
-                <div>
-                  <h5 className="font-black text-xs uppercase text-slate-900 mb-1">
-                    C. Butir-Butir Rekomendasi Kebijakan & Rencana Tindak Lanjut
+                <div className="rec-chapter-item space-y-1.5">
+                  <h5 className="rec-chapter-title font-bold text-xs uppercase text-slate-900">
+                    C. Rekomendasi Kebijakan (Policy Recommendations)
                   </h5>
-                  <div className="p-3.5 bg-blue-50/60 border border-blue-300 font-mono text-2xs whitespace-pre-line text-blue-950 font-bold">
-                    {policyActions || '(Belum ada butir rekomendasi kebijakan)'}
-                  </div>
+                  <p className="whitespace-pre-line text-slate-800 text-justify leading-relaxed">
+                    {policyRecommendations || '(Belum ada rumusan rekomendasi kebijakan)'}
+                  </p>
                 </div>
+
+                <div className="rec-chapter-item space-y-1.5">
+                  <h5 className="rec-chapter-title font-bold text-xs uppercase text-slate-900">
+                    D. Kesimpulan (Conclusion)
+                  </h5>
+                  <p className="whitespace-pre-line text-slate-800 text-justify leading-relaxed">
+                    {conclusion || '(Belum ada kesimpulan)'}
+                  </p>
+                </div>
+
+                {correlatedDocs && (
+                  <div className="rec-chapter-item space-y-1.5">
+                    <h5 className="rec-chapter-title font-bold text-xs uppercase text-slate-900">
+                      E. Dokumen Bukti yang Dikorelasikan ke Sistem
+                    </h5>
+                    <p className="whitespace-pre-line text-slate-700 text-justify leading-relaxed">
+                      {correlatedDocs}
+                    </p>
+                  </div>
+                )}
               </div>
 
-              {/* TTE Signature Section */}
-              <div className="pt-8 border-t border-slate-300 flex justify-end">
-                <div className="text-center w-64 space-y-2">
+              {/* 3. TTE Signature Section (Tepat di bawah paragraf, halaman paling akhir, utuh tanpa terpotong) */}
+              <div className="rec-tte-block mt-8 pt-2 flex justify-end">
+                <div className="text-center w-72 space-y-2">
                   <p className="text-xs font-bold text-slate-900">
                     Kepala Badan Riset dan Inovasi Daerah (BRIDA)
                   </p>
 
-                  <div className="h-28 border border-dashed border-blue-400 bg-blue-50/30 flex flex-col items-center justify-center p-2 text-center">
+                  <div className="h-28 border border-dashed border-blue-400 bg-blue-50/30 flex flex-col items-center justify-center p-2 text-center rounded-sm">
                     {isFinalized ? (
                       <div className="text-blue-900">
                         <ShieldCheck className="w-8 h-8 mx-auto text-blue-700" />

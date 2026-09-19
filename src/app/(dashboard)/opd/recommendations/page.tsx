@@ -39,8 +39,10 @@ interface UnifiedRecommendationView {
   opdName: string;
   problemStatement?: string;
   executiveSummary?: string;
-  keyFindings?: string;
-  policyActions?: string;
+  background?: string;
+  policyRecommendations?: string;
+  conclusion?: string;
+  correlatedDocs?: string | null;
   targetPolicyType?: string;
   impactLevel?: string;
   targetOpdNames?: string;
@@ -128,8 +130,10 @@ export default function OpdRecommendationsPage() {
         opdName: opdTitle,
         problemStatement: prop?.problemStatement,
         executiveSummary: rec.executiveSummary,
-        keyFindings: rec.keyFindings,
-        policyActions: rec.policyActions,
+        background: rec.background,
+        policyRecommendations: rec.policyRecommendations,
+        conclusion: rec.conclusion,
+        correlatedDocs: rec.correlatedDocs,
         targetPolicyType: rec.targetPolicyType || 'Peraturan Bupati (Perbup)',
         impactLevel: rec.impactLevel || 'Strategis Daerah',
         targetOpdNames: rec.targetOpdNames || undefined,
@@ -196,8 +200,10 @@ export default function OpdRecommendationsPage() {
       size: item.policyBriefDoc.size,
       url: item.policyBriefDoc.url,
       executiveSummary: item.executiveSummary,
-      keyFindings: item.keyFindings,
-      policyActions: item.policyActions,
+      background: item.background,
+      policyRecommendations: item.policyRecommendations,
+      conclusion: item.conclusion,
+      correlatedDocs: item.correlatedDocs || undefined,
       targetPolicyType: item.targetPolicyType,
       impactLevel: item.impactLevel,
       targetOpdNames: item.targetOpdNames,
@@ -239,7 +245,7 @@ export default function OpdRecommendationsPage() {
       finalReportSummary: report?.summary,
       url: report?.url,
       kakScope: item.kakDoc?.scope,
-      policyActions: item.policyActions,
+      policyRecommendations: item.policyRecommendations,
       executiveSummary: item.executiveSummary,
     });
   };
@@ -436,7 +442,7 @@ export default function OpdRecommendationsPage() {
                       <div>
                         <h5 className="font-bold text-xs text-purple-950">Naskah Policy Brief</h5>
                         <p className="text-3xs text-purple-800 leading-snug mt-0.5">
-                          Rekomendasi tindakan, temuan kunci & opsi regulasi ({item.targetPolicyType || 'Perbup'}).
+                          Pilihan kebijakan, alternatif rekomendasi OPD & opsi regulasi ({item.targetPolicyType || 'Perbup'}).
                         </p>
                       </div>
                       <div className="text-3xs text-slate-500 font-mono">

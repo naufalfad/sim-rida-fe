@@ -413,58 +413,92 @@ export default function ExecutiveLegalizationPage() {
                   {/* If Policy Recommendation */}
                   {(selectedInboxItem?.documentType === 'POLICY_RECOMMENDATION' || selectedHistoryItem?.documentType === 'POLICY_RECOMMENDATION') && (
                     <>
-                      <div>
-                        <h5 className="font-black text-slate-900 uppercase text-[11px] mb-1">A. Ringkasan Eksekutif (Executive Summary):</h5>
-                        <p className="text-slate-700 whitespace-pre-line text-justify">
+                      <div className="space-y-1">
+                        <h5 className="font-bold text-[#0f2c59] uppercase text-xs tracking-wider">
+                          A. Ringkasan Eksekutif (Executive Summary):
+                        </h5>
+                        <p className="text-xs text-slate-800 leading-relaxed text-justify whitespace-pre-line">
                           {activeDocumentDetail.executiveSummary || 'Ringkasan naskah rekomendasi belum terisi.'}
                         </p>
                       </div>
 
-                      <div>
-                        <h5 className="font-black text-slate-900 uppercase text-[11px] mb-1">B. Temuan Utama Riset & Fakta Lapangan:</h5>
-                        <div className="p-3.5 bg-white rounded-xl border border-slate-200 text-slate-800 font-mono text-[11px] whitespace-pre-line">
-                          {activeDocumentDetail.keyFindings || 'Uraian temuan empiris riset.'}
-                        </div>
+                      <div className="space-y-1">
+                        <h5 className="font-bold text-[#0f2c59] uppercase text-xs tracking-wider">
+                          B. Latar Belakang (Background):
+                        </h5>
+                        <p className="text-xs text-slate-800 leading-relaxed text-justify whitespace-pre-line">
+                          {activeDocumentDetail.background || 'Uraian latar belakang masalah dan urgensi regulasi daerah.'}
+                        </p>
                       </div>
 
-                      <div>
-                        <h5 className="font-black text-slate-900 uppercase text-[11px] mb-1">C. Butir-Butir Rekomendasi Kebijakan & Rencana Tindak Lanjut:</h5>
-                        <div className="p-3.5 bg-emerald-50 rounded-xl border border-emerald-200 text-emerald-950 font-mono text-[11px] whitespace-pre-line font-bold">
-                          {activeDocumentDetail.policyActions || 'Butir-butir arahan rekomendasi.'}
-                        </div>
+                      <div className="space-y-1">
+                        <h5 className="font-bold text-[#0f2c59] uppercase text-xs tracking-wider">
+                          C. Rekomendasi Kebijakan (Policy Recommendations):
+                        </h5>
+                        <p className="text-xs text-slate-800 leading-relaxed text-justify whitespace-pre-line">
+                          {activeDocumentDetail.policyRecommendations || 'Butir-butir arahan rekomendasi kebijakan operasional bagi OPD.'}
+                        </p>
                       </div>
+
+                      <div className="space-y-1">
+                        <h5 className="font-bold text-[#0f2c59] uppercase text-xs tracking-wider">
+                          D. Kesimpulan (Conclusion):
+                        </h5>
+                        <p className="text-xs text-slate-800 leading-relaxed text-justify whitespace-pre-line">
+                          {activeDocumentDetail.conclusion || 'Penerapan rekomendasi ini secara konsisten akan mempercepat pencapaian target pembangunan Kabupaten Mimika.'}
+                        </p>
+                      </div>
+
+                      {activeDocumentDetail.correlatedDocs && (
+                        <div className="space-y-1 pt-1">
+                          <h5 className="font-bold text-[#0f2c59] uppercase text-xs tracking-wider">
+                            E. Dokumen Bukti yang Dikorelasikan ke Sistem:
+                          </h5>
+                          <p className="text-xs text-slate-700 leading-relaxed whitespace-pre-line">
+                            {activeDocumentDetail.correlatedDocs}
+                          </p>
+                        </div>
+                      )}
                     </>
                   )}
 
                   {/* If KAK Document */}
                   {(selectedInboxItem?.documentType === 'KAK_DOCUMENT' || selectedHistoryItem?.documentType === 'KAK_DOCUMENT') && (
                     <>
-                      <div>
-                        <h5 className="font-black text-slate-900 uppercase text-[11px] mb-1">A. Latar Belakang KAK:</h5>
-                        <p className="text-slate-700 whitespace-pre-line text-justify">
+                      <div className="space-y-1">
+                        <h5 className="font-bold text-[#0f2c59] uppercase text-xs tracking-wider">
+                          A. Latar Belakang KAK:
+                        </h5>
+                        <p className="text-xs text-slate-800 leading-relaxed text-justify whitespace-pre-line">
                           {activeDocumentDetail.background || 'Latar belakang pelaksanaan kajian.'}
                         </p>
                       </div>
 
-                      <div>
-                        <h5 className="font-black text-slate-900 uppercase text-[11px] mb-1">B. Tujuan & Sasaran:</h5>
-                        <div className="p-3 bg-white rounded-xl border border-slate-200 text-slate-800 font-mono text-[11px] whitespace-pre-line">
+                      <div className="space-y-1">
+                        <h5 className="font-bold text-[#0f2c59] uppercase text-xs tracking-wider">
+                          B. Tujuan & Sasaran:
+                        </h5>
+                        <p className="text-xs text-slate-800 leading-relaxed text-justify whitespace-pre-line">
                           {activeDocumentDetail.objectives || 'Tujuan riset kelitbangan.'}
-                        </div>
+                        </p>
                       </div>
 
-                      <div>
-                        <h5 className="font-black text-slate-900 uppercase text-[11px] mb-1">C. Ruang Lingkup & Metodologi:</h5>
-                        <div className="p-3 bg-white rounded-xl border border-slate-200 text-slate-800 font-mono text-[11px] whitespace-pre-line">
+                      <div className="space-y-1">
+                        <h5 className="font-bold text-[#0f2c59] uppercase text-xs tracking-wider">
+                          C. Ruang Lingkup & Metodologi:
+                        </h5>
+                        <p className="text-xs text-slate-800 leading-relaxed text-justify whitespace-pre-line">
                           {activeDocumentDetail.scopeAndMethodology || 'Metodologi dan ruang lingkup.'}
-                        </div>
+                        </p>
                       </div>
 
-                      <div>
-                        <h5 className="font-black text-slate-900 uppercase text-[11px] mb-1">D. Target Output:</h5>
-                        <div className="p-3 bg-emerald-50 rounded-xl border border-emerald-200 text-emerald-950 font-mono text-[11px] font-bold">
+                      <div className="space-y-1">
+                        <h5 className="font-bold text-[#0f2c59] uppercase text-xs tracking-wider">
+                          D. Target Output:
+                        </h5>
+                        <p className="text-xs text-slate-800 leading-relaxed text-justify whitespace-pre-line">
                           {activeDocumentDetail.targetOutput || 'Dokumen Laporan Akhir & Policy Brief.'}
-                        </div>
+                        </p>
                       </div>
                     </>
                   )}

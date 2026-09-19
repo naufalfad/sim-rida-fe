@@ -337,9 +337,12 @@ export interface PolicyRecommendationItem {
   code: string;
   studyId: string;
   title: string;
+  // 4 Bagian Baku Policy Brief
   executiveSummary: string;
-  keyFindings: string;
-  policyActions: string;
+  background?: string;
+  policyRecommendations?: string;
+  conclusion?: string;
+  correlatedDocs?: string | null;
   targetPolicyType: 'DRAFT_PERBUP' | 'DRAFT_PERDA' | 'SE_BUPATI' | 'SOP_LAYANAN' | 'RENCANA_AKSI_DAERAH' | 'PETUNJUK_TEKNIS' | string;
   impactLevel: 'STRATEGIS_DAERAH' | 'SEKTORAL' | 'OPERASIONAL' | string;
   targetOpdNames?: string | null;
@@ -742,8 +745,10 @@ interface OpdState {
     studyId: string;
     title: string;
     executiveSummary: string;
-    keyFindings: string;
-    policyActions: string;
+    background?: string;
+    policyRecommendations?: string;
+    conclusion?: string;
+    correlatedDocs?: string | null;
     targetPolicyType?: 'DRAFT_PERBUP' | 'DRAFT_PERDA' | 'SE_BUPATI' | 'SOP_LAYANAN' | 'RENCANA_AKSI_DAERAH' | 'PETUNJUK_TEKNIS' | string;
     impactLevel?: 'STRATEGIS_DAERAH' | 'SEKTORAL' | 'OPERASIONAL' | string;
     targetOpdNames?: string | null;
@@ -753,8 +758,10 @@ interface OpdState {
   updateRecommendation: (id: string, payload: Partial<{
     title: string;
     executiveSummary: string;
-    keyFindings: string;
-    policyActions: string;
+    background: string;
+    policyRecommendations: string;
+    conclusion: string;
+    correlatedDocs: string | null;
     targetPolicyType: 'DRAFT_PERBUP' | 'DRAFT_PERDA' | 'SE_BUPATI' | 'SOP_LAYANAN' | 'RENCANA_AKSI_DAERAH' | 'PETUNJUK_TEKNIS' | string;
     impactLevel: 'STRATEGIS_DAERAH' | 'SEKTORAL' | 'OPERASIONAL' | string;
     targetOpdNames?: string | null;
@@ -816,8 +823,6 @@ interface OpdState {
       isUrgencyRelevant?: boolean;
       isStrategicAligned?: boolean;
       isResearchFeasible?: boolean;
-      isBudgetFeasible?: boolean;
-      isDataAdequate?: boolean;
     },
     verificationNotes?: string,
     adminName?: string
@@ -1515,8 +1520,6 @@ export const useOpdStore = create<OpdState>((set, get) => ({
         isUrgencyRelevant?: boolean;
         isStrategicAligned?: boolean;
         isResearchFeasible?: boolean;
-        isBudgetFeasible?: boolean;
-        isDataAdequate?: boolean;
       };
 
       if (typeof decisionOrPayload === 'object' && decisionOrPayload !== null) {
@@ -1534,8 +1537,6 @@ export const useOpdStore = create<OpdState>((set, get) => ({
           isUrgencyRelevant: decisionOrPayload.isUrgencyRelevant ?? true,
           isStrategicAligned: decisionOrPayload.isStrategicAligned ?? true,
           isResearchFeasible: decisionOrPayload.isResearchFeasible ?? true,
-          isBudgetFeasible: decisionOrPayload.isBudgetFeasible ?? true,
-          isDataAdequate: decisionOrPayload.isDataAdequate ?? true,
         };
       } else if (typeof decisionOrPayload === 'boolean') {
         payload = {
@@ -1550,8 +1551,6 @@ export const useOpdStore = create<OpdState>((set, get) => ({
           isUrgencyRelevant: decisionOrPayload,
           isStrategicAligned: decisionOrPayload,
           isResearchFeasible: decisionOrPayload,
-          isBudgetFeasible: decisionOrPayload,
-          isDataAdequate: decisionOrPayload,
         };
       } else {
         const dec = decisionOrPayload === 'PASS' ? 'PASS' : decisionOrPayload === 'REJECT' ? 'REJECT' : 'RETURN';
@@ -1569,8 +1568,6 @@ export const useOpdStore = create<OpdState>((set, get) => ({
           isUrgencyRelevant: dec === 'PASS',
           isStrategicAligned: dec === 'PASS',
           isResearchFeasible: dec === 'PASS',
-          isBudgetFeasible: dec === 'PASS',
-          isDataAdequate: dec === 'PASS',
         };
       }
 
@@ -1628,8 +1625,6 @@ export const useOpdStore = create<OpdState>((set, get) => ({
         verificationNotes: revisionNotes,
         isProblemClear: false,
         isUrgencyRelevant: false,
-        isBudgetFeasible: false,
-        isDataAdequate: false,
       },
       revisionNotes,
       adminName

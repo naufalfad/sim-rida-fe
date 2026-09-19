@@ -120,7 +120,7 @@ export default function AdminVerificationPage() {
     <div className="space-y-6 max-w-7xl mx-auto pb-16 font-sans">
       {/* HEADER */}
       <PageHeader
-        title="Validasi Usulan OPD (Tahap 2)"
+        title="Validasi Usulan OPD"
         description="Penilaian kelayakan usulan riset Perangkat Daerah melalui 5 pilar instrumen: Validasi Masalah, Kebaruan/Bebas Duplikasi, Tingkat Urgensi, Keselarasan Strategis RPJMD, dan Kelayakan Penelitian."
         action={
           <div className="flex items-center gap-3">

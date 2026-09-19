@@ -143,7 +143,7 @@ export default function ExecutiveImpactTrackingPage() {
         misi: `Misi ${idx + 1}: Optimalisasi Kebijakan Sektoral Berbasis Riset Daerah`,
         indicator: rec.title,
         researchCount: 1,
-        policyImpact: rec.policyActions || rec.executiveSummary || 'Telah disahkan menjadi naskah rekomendasi kebijakan pemerintah daerah.',
+        policyImpact: rec.policyRecommendations || rec.executiveSummary || 'Telah disahkan menjadi naskah rekomendasi kebijakan pemerintah daerah.',
         status: rec.status === 'FINALIZED' ? 'TERCAPAI (Optimal)' : 'ON TRACK',
       }));
     }
