@@ -26,10 +26,188 @@ import {
   X,
   Sliders,
   Award,
+  ShieldCheck,
+  Download,
   ArrowRight,
-  ShieldCheck
 } from 'lucide-react';
 import { cn } from '@/lib/utils/cn';
+import { generateKakPdf, openPdfLoadingWindow } from '@/lib/pdf-generator';
+
+function KakOfficialDocument({
+  proposal,
+  allocatedBudget,
+  durationMonths,
+  kakStatus,
+  background,
+  objectives,
+  scopeAndMethodology,
+  targetOutput,
+}: {
+  proposal: OpdProposal;
+  allocatedBudget: number;
+  durationMonths: number;
+  kakStatus: string;
+  background: string;
+  objectives: string;
+  scopeAndMethodology: string;
+  targetOutput: string;
+}) {
+  return (
+    <div
+      id="printable-kak-doc"
+      className="bg-white border border-slate-200 shadow-xs rounded-xl p-6 sm:p-12 max-w-4xl mx-auto font-sans text-slate-900"
+    >
+      {/* 1. Official Header Block (Hanya di Halaman 1) */}
+      <div className="kak-header-block space-y-4 mb-6">
+        {/* Official Letterhead */}
+        <div className="border-b-4 border-double border-black pb-5 text-center">
+          <div className="flex items-center justify-center gap-3 mb-2">
+            <Award className="w-10 h-10 text-[#0f2c59]" />
+            <div>
+              <h2 className="text-lg font-black tracking-wide uppercase text-slate-900">
+                Pemerintah Daerah Kabupaten Mimika
+              </h2>
+              <h3 className="text-sm font-extrabold tracking-wider uppercase text-[#0f2c59]">
+                Badan Riset dan Inovasi Daerah (BRIDA)
+              </h3>
+            </div>
+          </div>
+          <p className="text-2xs text-slate-600">
+            Jl. Cenderawasih, SP 3, Distrik Kuala Kencana, Kabupaten Mimika, Papua Tengah
+          </p>
+        </div>
+
+        {/* Letter Info */}
+        <div className="grid grid-cols-2 gap-4 text-xs pt-1">
+          <div>
+            <p>
+              <span className="font-bold">Nomor :</span> 070/BRIDA-MMK/KAK/{new Date().getFullYear()}/{proposal.code || '001'}
+            </p>
+            <p>
+              <span className="font-bold">Sifat :</span> Penting / Kerangka Acuan Kerja
+            </p>
+            <p>
+              <span className="font-bold">Lampiran :</span> 1 (Satu) Berkas KAK
+            </p>
+            <p>
+              <span className="font-bold">Perihal :</span> Kerangka Acuan Kerja (KAK) Riset Daerah
+            </p>
+          </div>
+          <div className="text-right">
+            <p>
+              Mimika,{' '}
+              {new Date().toLocaleDateString('id-ID', {
+                day: 'numeric',
+                month: 'long',
+                year: 'numeric',
+              })}
+            </p>
+            <p className="mt-2 font-bold">Perangkat Daerah Pemrakarsa:</p>
+            <p className="text-slate-900 font-bold">{proposal.opdName}</p>
+            <p className="text-slate-600">di Tempat</p>
+          </div>
+        </div>
+
+        {/* Meta Info */}
+        <div className="flex flex-wrap items-center gap-4 text-xs text-slate-700 pt-1 border-b border-slate-200 pb-3">
+          <p>
+            <strong className="text-slate-900">Tahun Anggaran:</strong> {new Date().getFullYear()}
+          </p>
+          <span className="text-slate-400">•</span>
+          <p>
+            <strong className="text-slate-900">Alokasi Pagu:</strong>{' '}
+            {new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(allocatedBudget)}
+          </p>
+          <span className="text-slate-400">•</span>
+          <p>
+            <strong className="text-slate-900">Durasi Pelaksanaan:</strong> {durationMonths} Bulan Kalender
+          </p>
+          <span className="text-slate-400">•</span>
+          <p>
+            <strong className="text-slate-900">Status Dokumen:</strong>{' '}
+            {kakStatus === 'FINAL' ? 'FINAL TERVERIFIKASI' : 'DRAF KAK'}
+          </p>
+        </div>
+
+        {/* Document Title */}
+        <div className="text-center py-2">
+          <h4 className="font-bold text-sm sm:text-base text-slate-900 uppercase tracking-wide">
+            {proposal.title}
+          </h4>
+          <p className="text-2xs text-slate-500 mt-0.5">
+            Kerangka Acuan Kerja (Terms of Reference) Riset Daerah Kabupaten Mimika
+          </p>
+        </div>
+      </div>
+
+      {/* 2. Document Body (Word-like, NO box frames, NO border lines) */}
+      <div className="kak-body-block space-y-6 pt-1 text-slate-900 text-xs leading-relaxed font-sans">
+        <div className="kak-chapter-item space-y-1.5">
+          <h5 className="kak-chapter-title font-bold text-xs uppercase text-slate-900">
+            BAB I. Latar Belakang & Urgensi Penelitian
+          </h5>
+          <p className="whitespace-pre-line text-slate-800 text-justify leading-relaxed">
+            {background || '-'}
+          </p>
+        </div>
+
+        <div className="kak-chapter-item space-y-1.5">
+          <h5 className="kak-chapter-title font-bold text-xs uppercase text-slate-900">
+            BAB II. Maksud, Tujuan & Sasaran Riset
+          </h5>
+          <p className="whitespace-pre-line text-slate-800 text-justify leading-relaxed">
+            {objectives || '-'}
+          </p>
+        </div>
+
+        <div className="kak-chapter-item space-y-1.5">
+          <h5 className="kak-chapter-title font-bold text-xs uppercase text-slate-900">
+            BAB III. Ruang Lingkup & Metodologi Kajian
+          </h5>
+          <p className="whitespace-pre-line text-slate-800 text-justify leading-relaxed">
+            {scopeAndMethodology || '-'}
+          </p>
+        </div>
+
+        <div className="kak-chapter-item space-y-1.5">
+          <h5 className="kak-chapter-title font-bold text-xs uppercase text-slate-900">
+            BAB IV. Target Luaran Kebijakan (Deliverables)
+          </h5>
+          <p className="whitespace-pre-line text-slate-800 text-justify leading-relaxed">
+            {targetOutput || '-'}
+          </p>
+        </div>
+      </div>
+
+      {/* 3. TTE Signature Section (Tepat di bawah paragraf, halaman paling akhir, utuh tanpa terpotong) */}
+      <div className="kak-tte-block mt-8 pt-2 flex justify-end">
+        <div className="text-center w-72 space-y-2">
+          <p className="text-xs font-bold text-slate-900">
+            Kepala Badan Riset dan Inovasi Daerah (BRIDA)
+          </p>
+          <div className="h-28 border border-dashed border-blue-400 bg-blue-50/30 flex flex-col items-center justify-center p-2 text-center rounded-sm">
+            <ShieldCheck className="w-8 h-8 mx-auto text-blue-700" />
+            <span className="text-2xs font-black uppercase block mt-1 text-blue-900">
+              Ditandatangani Secara Elektronik (TTE)
+            </span>
+            <span className="text-[9px] text-slate-600 font-mono">
+              BSrE - BSSN Validated
+            </span>
+            <span className="text-[8px] text-blue-950 font-mono block mt-0.5 font-bold">
+              DS-KAK-{proposal.code || '2026'}-BRIDA
+            </span>
+          </div>
+          <div>
+            <p className="text-xs font-black text-slate-900 underline">
+              Dr. Petrus Renyaan, M.Si.
+            </p>
+            <p className="text-2xs text-slate-600 font-mono">NIP. 19730412 199803 1 001</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export default function KakLiveEditorPage() {
   const params = useParams();
@@ -59,6 +237,7 @@ export default function KakLiveEditorPage() {
 
   // Print/Export Modal State
   const [isPrintModalOpen, setIsPrintModalOpen] = useState(false);
+  const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [saveMessage, setSaveMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
@@ -163,6 +342,70 @@ export default function KakLiveEditorPage() {
     }
   };
 
+  // Buka dokumen KAK sebagai PDF di tab peramban baru (Chrome PDF Viewer)
+  const handleOpenKakPdf = async () => {
+    if (!proposal) return;
+    const loadingWin = openPdfLoadingWindow();
+    setIsGeneratingPdf(true);
+    try {
+      await generateKakPdf(
+        {
+          proposalCode: proposal.code,
+          proposalTitle: proposal.title,
+          opdName: proposal.opdName,
+          fiscalYear: new Date().getFullYear(),
+          allocatedBudget,
+          durationMonths,
+          kakStatus,
+          background,
+          objectives,
+          scopeAndMethodology,
+          targetOutput,
+          signedBy: 'Dr. Petrus Renyaan, M.Si.',
+          signedNip: '19730412 199803 1 001',
+          certificateNumber: `DS-KAK-${proposal.code || '2026'}-BRIDA`,
+        },
+        loadingWin
+      );
+    } catch (err) {
+      console.error('Failed to generate KAK PDF:', err);
+      if (loadingWin && !loadingWin.closed) loadingWin.close();
+      alert('Gagal menyusun PDF KAK. Silakan coba kembali.');
+    } finally {
+      setIsGeneratingPdf(false);
+    }
+  };
+
+  // Unduh dokumen resmi KAK langsung sebagai file .pdf
+  const handleDownloadKakPdf = async () => {
+    if (!proposal) return;
+    setIsGeneratingPdf(true);
+    try {
+      const res = await generateKakPdf({
+        proposalCode: proposal.code,
+        proposalTitle: proposal.title,
+        opdName: proposal.opdName,
+        fiscalYear: new Date().getFullYear(),
+        allocatedBudget,
+        durationMonths,
+        kakStatus,
+        background,
+        objectives,
+        scopeAndMethodology,
+        targetOutput,
+        signedBy: 'Dr. Petrus Renyaan, M.Si.',
+        signedNip: '19730412 199803 1 001',
+        certificateNumber: `DS-KAK-${proposal.code || '2026'}-BRIDA`,
+      });
+      res.download();
+    } catch (err) {
+      console.error('Failed to download KAK PDF:', err);
+      alert('Gagal mengunduh file PDF KAK. Silakan coba kembali.');
+    } finally {
+      setIsGeneratingPdf(false);
+    }
+  };
+
   if (!proposal) {
     return (
       <div className="py-20 text-center text-slate-500 text-xs flex flex-col items-center gap-3">
@@ -175,7 +418,7 @@ export default function KakLiveEditorPage() {
   const isBrida = proposal.source === 'BRIDA_ANALYSIS' || proposal.code.includes('BRIDA');
 
   return (
-    <div className="space-y-6 max-w-7xl mx-auto pb-20 font-sans">
+    <>
       {/* Print CSS: Tata Letak Cetak Multi-Halaman Resmi KAK (A4, Tanpa Frame, Header Halaman 1 Saja, TTE Utuh di Halaman Akhir) */}
       <style jsx global>{`
         @media print {
@@ -196,36 +439,52 @@ export default function KakLiveEditorPage() {
             background: #ffffff !important;
             color: #000000 !important;
             height: auto !important;
-            min-height: 100% !important;
             overflow: visible !important;
           }
 
-          /* Sembunyikan seluruh UI luar / background modal */
-          body * {
-            visibility: hidden;
+          /* Sembunyikan TOTAL seluruh elemen dashboard, sidebar, header, form workbench, dan modal web */
+          aside,
+          header,
+          nav,
+          button,
+          .print\\:hidden,
+          [class*="print:hidden"],
+          .fixed {
+            display: none !important;
           }
 
-          /* Nonaktifkan fixed positioning dan overflow pada modal agar dokumen mengalir alami multi-halaman */
-          .fixed,
-          [class*="fixed"],
-          [class*="max-h-"],
-          [class*="overflow-"] {
-            position: static !important;
-            overflow: visible !important;
+          /* Reset container layout agar tidak mengonsumsi ruang atau padding */
+          .min-h-screen,
+          [class*="min-h-screen"],
+          [class*="overflow-hidden"],
+          [class*="overflow-y-auto"] {
+            min-height: 0 !important;
             height: auto !important;
-            max-height: none !important;
-            border: none !important;
-            box-shadow: none !important;
-            background: transparent !important;
+            overflow: visible !important;
+            display: block !important;
             padding: 0 !important;
             margin: 0 !important;
-            display: block !important;
+            background: transparent !important;
           }
 
-          /* Tampilkan lembar dokumen resmi KAK */
-          #printable-kak-doc,
-          #printable-kak-doc * {
-            visibility: visible !important;
+          main {
+            padding: 0 !important;
+            margin: 0 !important;
+            overflow: visible !important;
+            display: block !important;
+            height: auto !important;
+            min-height: 0 !important;
+            border: none !important;
+          }
+
+          /* Container cetak khusus: HANYA ini yang aktif saat cetak di posisi paling atas Halaman 1 */
+          #print-only-container {
+            display: block !important;
+            position: static !important;
+            width: 100% !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            background: #ffffff !important;
           }
 
           #printable-kak-doc {
@@ -279,15 +538,11 @@ export default function KakLiveEditorPage() {
             float: none !important;
             clear: both !important;
           }
-
-          /* Elemen kontrol cetak tidak dicetak */
-          button,
-          nav,
-          .no-print {
-            display: none !important;
-          }
         }
       `}</style>
+
+      {/* SCREEN VIEW (Form Workbench + Modals): disembunyikan total saat print */}
+      <div className="print:hidden space-y-6 max-w-7xl mx-auto pb-20 font-sans">
 
       {/* TOP NAVIGATION & ACTIONS */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-2 border-b border-slate-200">
@@ -363,11 +618,35 @@ export default function KakLiveEditorPage() {
           </button>
 
           <button
-            onClick={() => setIsPrintModalOpen(true)}
-            className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-slate-800 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 transition-colors shadow-2xs"
+            type="button"
+            onClick={handleOpenKakPdf}
+            disabled={isGeneratingPdf}
+            className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-bold text-blue-950 bg-sky-50 border border-sky-300 rounded-lg hover:bg-sky-100 transition-colors shadow-2xs cursor-pointer"
+            title="Buka dokumen KAK di Chrome PDF Viewer (untuk melihat halaman per halaman atau cetak PDF langsung)"
           >
-            <Printer className="h-3.5 w-3.5 text-slate-600" />
-            <span>Pratinjau / Cetak</span>
+            <Printer className="h-3.5 w-3.5 text-blue-700" />
+            <span>{isGeneratingPdf ? 'Menyiapkan PDF...' : 'Buka / Cetak PDF'}</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={handleDownloadKakPdf}
+            disabled={isGeneratingPdf}
+            className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-slate-800 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 transition-colors shadow-2xs cursor-pointer"
+            title="Unduh file resmi KAK dalam format .pdf"
+          >
+            <Download className="h-3.5 w-3.5 text-slate-700" />
+            <span>Unduh PDF</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setIsPrintModalOpen(true)}
+            className="inline-flex items-center gap-1.5 px-2.5 py-2 text-xs font-medium text-slate-600 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors shadow-2xs"
+            title="Pratinjau naskah dokumen pada layar"
+          >
+            <FileText className="h-3.5 w-3.5 text-slate-500" />
+            <span>Pratinjau Layar</span>
           </button>
 
           <button
@@ -719,16 +998,28 @@ export default function KakLiveEditorPage() {
               <div className="flex items-center gap-2">
                 <button
                   type="button"
-                  onClick={() => window.print()}
-                  className="px-3 py-1.5 bg-blue-600 text-white text-xs font-bold rounded-lg hover:bg-blue-700 transition flex items-center gap-1.5 shadow border border-blue-700"
+                  onClick={handleOpenKakPdf}
+                  disabled={isGeneratingPdf}
+                  className="px-3 py-1.5 bg-blue-600 text-white text-xs font-bold rounded-lg hover:bg-blue-700 transition flex items-center gap-1.5 shadow border border-blue-700 cursor-pointer"
+                  title="Buka dokumen di Chrome PDF viewer (halaman per halaman & cetak PDF)"
                 >
-                  <Printer className="h-3.5 w-3.5" />
-                  <span>Cetak Dokumen</span>
+                  <ExternalLink className="h-3.5 w-3.5" />
+                  <span>{isGeneratingPdf ? 'Memproses PDF...' : 'Buka / Cetak PDF (Tab Baru)'}</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={handleDownloadKakPdf}
+                  disabled={isGeneratingPdf}
+                  className="px-3 py-1.5 bg-slate-100 text-slate-800 text-xs font-semibold rounded-lg hover:bg-slate-200 transition flex items-center gap-1.5 border border-slate-300 cursor-pointer"
+                  title="Unduh langsung berkas resmi format PDF"
+                >
+                  <Download className="h-3.5 w-3.5 text-slate-700" />
+                  <span>Unduh PDF</span>
                 </button>
                 <button
                   type="button"
                   onClick={() => setIsPrintModalOpen(false)}
-                  className="text-slate-400 hover:text-black p-1"
+                  className="text-slate-400 hover:text-black p-1 cursor-pointer"
                 >
                   <X className="h-4 w-4" />
                 </button>
@@ -737,163 +1028,35 @@ export default function KakLiveEditorPage() {
 
             {/* Document preview container */}
             <div className="p-6 sm:p-12 overflow-y-auto bg-slate-100/50">
-              <div
-                id="printable-kak-doc"
-                className="bg-white border border-slate-200 shadow-xs rounded-xl p-6 sm:p-12 max-w-4xl mx-auto font-sans text-slate-900"
-              >
-                {/* 1. Official Header Block (Hanya di Halaman 1) */}
-                <div className="kak-header-block space-y-4 mb-6">
-                  {/* Official Letterhead */}
-                  <div className="border-b-4 border-double border-black pb-5 text-center">
-                    <div className="flex items-center justify-center gap-3 mb-2">
-                      <Award className="w-10 h-10 text-[#0f2c59]" />
-                      <div>
-                        <h2 className="text-lg font-black tracking-wide uppercase text-slate-900">
-                          Pemerintah Daerah Kabupaten Mimika
-                        </h2>
-                        <h3 className="text-sm font-extrabold tracking-wider uppercase text-[#0f2c59]">
-                          Badan Riset dan Inovasi Daerah (BRIDA)
-                        </h3>
-                      </div>
-                    </div>
-                    <p className="text-2xs text-slate-600">
-                      Jl. Cenderawasih, SP 3, Distrik Kuala Kencana, Kabupaten Mimika, Papua Tengah
-                    </p>
-                  </div>
-
-                  {/* Letter Info */}
-                  <div className="grid grid-cols-2 gap-4 text-xs pt-1">
-                    <div>
-                      <p>
-                        <span className="font-bold">Nomor :</span> 070/BRIDA-MMK/KAK/{new Date().getFullYear()}/{proposal.code || '001'}
-                      </p>
-                      <p>
-                        <span className="font-bold">Sifat :</span> Penting / Kerangka Acuan Kerja
-                      </p>
-                      <p>
-                        <span className="font-bold">Lampiran :</span> 1 (Satu) Berkas KAK
-                      </p>
-                      <p>
-                        <span className="font-bold">Perihal :</span> Kerangka Acuan Kerja (KAK) Riset Daerah
-                      </p>
-                    </div>
-                    <div className="text-right">
-                      <p>
-                        Mimika,{' '}
-                        {new Date().toLocaleDateString('id-ID', {
-                          day: 'numeric',
-                          month: 'long',
-                          year: 'numeric',
-                        })}
-                      </p>
-                      <p className="mt-2 font-bold">Perangkat Daerah Pemrakarsa:</p>
-                      <p className="text-slate-900 font-bold">{proposal.opdName}</p>
-                      <p className="text-slate-600">di Tempat</p>
-                    </div>
-                  </div>
-
-                  {/* Meta Info */}
-                  <div className="flex flex-wrap items-center gap-4 text-xs text-slate-700 pt-1 border-b border-slate-200 pb-3">
-                    <p>
-                      <strong className="text-slate-900">Tahun Anggaran:</strong> {new Date().getFullYear()}
-                    </p>
-                    <span className="text-slate-400">•</span>
-                    <p>
-                      <strong className="text-slate-900">Alokasi Pagu:</strong>{' '}
-                      {new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(allocatedBudget)}
-                    </p>
-                    <span className="text-slate-400">•</span>
-                    <p>
-                      <strong className="text-slate-900">Durasi Pelaksanaan:</strong> {durationMonths} Bulan Kalender
-                    </p>
-                    <span className="text-slate-400">•</span>
-                    <p>
-                      <strong className="text-slate-900">Status Dokumen:</strong>{' '}
-                      {kakStatus === 'FINAL' ? 'FINAL TERVERIFIKASI' : 'DRAF KAK'}
-                    </p>
-                  </div>
-
-                  {/* Document Title */}
-                  <div className="text-center py-2">
-                    <h4 className="font-bold text-sm sm:text-base text-slate-900 uppercase tracking-wide">
-                      {proposal.title}
-                    </h4>
-                    <p className="text-2xs text-slate-500 mt-0.5">
-                      Kerangka Acuan Kerja (Terms of Reference) Riset Daerah Kabupaten Mimika
-                    </p>
-                  </div>
-                </div>
-
-                {/* 2. Document Body (Word-like, NO box frames, NO border lines) */}
-                <div className="kak-body-block space-y-6 pt-1 text-slate-900 text-xs leading-relaxed font-sans">
-                  <div className="kak-chapter-item space-y-1.5">
-                    <h5 className="kak-chapter-title font-bold text-xs uppercase text-slate-900">
-                      BAB I. Latar Belakang & Urgensi Penelitian
-                    </h5>
-                    <p className="whitespace-pre-line text-slate-800 text-justify leading-relaxed">
-                      {background || '-'}
-                    </p>
-                  </div>
-
-                  <div className="kak-chapter-item space-y-1.5">
-                    <h5 className="kak-chapter-title font-bold text-xs uppercase text-slate-900">
-                      BAB II. Maksud, Tujuan & Sasaran Riset
-                    </h5>
-                    <p className="whitespace-pre-line text-slate-800 text-justify leading-relaxed">
-                      {objectives || '-'}
-                    </p>
-                  </div>
-
-                  <div className="kak-chapter-item space-y-1.5">
-                    <h5 className="kak-chapter-title font-bold text-xs uppercase text-slate-900">
-                      BAB III. Ruang Lingkup & Metodologi Kajian
-                    </h5>
-                    <p className="whitespace-pre-line text-slate-800 text-justify leading-relaxed">
-                      {scopeAndMethodology || '-'}
-                    </p>
-                  </div>
-
-                  <div className="kak-chapter-item space-y-1.5">
-                    <h5 className="kak-chapter-title font-bold text-xs uppercase text-slate-900">
-                      BAB IV. Target Luaran Kebijakan (Deliverables)
-                    </h5>
-                    <p className="whitespace-pre-line text-slate-800 text-justify leading-relaxed">
-                      {targetOutput || '-'}
-                    </p>
-                  </div>
-                </div>
-
-                {/* 3. TTE Signature Section (Tepat di bawah paragraf, halaman paling akhir, utuh tanpa terpotong) */}
-                <div className="kak-tte-block mt-8 pt-2 flex justify-end">
-                  <div className="text-center w-72 space-y-2">
-                    <p className="text-xs font-bold text-slate-900">
-                      Kepala Badan Riset dan Inovasi Daerah (BRIDA)
-                    </p>
-                    <div className="h-28 border border-dashed border-blue-400 bg-blue-50/30 flex flex-col items-center justify-center p-2 text-center rounded-sm">
-                      <ShieldCheck className="w-8 h-8 mx-auto text-blue-700" />
-                      <span className="text-2xs font-black uppercase block mt-1 text-blue-900">
-                        Ditandatangani Secara Elektronik (TTE)
-                      </span>
-                      <span className="text-[9px] text-slate-600 font-mono">
-                        BSrE - BSSN Validated
-                      </span>
-                      <span className="text-[8px] text-blue-950 font-mono block mt-0.5 font-bold">
-                        DS-KAK-{proposal.code || '2026'}-BRIDA
-                      </span>
-                    </div>
-                    <div>
-                      <p className="text-xs font-black text-slate-900 underline">
-                        Dr. Petrus Renyaan, M.Si.
-                      </p>
-                      <p className="text-2xs text-slate-600 font-mono">NIP. 19730412 199803 1 001</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
+              <KakOfficialDocument
+                proposal={proposal}
+                allocatedBudget={allocatedBudget}
+                durationMonths={durationMonths}
+                kakStatus={kakStatus}
+                background={background}
+                objectives={objectives}
+                scopeAndMethodology={scopeAndMethodology}
+                targetOutput={targetOutput}
+              />
             </div>
           </div>
         </div>
       )}
-    </div>
+      </div>
+
+      {/* DEDICATED PRINT CONTAINER: Hanya aktif saat cetak, langsung di puncak Halaman 1 */}
+      <div id="print-only-container" className="hidden print:block">
+        <KakOfficialDocument
+          proposal={proposal}
+          allocatedBudget={allocatedBudget}
+          durationMonths={durationMonths}
+          kakStatus={kakStatus}
+          background={background}
+          objectives={objectives}
+          scopeAndMethodology={scopeAndMethodology}
+          targetOutput={targetOutput}
+        />
+      </div>
+    </>
   );
 }

@@ -1,3 +1,5 @@
+import jsPDF from 'jspdf';
+
 // Helper utilitas untuk membuka berkas PDF di tab baru atau langsung mengunduh berkas non-PDF
 
 export interface ViewableFile {
@@ -23,7 +25,7 @@ export const isPdfDocument = (fileName: string): boolean => {
 };
 
 /**
- * Menghasilkan file Blob untuk data berkas jika belum memiliki Blob URL
+ * Menghasilkan file Blob untuk data berkas jika belum memiliki Blob URL (asli format application/pdf untuk PDF)
  */
 export const generateFallbackFileBlob = (file: ViewableFile): Blob => {
   if (file.rawFile) {
@@ -34,138 +36,115 @@ export const generateFallbackFileBlob = (file: ViewableFile): Blob => {
   const ext = file.name.split('.').pop()?.toLowerCase() || '';
 
   if (isPdf) {
-    // Generate dokumen PDF / HTML viewer di tab baru
-    const htmlPdfContent = `<!DOCTYPE html>
-<html lang="id">
-<head>
-  <meta charset="UTF-8">
-  <title>${file.name} - Peninjau Dokumen SIM-RIDA</title>
-  <style>
-    @page { size: A4; margin: 20mm; }
-    body {
-      font-family: 'Times New Roman', Times, serif;
-      line-height: 1.6;
-      color: #000;
-      background: #525659;
-      margin: 0;
-      padding: 24px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-    }
-    .page-container {
-      width: 210mm;
-      min-height: 297mm;
-      padding: 25mm 25mm 20mm 25mm;
-      background: #ffffff;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-      box-sizing: border-box;
-      position: relative;
-    }
-    .header-kop {
-      text-align: center;
-      border-bottom: 3px double #000;
-      padding-bottom: 12px;
-      margin-bottom: 24px;
-    }
-    .header-kop h3 { margin: 0; font-size: 16pt; font-weight: bold; text-transform: uppercase; }
-    .header-kop h2 { margin: 2px 0; font-size: 18pt; font-weight: bold; text-transform: uppercase; }
-    .header-kop p { margin: 0; font-size: 10pt; font-family: Arial, sans-serif; }
-    .doc-title { text-align: center; margin: 20px 0; }
-    .doc-title h4 { margin: 0; font-size: 13pt; text-decoration: underline; text-transform: uppercase; font-weight: bold; }
-    .doc-title span { font-size: 10pt; font-family: Arial, sans-serif; color: #333; }
-    .content-body { font-size: 12pt; text-align: justify; }
-    .content-body p { text-indent: 30px; margin: 10px 0; }
-    .meta-table { width: 100%; border-collapse: collapse; margin: 15px 0; font-size: 11pt; }
-    .meta-table td { padding: 4px 6px; vertical-align: top; }
-    .meta-table td.label { width: 30%; font-weight: bold; }
-    .meta-table td.colon { width: 3%; }
-    .footer-sign { margin-top: 40px; float: right; width: 220px; text-align: center; font-size: 11pt; }
-    .print-bar {
-      position: fixed;
-      top: 12px;
-      right: 24px;
-      background: #0f2c59;
-      color: #fff;
-      padding: 8px 16px;
-      border-radius: 6px;
-      font-family: Arial, sans-serif;
-      font-size: 13px;
-      font-weight: bold;
-      cursor: pointer;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.3);
-      z-index: 999;
-    }
-    @media print {
-      body { background: transparent; padding: 0; }
-      .page-container { box-shadow: none; width: 100%; min-height: auto; padding: 0; }
-      .print-bar { display: none; }
-    }
-  </style>
-</head>
-<body>
-  <button class="print-bar" onclick="window.print()">🖨️ Cetak / Simpan PDF</button>
-  <div class="page-container">
-    <div class="header-kop">
-      <h3>Pemerintah Kabupaten Mimika</h3>
-      <h2>Badan Riset dan Inovasi Daerah</h2>
-      <p>Jl. Cenderawasih, SP 3, Distrik Kuala Kencana, Kabupaten Mimika, Papua Tengah</p>
-      <p>Laman: brida.mimikakab.go.id | Pos-el: brida@mimikakab.go.id</p>
-    </div>
+    const doc = new jsPDF({
+      orientation: 'portrait',
+      unit: 'mm',
+      format: 'a4',
+      compress: true,
+    });
 
-    <div class="doc-title">
-      <h4>${file.name.replace(/\.pdf$/i, '')}</h4>
-      <span>Nomor Registrasi Sistem: ${file.proposalCode || 'SIMRIDA/2026/DOC'}</span>
-    </div>
+    // 1. Kop Surat Resmi
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(13);
+    doc.setTextColor(0, 0, 0);
+    doc.text('PEMERINTAH DAERAH KABUPATEN MIMIKA', 105, 18, { align: 'center' });
+    doc.setFontSize(11);
+    doc.setTextColor(15, 44, 89);
+    doc.text('BADAN RISET DAN INOVASI DAERAH (BRIDA)', 105, 23.5, { align: 'center' });
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(8);
+    doc.setTextColor(100, 116, 139);
+    doc.text('Jl. Cenderawasih, SP 3, Distrik Kuala Kencana, Kabupaten Mimika, Papua Tengah', 105, 28, { align: 'center' });
 
-    <table class="meta-table">
-      <tr>
-        <td class="label">Nama Dokumen</td>
-        <td class="colon">:</td>
-        <td>${file.name}</td>
-      </tr>
-      <tr>
-        <td class="label">Perangkat Daerah Pengunggah</td>
-        <td class="colon">:</td>
-        <td>${file.opdName || 'Pemerintah Kabupaten Mimika'}</td>
-      </tr>
-      <tr>
-        <td class="label">Usulan Terkait</td>
-        <td class="colon">:</td>
-        <td>${file.proposalTitle || '-'}</td>
-      </tr>
-      <tr>
-        <td class="label">Tanggal Unggah</td>
-        <td class="colon">:</td>
-        <td>${file.uploadDate || new Date().toLocaleDateString('id-ID')}</td>
-      </tr>
-      <tr>
-        <td class="label">Ukuran Berkas</td>
-        <td class="colon">:</td>
-        <td>${file.size || '1.5 MB'}</td>
-      </tr>
-    </table>
+    // Garis Kop Ganda
+    doc.setDrawColor(0, 0, 0);
+    doc.setLineWidth(0.7);
+    doc.line(15, 31, 195, 31);
+    doc.setLineWidth(0.25);
+    doc.line(15, 32.2, 195, 32.2);
 
-    <div class="content-body">
-      <h5 style="margin-top: 15px; margin-bottom: 5px; font-size: 11pt; text-transform: uppercase;">Uraian Dokumen / Keterangan Berkas:</h5>
-      <p>
-        ${file.content ? file.content.replace(/\n/g, '<br/>') : 'Dokumen lampiran resmi ini telah diunggah dan diverifikasi kelengkapannya ke dalam sistem SIM-RIDA Pemerintah Kabupaten Mimika.'}
-      </p>
-      <p>
-        Dokumen ini merupakan bagian dari kelengkapan administrasi dan substansi teknis kelitbangan tahun anggaran berjalan.
-      </p>
-    </div>
+    // 2. Judul Dokumen
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(11);
+    doc.setTextColor(0, 0, 0);
+    doc.text(file.name.replace(/\.pdf$/i, '').toUpperCase(), 105, 40, { align: 'center' });
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(8);
+    doc.setTextColor(71, 85, 105);
+    doc.text(`Nomor Registrasi: ${file.proposalCode || 'SIMRIDA/2026/DOC'}`, 105, 44.5, { align: 'center' });
 
-    <div class="footer-sign">
-      <p>Mimika, ${file.uploadDate || new Date().toLocaleDateString('id-ID')}</p>
-      <p>Pemverifikasi Dokumen,</p>
-      <br/><br/><br/>
-      <p style="font-weight: bold; text-decoration: underline;">BRIDA KABUPATEN MIMIKA</p>
-    </div>
-  </div>
-</body>
-</html>`;
-    return new Blob([htmlPdfContent], { type: 'text/html' });
+    // 3. Metadata
+    doc.setDrawColor(226, 232, 240);
+    doc.setLineWidth(0.2);
+    doc.line(15, 49, 195, 49);
+
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(8.5);
+    doc.setTextColor(30, 41, 59);
+    doc.text('Instansi Pengunggah', 18, 54.5);
+    doc.setFont('helvetica', 'normal');
+    doc.text(`: ${file.opdName || 'Pemerintah Kabupaten Mimika'}`, 60, 54.5);
+
+    doc.setFont('helvetica', 'bold');
+    doc.text('Usulan Terkait', 18, 60);
+    doc.setFont('helvetica', 'normal');
+    const titleLines = doc.splitTextToSize(`: ${file.proposalTitle || '-'}`, 130);
+    doc.text(titleLines, 60, 60);
+
+    const afterTitleY = 60 + (titleLines.length * 4.5);
+    doc.setFont('helvetica', 'bold');
+    doc.text('Tanggal Unggah', 18, afterTitleY);
+    doc.setFont('helvetica', 'normal');
+    doc.text(`: ${file.uploadDate || new Date().toLocaleDateString('id-ID')}`, 60, afterTitleY);
+
+    doc.setFont('helvetica', 'bold');
+    doc.text('Ukuran Berkas', 18, afterTitleY + 5.5);
+    doc.setFont('helvetica', 'normal');
+    doc.text(`: ${file.size || '1.5 MB'}`, 60, afterTitleY + 5.5);
+
+    doc.line(15, afterTitleY + 9, 195, afterTitleY + 9);
+
+    // 4. Uraian Isi
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(9);
+    doc.setTextColor(0, 0, 0);
+    doc.text('Uraian Dokumen / Substansi Teknis:', 18, afterTitleY + 16);
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(8.5);
+    doc.setTextColor(51, 65, 85);
+
+    const bodyText = file.content || 'Dokumen lampiran resmi ini telah diunggah dan diverifikasi kelengkapannya ke dalam sistem SIM-RIDA Pemerintah Kabupaten Mimika sebagai bagian dari kelengkapan administrasi dan substansi teknis kelitbangan.';
+    const contentLines = doc.splitTextToSize(bodyText, 175);
+    doc.text(contentLines, 18, afterTitleY + 22);
+
+    // 5. TTE Pengesahan BSrE
+    const tteY = Math.max(afterTitleY + 28 + (contentLines.length * 4.5), 220);
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(8.5);
+    doc.setTextColor(0, 0, 0);
+    doc.text('Kepala BRIDA Kabupaten Mimika', 145, tteY, { align: 'center' });
+
+    doc.setDrawColor(59, 130, 246);
+    doc.setFillColor(239, 246, 255);
+    doc.roundedRect(110, tteY + 3, 70, 16, 1.5, 1.5, 'FD');
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(7);
+    doc.setTextColor(30, 58, 138);
+    doc.text('TTE BSrE - BSSN VALIDATED', 145, tteY + 9, { align: 'center' });
+    doc.setFontSize(6);
+    doc.setTextColor(71, 85, 105);
+    doc.text('DS-SIMRIDA-MIMIKA-BSRE', 145, tteY + 14.5, { align: 'center' });
+
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(9);
+    doc.setTextColor(0, 0, 0);
+    doc.text('Dr. Petrus Renyaan, M.Si.', 145, tteY + 25, { align: 'center' });
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(7.5);
+    doc.setTextColor(71, 85, 105);
+    doc.text('NIP. 19730412 199803 1 001', 145, tteY + 29, { align: 'center' });
+
+    return doc.output('blob');
   }
 
   // Jika format berkas non-PDF (misal .xlsx, .docx, .csv, dll)

@@ -35,8 +35,10 @@ import {
   Edit3,
   ExternalLink,
   Target,
+  Download,
 } from 'lucide-react';
 import { cn } from '@/lib/utils/cn';
+import { generatePolicyBriefPdf, openPdfLoadingWindow } from '@/lib/pdf-generator';
 
 const TARGET_POLICY_TYPES = [
   { value: 'DRAFT_PERBUP', label: 'Draf Peraturan Bupati (Perbup)' },
@@ -96,6 +98,7 @@ function RecommendationBuilderContent() {
   // UI Interactive states
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isGeneratingAi, setIsGeneratingAi] = useState(false);
+  const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
   const [isAiModalOpen, setIsAiModalOpen] = useState(false);
   const [isQuickPickerOpen, setIsQuickPickerOpen] = useState(false);
   const [quickPickerSearch, setQuickPickerSearch] = useState('');
@@ -467,9 +470,73 @@ function RecommendationBuilderContent() {
     }
   };
 
-  // Print official document
+  // Buka naskah Policy Brief sebagai PDF di tab peramban baru (Chrome PDF Viewer)
+  const handleOpenPolicyBriefPdf = async () => {
+    const loadingWin = openPdfLoadingWindow();
+    setIsGeneratingPdf(true);
+    try {
+      await generatePolicyBriefPdf(
+        {
+          officialNumber: officialDraftNumber || '070/BRIDA-MMK/' + new Date().getFullYear() + '/042',
+          title: recTitle || currentStudy?.title || 'Naskah Rekomendasi Kebijakan',
+          targetOpdNames: targetOpdNames || currentStudy?.proposal?.opd?.name || 'Pemerintah Kabupaten Mimika',
+          targetPolicyType: TARGET_POLICY_TYPES.find((t) => t.value === targetPolicyType)?.label || targetPolicyType,
+          impactLevel: IMPACT_LEVELS.find((i) => i.value === impactLevel)?.label || impactLevel,
+          subject: draftLetterSubject || recTitle,
+          executiveSummary,
+          background,
+          policyRecommendations,
+          conclusion,
+          correlatedDocs,
+          isFinalized,
+          signedBy: 'Dr. Petrus Renyaan, M.Si.',
+          signedNip: '19730412 199803 1 001',
+          certificateNumber: currentRec?.digitalSignatureLogs?.[0]?.certificateNumber || 'DS-2026-0001',
+        },
+        loadingWin
+      );
+    } catch (err) {
+      console.error('Failed to generate Policy Brief PDF:', err);
+      if (loadingWin && !loadingWin.closed) loadingWin.close();
+      alert('Gagal menyusun PDF Policy Brief. Silakan coba kembali.');
+    } finally {
+      setIsGeneratingPdf(false);
+    }
+  };
+
+  // Unduh dokumen resmi Policy Brief langsung sebagai file .pdf
+  const handleDownloadPolicyBriefPdf = async () => {
+    setIsGeneratingPdf(true);
+    try {
+      const res = await generatePolicyBriefPdf({
+        officialNumber: officialDraftNumber || '070/BRIDA-MMK/' + new Date().getFullYear() + '/042',
+        title: recTitle || currentStudy?.title || 'Naskah Rekomendasi Kebijakan',
+        targetOpdNames: targetOpdNames || currentStudy?.proposal?.opd?.name || 'Pemerintah Kabupaten Mimika',
+        targetPolicyType: TARGET_POLICY_TYPES.find((t) => t.value === targetPolicyType)?.label || targetPolicyType,
+        impactLevel: IMPACT_LEVELS.find((i) => i.value === impactLevel)?.label || impactLevel,
+        subject: draftLetterSubject || recTitle,
+        executiveSummary,
+        background,
+        policyRecommendations,
+        conclusion,
+        correlatedDocs,
+        isFinalized,
+        signedBy: 'Dr. Petrus Renyaan, M.Si.',
+        signedNip: '19730412 199803 1 001',
+        certificateNumber: currentRec?.digitalSignatureLogs?.[0]?.certificateNumber || 'DS-2026-0001',
+      });
+      res.download();
+    } catch (err) {
+      console.error('Failed to download Policy Brief PDF:', err);
+      alert('Gagal mengunduh file PDF Policy Brief. Silakan coba kembali.');
+    } finally {
+      setIsGeneratingPdf(false);
+    }
+  };
+
+  // Helper cetak cepat
   const handlePrint = () => {
-    window.print();
+    handleOpenPolicyBriefPdf();
   };
 
   // Helper badge for recommendation status
@@ -532,12 +599,42 @@ function RecommendationBuilderContent() {
             overflow: visible !important;
           }
 
-          /* Sembunyikan seluruh elemen dashboard luar */
-          body * {
-            visibility: hidden;
+          /* Sembunyikan TOTAL seluruh elemen dashboard, sidebar, header, dan toolbar luar */
+          aside,
+          header,
+          nav,
+          button,
+          .print\\:hidden,
+          [class*="print:hidden"],
+          .fixed {
+            display: none !important;
           }
 
-          /* Tampilkan dokumen naskah rekomendasi resmi */
+          /* Reset container layout agar tidak mengonsumsi ruang atau padding */
+          .min-h-screen,
+          [class*="min-h-screen"],
+          [class*="overflow-hidden"],
+          [class*="overflow-y-auto"] {
+            min-height: 0 !important;
+            height: auto !important;
+            overflow: visible !important;
+            display: block !important;
+            padding: 0 !important;
+            margin: 0 !important;
+            background: transparent !important;
+          }
+
+          main {
+            padding: 0 !important;
+            margin: 0 !important;
+            overflow: visible !important;
+            display: block !important;
+            height: auto !important;
+            min-height: 0 !important;
+            border: none !important;
+          }
+
+          /* Tampilkan dokumen naskah rekomendasi resmi di posisi paling atas Halaman 1 */
           #printable-recommendation-doc,
           #printable-recommendation-doc * {
             visibility: visible !important;
@@ -593,19 +690,13 @@ function RecommendationBuilderContent() {
             float: none !important;
             clear: both !important;
           }
-
-          button,
-          nav,
-          .no-print {
-            display: none !important;
-          }
         }
       `}</style>
 
       {/* ========================================================================= */}
       {/* 1. HEADER SECTION & NAVIGATION                                            */}
       {/* ========================================================================= */}
-      <div className="bg-[#0f2c59] p-5 sm:p-6 md:p-8 text-white border border-slate-200 rounded-xl shadow-xs flex flex-col md:flex-row md:items-center md:justify-between gap-5">
+      <div className="print:hidden bg-[#0f2c59] p-5 sm:p-6 md:p-8 text-white border border-slate-200 rounded-xl shadow-xs flex flex-col md:flex-row md:items-center md:justify-between gap-5">
         <div className="space-y-1.5">
           <div className="flex items-center gap-2 text-sky-300 text-2xs font-black tracking-widest uppercase">
             <BookOpen className="w-4 h-4 text-sky-400" />
@@ -1109,19 +1200,32 @@ function RecommendationBuilderContent() {
                 <>
                   <button
                     type="button"
-                    onClick={handlePrint}
-                    className="flex items-center gap-1.5 bg-slate-800 hover:bg-slate-900 text-white font-bold px-3.5 py-2 border border-slate-800 text-xs shadow-sm transition"
+                    onClick={handleOpenPolicyBriefPdf}
+                    disabled={isGeneratingPdf}
+                    className="flex items-center gap-1.5 bg-blue-600 hover:bg-blue-700 text-white font-bold px-3.5 py-2 border border-blue-700 text-xs shadow-sm transition cursor-pointer"
+                    title="Buka dokumen di Chrome PDF viewer (halaman per halaman & cetak PDF)"
                   >
-                    <Printer className="w-3.5 h-3.5 text-sky-400" />
-                    Cetak Naskah Resmi
+                    <ExternalLink className="w-3.5 h-3.5 text-sky-200" />
+                    {isGeneratingPdf ? 'Memproses PDF...' : 'Buka / Cetak PDF Resmi'}
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={handleDownloadPolicyBriefPdf}
+                    disabled={isGeneratingPdf}
+                    className="flex items-center gap-1.5 bg-slate-800 hover:bg-slate-900 text-white font-bold px-3.5 py-2 border border-slate-800 text-xs shadow-sm transition cursor-pointer"
+                    title="Unduh langsung berkas resmi format PDF"
+                  >
+                    <Download className="w-3.5 h-3.5 text-sky-400" />
+                    Unduh PDF
                   </button>
 
                   <button
                     type="button"
                     onClick={handleCreateNewDraftForStudy}
-                    className="flex items-center gap-1.5 bg-blue-600 hover:bg-blue-700 text-white font-bold px-3.5 py-2 border border-blue-700 text-xs shadow-sm transition"
+                    className="flex items-center gap-1.5 bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold px-3.5 py-2 border border-slate-300 text-xs shadow-sm transition cursor-pointer"
                   >
-                    <Sparkles className="w-3.5 h-3.5 text-sky-200" />
+                    <Sparkles className="w-3.5 h-3.5 text-blue-600" />
                     Buat Rekomendasi Baru
                   </button>
                 </>
@@ -1129,14 +1233,28 @@ function RecommendationBuilderContent() {
 
               {/* Preview Mode Print Button */}
               {viewMode === 'PREVIEW' && !isFinalized && (
-                <button
-                  type="button"
-                  onClick={handlePrint}
-                  className="flex items-center gap-1.5 bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold px-3 py-2 border border-slate-300 text-xs shadow-sm transition"
-                >
-                  <Printer className="w-3.5 h-3.5 text-slate-600" />
-                  Cetak Lembar
-                </button>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={handleOpenPolicyBriefPdf}
+                    disabled={isGeneratingPdf}
+                    className="flex items-center gap-1.5 bg-blue-600 hover:bg-blue-700 text-white font-bold px-3.5 py-2 border border-blue-700 text-xs shadow-sm transition cursor-pointer"
+                    title="Buka dokumen di Chrome PDF viewer (halaman per halaman & cetak PDF)"
+                  >
+                    <ExternalLink className="w-3.5 h-3.5 text-sky-200" />
+                    {isGeneratingPdf ? 'Memproses PDF...' : 'Buka / Cetak PDF'}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleDownloadPolicyBriefPdf}
+                    disabled={isGeneratingPdf}
+                    className="flex items-center gap-1.5 bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold px-3 py-2 border border-slate-300 text-xs shadow-sm transition cursor-pointer"
+                    title="Unduh langsung berkas resmi format PDF"
+                  >
+                    <Download className="w-3.5 h-3.5 text-slate-700" />
+                    Unduh PDF
+                  </button>
+                </div>
               )}
             </div>
           </div>

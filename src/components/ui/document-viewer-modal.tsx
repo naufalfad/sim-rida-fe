@@ -18,6 +18,12 @@ import {
 } from 'lucide-react';
 import { useToast } from '@/components/ui/toast';
 import { downloadFileDirectly, isPdfDocument } from '@/lib/file-viewer';
+import {
+  generateKakPdf,
+  generatePolicyBriefPdf,
+  generateGeneralDocPdf,
+  openPdfLoadingWindow,
+} from '@/lib/pdf-generator';
 
 export interface DocumentReviewItem {
   name: string;
@@ -97,9 +103,121 @@ export const DocumentViewerModal: React.FC<DocumentViewerModalProps> = ({
     }
   };
 
-  // Generate real downloadable text/PDF file Blob
-  const handleDownload = () => {
-    // Jika berkas memiliki URL unggahan riil (PDF, Excel, Word, dll), unduh file asli secara langsung!
+  const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
+
+  // Helper untuk menghasilkan PDF resmi terstandar untuk setiap jenis dokumen
+  const handleGeneratePdfForDoc = async (targetWindow?: Window | null) => {
+    if (!document) return null;
+
+    if (document.type === 'POLICY_BRIEF') {
+      return await generatePolicyBriefPdf(
+        {
+          officialNumber: document.proposalCode || '070/BRIDA-MMK/2026/042',
+          title: document.proposalTitle || document.name,
+          targetOpdNames: document.targetOpdNames || document.opdName || 'Pemerintah Kabupaten Mimika',
+          targetPolicyType: document.targetPolicyType || 'Perbup Mimika',
+          impactLevel: document.impactLevel || 'Strategis Daerah',
+          subject: document.proposalTitle || document.name,
+          executiveSummary: document.executiveSummary || document.content || '',
+          background: document.background || '',
+          policyRecommendations: document.policyRecommendations || '',
+          conclusion: document.conclusion || '',
+          correlatedDocs: document.correlatedDocs,
+          isFinalized: true,
+          signedBy: document.signedBy || 'Dr. Petrus Renyaan, M.Si.',
+          signedNip: '19730412 199803 1 001',
+          certificateNumber: 'DS-2026-0001-BSRE',
+        },
+        targetWindow
+      );
+    } else if (document.type === 'KAK_TOR') {
+      return await generateKakPdf(
+        {
+          proposalCode: document.proposalCode || 'KAK-2026',
+          proposalTitle: document.proposalTitle || document.name,
+          opdName: document.opdName || 'Pemerintah Kabupaten Mimika',
+          fiscalYear: document.fiscalYear || new Date().getFullYear(),
+          allocatedBudget: document.estimatedBudget || 0,
+          durationMonths: 3,
+          kakStatus: document.kakStatus || 'FINAL',
+          background: document.kakBackground || document.problemStatement || '',
+          objectives: document.kakObjectives || document.urgencyReason || '',
+          scopeAndMethodology: document.kakScope || '',
+          targetOutput: document.kakTargetOutput || document.expectedOutput || '',
+          signedBy: document.signedBy || 'Dr. Petrus Renyaan, M.Si.',
+          signedNip: '19730412 199803 1 001',
+          certificateNumber: `DS-KAK-${document.proposalCode || '2026'}-BRIDA`,
+        },
+        targetWindow
+      );
+    } else {
+      // General Doc (Laporan Akhir, SK Kerjasama, Berkas Kerja, Dokumen Usulan OPD)
+      const sections: Array<{ heading: string; content: string }> = [];
+
+      if (document.type === 'LAPORAN_AKHIR') {
+        sections.push({
+          heading: '1. Ringkasan Eksekutif Hasil Riset Empiris',
+          content: document.finalReportSummary || document.content || 'Laporan akhir merangkum temuan data empiris, pengolahan metodologi, dan sintesis kajian.',
+        });
+        sections.push({
+          heading: '2. Ruang Lingkup & Metodologi Riset',
+          content: document.kakScope || 'Penelitian dilaksanakan menggunakan mixed-methods dengan pengumpulan data primer di wilayah Kabupaten Mimika.',
+        });
+        sections.push({
+          heading: '3. Rujukan Pemanfaatan Kebijakan Bagi OPD',
+          content: document.policyRecommendations || document.executiveSummary || 'Hasil laporan akhir ini menjadi dasar penyusunan Policy Brief dan rekomendasi kebijakan operasional OPD.',
+        });
+      } else if (document.type === 'COOPERATION_DOC') {
+        sections.push({
+          heading: '1. Ketentuan Legalitas & Susunan Tim Riset',
+          content: document.content || 'Dokumen legalitas ini mengikat susunan tim pelaksana, alokasi tugas litbang, kewajiban penyusunan luaran, serta akuntabilitas anggaran.',
+        });
+        sections.push({
+          heading: '2. Kepatuhan & Pedoman Litbang',
+          content: 'Pelaksanaan riset berpedoman penuh pada Kerangka Acuan Kerja (KAK) dan RKA yang disetujui Kepala BRIDA Mimika.',
+        });
+      } else if (document.type === 'WORKING_DOC') {
+        sections.push({
+          heading: '1. Uraian Berkas Kerja & Data Lapangan',
+          content: document.workingDocDescription || document.content || 'Berkas kerja penelitian berupa data mentah, instrumen survei, atau tabulasi lapangan.',
+        });
+        sections.push({
+          heading: '2. Akuntabilitas & Integritas Data',
+          content: 'Data dihimpun secara objektif dan akuntabel di Kabupaten Mimika sebagai basis bukti empiris perumusan rekomendasi kebijakan.',
+        });
+      } else {
+        sections.push({
+          heading: '1. Identifikasi Masalah / Latar Belakang Usulan',
+          content: document.problemStatement || 'Telah diverifikasi sesuai formulir pengajuan riset daerah.',
+        });
+        sections.push({
+          heading: '2. Urgensi Penelitian Bagi Daerah',
+          content: document.urgencyReason || 'Mendesak untuk mendukung penyusunan kebijakan prioritas Kabupaten Mimika.',
+        });
+        sections.push({
+          heading: '3. Ringkasan Pagu & Luaran',
+          content: `Estimasi Kebutuhan Pagu: ${document.estimatedBudget ? 'Rp ' + document.estimatedBudget.toLocaleString('id-ID') : 'Sesuai Standar Biaya Masukan'}\nTarget Output Luaran: ${document.expectedOutput || 'Rekomendasi Kebijakan / Policy Brief'}`,
+        });
+      }
+
+      return await generateGeneralDocPdf(
+        {
+          title: document.proposalTitle || document.name,
+          registrationNumber: document.proposalCode || 'SIMRIDA/2026/DOC',
+          targetAgency: document.opdName || 'Pemerintah Kabupaten Mimika',
+          typeBadge: document.name,
+          dateStr: document.uploadDate,
+          sections,
+          signedBy: document.signedBy || 'Dr. Petrus Renyaan, M.Si.',
+          certificateNumber: 'DS-SIMRIDA-MIMIKA-BSRE',
+        },
+        targetWindow
+      );
+    }
+  };
+
+  // Unduh dokumen riil (file asli jika ada URL, atau generate file .pdf resmi jika dokumen sistem)
+  const handleDownload = async () => {
     if (document.url) {
       downloadFileDirectly({
         name: document.name,
@@ -110,528 +228,41 @@ export const DocumentViewerModal: React.FC<DocumentViewerModalProps> = ({
       return;
     }
 
-    let docContent = '';
-
-    if (document.type === 'POLICY_BRIEF') {
-      docContent = `
-================================================================================
-BADAN RISET DAN INOVASI DAERAH (BRIDA) KABUPATEN MIMIKA
-NASKAH REKOMENDASI KEBIJAKAN RESMI (POLICY BRIEF)
-================================================================================
-
-Nomor Registrasi : ${document.proposalCode || 'REK-2026-001'}
-Judul Naskah     : ${document.proposalTitle || document.name}
-Perangkat Daerah : ${document.targetOpdNames || document.opdName || 'Pemerintah Kabupaten Mimika'}
-Bentuk Regulasi  : ${document.targetPolicyType || 'Peraturan Bupati (Perbup)'}
-Tingkat Dampak   : ${document.impactLevel || 'Strategis Daerah'}
-Penandatangan    : ${document.signedBy || 'Dr. Petrus Renyaan, M.Si (Kepala BRIDA Mimika)'}
-Tanggal Disahkan : ${document.signedAt || document.uploadDate || new Date().toLocaleDateString('id-ID')}
-Status Validasi  : TTE TERSERTIFIKASI ELEKTRONIK BSrE - BSSN REPUBLIK INDONESIA
-
---------------------------------------------------------------------------------
-1. RINGKASAN EKSEKUTIF (EXECUTIVE SUMMARY)
---------------------------------------------------------------------------------
-${document.executiveSummary || document.content || 'Kajian kelitbangan ini merumuskan rekomendasi kebijakan berbasis bukti empiris dan saintifik.'}
-
---------------------------------------------------------------------------------
-2. LATAR BELAKANG (BACKGROUND)
---------------------------------------------------------------------------------
-${document.background || 'Uraian latar belakang masalah, dasar yuridis, dan urgensi intervensi kebijakan bagi daerah.'}
-
---------------------------------------------------------------------------------
-3. REKOMENDASI KEBIJAKAN (POLICY RECOMMENDATIONS)
---------------------------------------------------------------------------------
-${document.policyRecommendations || 'Butir-butir arahan rekomendasi kebijakan konkret dan operasional bagi perangkat daerah.'}
-
---------------------------------------------------------------------------------
-4. KESIMPULAN (CONCLUSION)
---------------------------------------------------------------------------------
-${document.conclusion || 'Penerapan rekomendasi ini secara konsisten akan mempercepat pencapaian target pembangunan Kabupaten Mimika.'}
-
---------------------------------------------------------------------------------
-DOKUMEN BUKTI RUJUKAN YANG DIKORELASIKAN:
-${document.correlatedDocs || 'Dokumen KAK, Laporan Riset Lapangan, dan telaah mandiri analis BRIDA.'}
-
---------------------------------------------------------------------------------
-Keterangan: Naskah Policy Brief ini sah dan mengikat sebagai bahan rujukan penyusunan Renja, Perbup/Perda, serta SOP teknis instansi.
-================================================================================
-      `.trim();
-    } else if (document.type === 'KAK_TOR') {
-      docContent = `
-================================================================================
-BADAN RISET DAN INOVASI DAERAH (BRIDA) KABUPATEN MIMIKA
-KERANGKA ACUAN KERJA (KAK / TOR) PENELITIAN & PENGEMBANGAN
-================================================================================
-
-Kode Kegiatan    : ${document.proposalCode || 'KAK-2026'}
-Judul Kegiatan   : ${document.proposalTitle || document.name}
-Perangkat Daerah : ${document.opdName || 'Pemerintah Kabupaten Mimika'}
-Tahun Anggaran   : ${document.fiscalYear || '2026'}
-Status Dokumen   : DISAHKAN RESMI (TTE ELEKTRONIK KEPALA BRIDA)
-
---------------------------------------------------------------------------------
-1. LATAR BELAKANG & DASAR HUKUM
---------------------------------------------------------------------------------
-${document.kakBackground || document.problemStatement || 'Kajian ini dilaksanakan berlandaskan regulasi riset daerah dan kebutuhan mendesak Pemkab Mimika.'}
-
---------------------------------------------------------------------------------
-2. MAKSUD DAN TUJUAN RISET
---------------------------------------------------------------------------------
-${document.kakObjectives || document.urgencyReason || 'Memberikan telaah saintifik dan rekomendasi solutif atas isu strategis daerah.'}
-
---------------------------------------------------------------------------------
-3. RUANG LINGKUP & METODOLOGI PENELITIAN
---------------------------------------------------------------------------------
-${document.kakScope || 'Ruang lingkup mencakup studi pustaka, observasi lapangan, survei responden, dan wawancara mendalam di distrik terpilih.'}
-
---------------------------------------------------------------------------------
-4. TARGET LUARAN KONKRET (DELIVERABLES)
---------------------------------------------------------------------------------
-${document.kakTargetOutput || document.expectedOutput || 'Laporan Akhir Penelitian, Naskah Policy Brief, dan Draf Regulasi Daerah.'}
-================================================================================
-      `.trim();
-    } else if (document.type === 'LAPORAN_AKHIR') {
-      docContent = `
-================================================================================
-BADAN RISET DAN INOVASI DAERAH (BRIDA) KABUPATEN MIMIKA
-LAPORAN AKHIR HASIL PENELITIAN & KAJIAN KELITBANGAN DAERAH
-================================================================================
-
-Kode Riset       : ${document.proposalCode || 'LAP-AKHIR-2026'}
-Judul Kajian     : ${document.proposalTitle || document.name}
-Perangkat Daerah : ${document.opdName || 'Pemerintah Kabupaten Mimika'}
-Nama Berkas      : ${document.name}
-Ukuran Berkas    : ${document.size || '5.2 MB'}
-Status Dokumen   : TELAH RAMPUNG & DISETUJUI TIM EVALUATOR LITBANG
-
---------------------------------------------------------------------------------
-1. RINGKASAN HASIL RISET EMPIRIS
---------------------------------------------------------------------------------
-${document.finalReportSummary || document.content || 'Laporan akhir merangkum seluruh temuan data primer dan sekunder, analisis kuantitatif dan kualitatif, serta sintesis rekomendasi praktis bagi perangkat daerah.'}
-
---------------------------------------------------------------------------------
-2. METODOLOGI & PELAKSANAAN RISET
---------------------------------------------------------------------------------
-${document.kakScope || 'Penelitian dilaksanakan menggunakan metode campuran (mixed methods) dengan pengumpulan data primer di wilayah Kabupaten Mimika.'}
-
---------------------------------------------------------------------------------
-3. REKOMENDASI DAN TINDAK LANJUT
---------------------------------------------------------------------------------
-${document.policyRecommendations || document.executiveSummary || 'Hasil laporan akhir ini menjadi dasar penyusunan Policy Brief dan rekomendasi kebijakan operasional OPD.'}
-================================================================================
-      `.trim();
-    } else if (document.type === 'COOPERATION_DOC') {
-      docContent = `
-================================================================================
-BADAN RISET DAN INOVASI DAERAH (BRIDA) KABUPATEN MIMIKA
-DOKUMEN LEGALITAS & PERJANJIAN KERJA SAMA RISET DAERAH
-================================================================================
-
-Nomor Registrasi : ${document.cooperationNumber || document.proposalCode || 'SK-PKS-2026'}
-Nama Dokumen     : ${document.name}
-Skema Riset      : ${document.cooperationScheme || 'Swakelola Internal / Lembaga Mitra'}
-Kegiatan Riset   : ${document.proposalTitle || document.name}
-Perangkat Daerah : ${document.opdName || 'Pemerintah Kabupaten Mimika'}
-Tanggal Disahkan : ${document.uploadDate || new Date().toLocaleDateString('id-ID')}
-Status Validasi  : RESMI DITETAPKAN & DIARSIPKAN DI BRIDA KABUPATEN MIMIKA
-
---------------------------------------------------------------------------------
-1. KETENTUAN LEGALITAS & TIM PENELITI
---------------------------------------------------------------------------------
-${document.content || 'Dokumen legalitas ini mengikat pelaksanaan penelitian dan pengembangan inovasi daerah di Kabupaten Mimika. Menetapkan susunan tim peneliti resmi, hak dan kewajiban pelaksana, serta jadwal pelaksanaan kegiatan.'}
-
---------------------------------------------------------------------------------
-2. PEDOMAN OPERASIONAL & RUANG LINGKUP
---------------------------------------------------------------------------------
-Pelaksanaan kegiatan mengacu pada Kerangka Acuan Kerja (KAK) dan Rencana Kerja Anggaran (RKA) yang telah diverifikasi dan disetujui Kepala BRIDA.
-================================================================================
-      `.trim();
-    } else if (document.type === 'WORKING_DOC') {
-      docContent = `
-================================================================================
-BADAN RISET DAN INOVASI DAERAH (BRIDA) KABUPATEN MIMIKA
-BERKAS KERJA RISET & DATA LAPANGAN (WORKING DOCUMENT)
-================================================================================
-
-Nama Berkas      : ${document.name}
-Kategori Berkas  : ${document.workingDocType || 'Data Mentah / Tabulasi'}
-Judul Usulan     : ${document.proposalTitle || document.name}
-Instansi Pengusul: ${document.opdName || 'Pemerintah Kabupaten Mimika'}
-Ukuran Berkas    : ${document.size || '2.4 MB'}
-Tanggal Unggah   : ${document.uploadDate || new Date().toLocaleDateString('id-ID')}
-Status Berkas    : ARSIP RESMI REPOSITORI LITBANG BRIDA MIMIKA
-
---------------------------------------------------------------------------------
-1. DESKRIPSI BERKAS KERJA
---------------------------------------------------------------------------------
-${document.workingDocDescription || document.content || 'Berkas kerja riset ini memuat tabulasi data primer lapangan, transkrip wawancara mendalam / FGD stakeholder, atau draf laporan teknis yang disusun tim peneliti BRIDA.'}
-
---------------------------------------------------------------------------------
-2. AKUNTABILITAS & INTEGRITAS DATA
---------------------------------------------------------------------------------
-Data ini dihimpun secara objektif dan akuntabel di wilayah Kabupaten Mimika, menjadi basis data bukti empiris dalam penyusunan Naskah Kebijakan (Policy Brief) dan Laporan Akhir.
-================================================================================
-      `.trim();
-    } else {
-      docContent = `
-================================================================================
-BADAN RISET DAN INOVASI DAERAH (BRIDA) KABUPATEN MIMIKA
-DOKUMEN USULAN & KELENGKAPAN PENELITIAN DAERAH
-================================================================================
-
-Nama Dokumen      : ${document.name}
-Kode Usulan       : ${document.proposalCode || 'USUL-2026'}
-Instansi Pengusul : ${document.opdName || 'Pemerintah Kabupaten Mimika'}
-Tanggal Unggah    : ${document.uploadDate || new Date().toLocaleDateString('id-ID')}
-Ukuran Berkas     : ${document.size || '1.2 MB'}
-Status Dokumen    : TERSERTIFIKASI / VALIDASI SISTEM SIM-RIDA
-
---------------------------------------------------------------------------------
-JUDUL USULAN PENELITIAN:
-${document.proposalTitle || 'Kajian Kelitbangan Kabupaten Mimika'}
-
-IDENTIFIKASI MASALAH / LATAR BELAKANG:
-${document.problemStatement || 'Telah diverifikasi sesuai formulir pengajuan riset daerah.'}
-
-ALASAN URGENSI PENELITIAN:
-${document.urgencyReason || 'Mendesak untuk mendukung penyusunan kebijakan RKPD/Renja.'}
-
-ESTIMASI KEBUTUHAN PAGU ANGGARAN:
-${document.estimatedBudget ? `Rp ${document.estimatedBudget.toLocaleString('id-ID')}` : 'Sesuai Standar Biaya Masukan (SBM) Mimika'}
-
-TARGET OUTPUT LUARAN:
-${document.expectedOutput || 'Rekomendasi Kebijakan / Policy Brief'}
-
---------------------------------------------------------------------------------
-CATATAN REVIEW VERIFIKASI BRIDA:
-Dokumen ini merupakan lampiran resmi usulan penelitian yang diunggah melalui 
-Portal SIM-RIDA (Sistem Informasi Riset dan Inovasi Daerah) Kabupaten Mimika.
-================================================================================
-      `.trim();
+    setIsGeneratingPdf(true);
+    try {
+      const res = await handleGeneratePdfForDoc();
+      if (res) {
+        res.download();
+        toast(`Berkas PDF resmi "${document.name.replace(/\.[^/.]+$/, '')}.pdf" berhasil diunduh!`, 'success');
+      }
+    } catch (err) {
+      console.error('Error downloading generated PDF:', err);
+      toast('Gagal mengunduh dokumen PDF. Silakan coba kembali.', 'error');
+    } finally {
+      setIsGeneratingPdf(false);
     }
-
-    const blob = new Blob([docContent], { type: 'text/plain;charset=utf-8' });
-    const url = URL.createObjectURL(blob);
-    const link = window.document.createElement('a');
-    link.href = url;
-    link.download = document.name.endsWith('.txt') ? document.name : `${document.name.replace(/\.[^/.]+$/, '')}_SIMRIDA.txt`;
-    window.document.body.appendChild(link);
-    link.click();
-    window.document.body.removeChild(link);
-    URL.revokeObjectURL(url);
-
-    toast(`Berkas "${document.name}" berhasil diunduh ke perangkat Anda.`, 'success');
   };
 
-  // Open in a new formatted browser tab
-  const handleOpenInNewTab = () => {
-    // Jika berkas memiliki URL unggahan riil, buka langsung berkas asli di tab baru!
+  // Buka dokumen langsung di Chrome PDF Viewer tab baru
+  const handleOpenInNewTab = async () => {
     if (document.url) {
       window.open(document.url, '_blank');
       toast(`Membuka berkas "${document.name}" pada tab peramban baru...`, 'info');
       return;
     }
 
-    const previewWindow = window.open('', '_blank');
-    if (!previewWindow) {
-      toast('Pop-up diblokir oleh peramban. Izinkan pop-up untuk membuka dokumen.', 'warning');
-      return;
+    const loadingWin = openPdfLoadingWindow();
+    setIsGeneratingPdf(true);
+    try {
+      await handleGeneratePdfForDoc(loadingWin);
+      toast(`Membuka dokumen "${document.name}" di Chrome PDF Viewer...`, 'info');
+    } catch (err) {
+      console.error('Error opening PDF in Chrome tab:', err);
+      if (loadingWin && !loadingWin.closed) loadingWin.close();
+      toast('Gagal membuka peninjau PDF.', 'error');
+    } finally {
+      setIsGeneratingPdf(false);
     }
-
-    let mainBodyHtml = '';
-
-    if (document.type === 'POLICY_BRIEF') {
-      mainBodyHtml = `
-        <div class="section">
-          <div class="section-title">Informasi Naskah Rekomendasi</div>
-          <table style="width: 100%; font-size: 12px; border-collapse: collapse;">
-            <tr><td style="width: 200px; padding: 6px 0; color: #64748b;">Nomor Registrasi:</td><td style="font-weight: bold; color: #0f2c59;">${document.proposalCode || 'REK-2026'}</td></tr>
-            <tr><td style="padding: 6px 0; color: #64748b;">Bentuk Regulasi Sasaran:</td><td style="font-weight: bold;">${document.targetPolicyType || 'Perbup Mimika'}</td></tr>
-            <tr><td style="padding: 6px 0; color: #64748b;">OPD Sasaran:</td><td>${document.targetOpdNames || document.opdName || 'Dinas Lingkungan Hidup Kab. Mimika'}</td></tr>
-            <tr><td style="padding: 6px 0; color: #64748b;">Penandatangan:</td><td style="font-weight: bold; color: #0369a1;">${document.signedBy || 'Dr. Petrus Renyaan, M.Si (Kepala BRIDA)'}</td></tr>
-            <tr><td style="padding: 6px 0; color: #64748b;">Sertifikat Digital:</td><td><span style="background:#e0f2fe; color:#0369a1; padding:2px 8px; font-weight:bold; font-size:11px;">TTE BSrE BSSN TERVALIDASI</span></td></tr>
-          </table>
-        </div>
-
-        <div class="section">
-          <div class="section-title">Judul Naskah Rekomendasi Kebijakan</div>
-          <div class="content" style="font-weight: bold; font-size: 15px; color: #0f2c59;">
-            ${document.proposalTitle || document.name}
-          </div>
-        </div>
-
-        <div class="section">
-          <div class="section-title">1. Ringkasan Eksekutif (Executive Summary)</div>
-          <div class="content">
-            ${(document.executiveSummary || document.content || '').replace(/\n/g, '<br/>')}
-          </div>
-        </div>
-
-        <div class="section">
-          <div class="section-title">2. Latar Belakang (Background)</div>
-          <div class="content">
-            ${(document.background || '').replace(/\n/g, '<br/>')}
-          </div>
-        </div>
-
-        <div class="section">
-          <div class="section-title">3. Rekomendasi Kebijakan (Policy Recommendations)</div>
-          <div class="content">
-            ${(document.policyRecommendations || '').replace(/\n/g, '<br/>')}
-          </div>
-        </div>
-
-        <div class="section">
-          <div class="section-title">4. Kesimpulan (Conclusion)</div>
-          <div class="content">
-            ${(document.conclusion || 'Penerapan rekomendasi ini secara konsisten akan mempercepat pencapaian target pembangunan Kabupaten Mimika.').replace(/\n/g, '<br/>')}
-          </div>
-        </div>
-
-        ${document.correlatedDocs ? `
-        <div class="section">
-          <div class="section-title">Dokumen Bukti yang Dikorelasikan ke Sistem</div>
-          <div class="content">${document.correlatedDocs}</div>
-        </div>` : ''}
-      `;
-    } else if (document.type === 'KAK_TOR') {
-      mainBodyHtml = `
-        <div class="section">
-          <div class="section-title">Informasi Kerangka Acuan Kerja</div>
-          <table style="width: 100%; font-size: 12px; border-collapse: collapse;">
-            <tr><td style="width: 200px; padding: 6px 0; color: #64748b;">Kode Kegiatan:</td><td style="font-weight: bold; color: #0f2c59;">${document.proposalCode || 'KAK-2026'}</td></tr>
-            <tr><td style="padding: 6px 0; color: #64748b;">Perangkat Daerah:</td><td>${document.opdName || 'Pemerintah Kabupaten Mimika'}</td></tr>
-            <tr><td style="padding: 6px 0; color: #64748b;">Tahun Anggaran:</td><td>${document.fiscalYear || '2026'}</td></tr>
-            <tr><td style="padding: 6px 0; color: #64748b;">Status Pengesahan:</td><td><span style="background:#e0f2fe; color:#0369a1; padding:2px 8px; font-weight:bold; font-size:11px;">TTE SAH KEPALA BRIDA</span></td></tr>
-          </table>
-        </div>
-
-        <div class="section">
-          <div class="section-title">Judul Kegiatan Riset</div>
-          <div class="content" style="font-weight: bold; font-size: 15px; color: #0f2c59;">
-            ${document.proposalTitle || document.name}
-          </div>
-        </div>
-
-        <div class="section">
-          <div class="section-title">1. Latar Belakang & Landasan Yuridis</div>
-          <div class="content">
-            ${(document.kakBackground || document.problemStatement || '').replace(/\n/g, '<br/>')}
-          </div>
-        </div>
-
-        <div class="section">
-          <div class="section-title">2. Maksud dan Tujuan Riset</div>
-          <div class="content">
-            ${(document.kakObjectives || document.urgencyReason || '').replace(/\n/g, '<br/>')}
-          </div>
-        </div>
-
-        <div class="section">
-          <div class="section-title">3. Ruang Lingkup & Metodologi Penelitian</div>
-          <div class="content">
-            ${(document.kakScope || '').replace(/\n/g, '<br/>')}
-          </div>
-        </div>
-
-        <div class="section">
-          <div class="section-title">4. Target Luaran Konkret (Deliverables)</div>
-          <div class="content">
-            ${(document.kakTargetOutput || document.expectedOutput || '').replace(/\n/g, '<br/>')}
-          </div>
-        </div>
-      `;
-    } else if (document.type === 'LAPORAN_AKHIR') {
-      mainBodyHtml = `
-        <div class="section">
-          <div class="section-title">Informasi Laporan Akhir Riset</div>
-          <table style="width: 100%; font-size: 12px; border-collapse: collapse;">
-            <tr><td style="width: 200px; padding: 6px 0; color: #64748b;">Nama Berkas:</td><td style="font-weight: bold; color: #0f2c59;">${document.name}</td></tr>
-            <tr><td style="padding: 6px 0; color: #64748b;">Ukuran & Format:</td><td>${document.size || '5.2 MB'} • Dokumen Resmi Hasil Riset</td></tr>
-            <tr><td style="padding: 6px 0; color: #64748b;">Status Publikasi:</td><td><span style="background:#fef3c7; color:#92400e; padding:2px 8px; font-weight:bold; font-size:11px;">LAPORAN AKHIR TUNTAS</span></td></tr>
-          </table>
-        </div>
-
-        <div class="section">
-          <div class="section-title">Judul Laporan Akhir Penelitian</div>
-          <div class="content" style="font-weight: bold; font-size: 15px; color: #0f2c59;">
-            ${document.proposalTitle || document.name}
-          </div>
-        </div>
-
-        <div class="section">
-          <div class="section-title">1. Ringkasan Eksekutif Hasil Riset Empiris</div>
-          <div class="content">
-            ${(document.finalReportSummary || document.content || '').replace(/\n/g, '<br/>')}
-          </div>
-        </div>
-
-        <div class="section">
-          <div class="section-title">2. Ruang Lingkup & Metodologi Pelaksanaan</div>
-          <div class="content">
-            ${(document.kakScope || 'Penelitian dilaksanakan menggunakan metode campuran (mixed methods) dengan pengumpulan data primer dan sekunder di distrik Kabupaten Mimika.').replace(/\n/g, '<br/>')}
-          </div>
-        </div>
-
-        <div class="section">
-          <div class="section-title">3. Rujukan Pemanfaatan Kebijakan Bagi OPD</div>
-          <div class="content">
-            ${(document.policyRecommendations || document.executiveSummary || 'Hasil laporan akhir ini siap ditindaklanjuti ke dalam Renja dan revisi SOP teknis dinas terkait.').replace(/\n/g, '<br/>')}
-          </div>
-        </div>
-      `;
-    } else if (document.type === 'COOPERATION_DOC') {
-      mainBodyHtml = `
-        <div class="section">
-          <div class="section-title">Legalitas Kerja Sama & Pelaksanaan Riset</div>
-          <table style="width: 100%; font-size: 12px; border-collapse: collapse;">
-            <tr><td style="width: 200px; padding: 6px 0; color: #64748b;">Nama Berkas:</td><td style="font-weight: bold; color: #0f2c59;">${document.name}</td></tr>
-            <tr><td style="padding: 6px 0; color: #64748b;">Nomor Surat / SK:</td><td style="font-weight: bold; color: #3730a3;">${document.cooperationNumber || document.proposalCode || 'SK/045.2/BRIDA/2026'}</td></tr>
-            <tr><td style="padding: 6px 0; color: #64748b;">Skema Pelaksanaan:</td><td style="font-weight: bold;">${document.cooperationScheme || 'Swakelola Internal BRIDA'}</td></tr>
-            <tr><td style="padding: 6px 0; color: #64748b;">Instansi Terkait:</td><td>${document.opdName || 'Pemerintah Kabupaten Mimika'}</td></tr>
-            <tr><td style="padding: 6px 0; color: #64748b;">Status Legalitas:</td><td><span style="background:#e0e7ff; color:#3730a3; padding:2px 8px; font-weight:bold; font-size:11px;">RESMI & TEREGISTRASI DI BRIDA</span></td></tr>
-          </table>
-        </div>
-
-        <div class="section">
-          <div class="section-title">Kegiatan Riset yang Dilaksanakan</div>
-          <div class="content" style="font-weight: bold; font-size: 14px; color: #0f2c59;">
-            ${document.proposalTitle || document.name}
-          </div>
-        </div>
-
-        <div class="section">
-          <div class="section-title">1. Uraian Ketentuan Kerja Sama / SK Tim Peneliti</div>
-          <div class="content">
-            ${(document.content || 'Dokumen legalitas ini mengikat susunan tim pelaksana, alokasi tugas litbang, kewajiban penyusunan luaran (Policy Brief & Laporan Akhir), serta akuntabilitas penggunaan anggaran daerah.').replace(/\n/g, '<br/>')}
-          </div>
-        </div>
-
-        <div class="section">
-          <div class="section-title">2. Kepatuhan & Pedoman Litbang</div>
-          <div class="content">
-            Pelaksanaan riset berpedoman penuh pada Kerangka Acuan Kerja (KAK) dan Rencana Kerja Anggaran (RKA) yang disetujui Kepala BRIDA Mimika.
-          </div>
-        </div>
-      `;
-    } else if (document.type === 'WORKING_DOC') {
-      mainBodyHtml = `
-        <div class="section">
-          <div class="section-title">Informasi Berkas Kerja & Data Lapangan</div>
-          <table style="width: 100%; font-size: 12px; border-collapse: collapse;">
-            <tr><td style="width: 200px; padding: 6px 0; color: #64748b;">Nama Berkas:</td><td style="font-weight: bold; color: #0f2c59;">${document.name}</td></tr>
-            <tr><td style="padding: 6px 0; color: #64748b;">Kategori Berkas:</td><td style="font-weight: bold; color: #0d9488;">${document.workingDocType || 'Data Mentah / Tabulasi'}</td></tr>
-            <tr><td style="padding: 6px 0; color: #64748b;">Ukuran & Waktu:</td><td>${document.size || '2.4 MB'} • Diunggah pada ${document.uploadDate || '01 Jan 2026'}</td></tr>
-            <tr><td style="padding: 6px 0; color: #64748b;">Instansi Terkait:</td><td>${document.opdName || 'Pemerintah Kabupaten Mimika'}</td></tr>
-          </table>
-        </div>
-
-        <div class="section">
-          <div class="section-title">Usulan Riset Terkait</div>
-          <div class="content" style="font-weight: bold; font-size: 14px; color: #0f2c59;">
-            ${document.proposalTitle || document.name}
-          </div>
-        </div>
-
-        <div class="section">
-          <div class="section-title">1. Deskripsi & Rincian Berkas Kerja</div>
-          <div class="content">
-            ${(document.workingDocDescription || document.content || 'Berkas kerja riset ini memuat tabulasi data primer lapangan, transkrip wawancara mendalam / FGD stakeholder, atau draf laporan teknis yang dihimpun selama proses riset.').replace(/\n/g, '<br/>')}
-          </div>
-        </div>
-
-        <div class="section">
-          <div class="section-title">2. Akuntabilitas & Integritas Data Empiris</div>
-          <div class="content">
-            Data ini dihimpun secara objektif dan akuntabel di wilayah Kabupaten Mimika, menjadi basis data bukti empiris dalam penyusunan Naskah Kebijakan (Policy Brief) dan Laporan Akhir.
-          </div>
-        </div>
-      `;
-    } else {
-      mainBodyHtml = `
-        <div class="section">
-          <div class="section-title">Informasi Berkas Lampiran</div>
-          <table style="width: 100%; font-size: 12px; border-collapse: collapse;">
-            <tr><td style="width: 180px; padding: 6px 0; color: #64748b;">Nama File:</td><td style="font-weight: bold; color: #0f2c59;">${document.name}</td></tr>
-            <tr><td style="padding: 6px 0; color: #64748b;">Instansi Pengusul:</td><td>${document.opdName || 'Perangkat Daerah Mimika'}</td></tr>
-            <tr><td style="padding: 6px 0; color: #64748b;">Ukuran & Tanggal:</td><td>${document.size || '1.4 MB'} • Diunggah pada ${document.uploadDate || '01 Jan 2026'}</td></tr>
-          </table>
-        </div>
-
-        <div class="section">
-          <div class="section-title">Judul Usulan Penelitian</div>
-          <div class="content" style="font-weight: bold; font-size: 14px; color: #0f2c59;">
-            ${document.proposalTitle || 'Strategi & Intervensi Kebijakan Daerah'}
-          </div>
-        </div>
-
-        <div class="section">
-          <div class="section-title">1. Uraian Identifikasi Masalah & Latar Belakang</div>
-          <div class="content">
-            ${document.problemStatement || 'Dokumen usulan memuat rincian identifikasi masalah kebijakan yang memerlukan intervensi kajian saintifik oleh BRIDA.'}
-          </div>
-        </div>
-
-        <div class="section">
-          <div class="section-title">2. Urgensi Penelitian Bagi Daerah</div>
-          <div class="content">
-            ${document.urgencyReason || 'Kajian ini mendesak untuk diselesaikan sebagai bahan perumusan kebijakan prioritas Kabupaten Mimika.'}
-          </div>
-        </div>
-
-        <div class="section">
-          <div class="section-title">3. Ringkasan Pagu & Luaran</div>
-          <div class="content">
-            Estimasi Kebutuhan Pagu: <strong>${document.estimatedBudget ? `Rp ${document.estimatedBudget.toLocaleString('id-ID')}` : 'Sesuai Standar Satuan Biaya'}</strong><br/>
-            Target Output Luaran: <strong>${document.expectedOutput || 'Rekomendasi Kebijakan / Policy Brief'}</strong>
-          </div>
-        </div>
-      `;
-    }
-
-    const htmlContent = `
-      <!DOCTYPE html>
-      <html lang="id">
-      <head>
-        <meta charset="UTF-8">
-        <title>Review Dokumen: ${document.name} - SIM-RIDA Mimika</title>
-        <style>
-          body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; line-height: 1.6; padding: 40px; color: #1e293b; background: #f8fafc; }
-          .container { max-width: 860px; margin: 0 auto; background: #ffffff; padding: 48px; border: 1px solid #cbd5e1; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1); }
-          .header { border-bottom: 2px solid #0f2c59; padding-bottom: 20px; margin-bottom: 28px; display: flex; justify-content: space-between; align-items: flex-start; }
-          .title { font-size: 20px; font-weight: bold; color: #0f2c59; margin: 0; }
-          .meta { font-size: 12px; color: #64748b; margin-top: 4px; }
-          .badge { display: inline-block; padding: 4px 10px; background: #e0f2fe; color: #0369a1; font-weight: bold; font-size: 11px; text-transform: uppercase; border: 1px solid #bae6fd; }
-          .section { margin-bottom: 20px; }
-          .section-title { font-size: 13px; font-weight: bold; text-transform: uppercase; letter-spacing: 0.03em; color: #0f2c59; margin-bottom: 6px; }
-          .content { font-size: 13px; color: #334155; line-height: 1.7; text-align: justify; }
-          .footer { margin-top: 40px; padding-top: 20px; border-top: 1px solid #e2e8f0; font-size: 11px; color: #64748b; text-align: center; }
-          @media print { body { background: #fff; padding: 0; } .container { border: none; box-shadow: none; padding: 0; } }
-        </style>
-      </head>
-      <body>
-        <div class="container">
-          <div class="header">
-            <div>
-              <h1 class="title">Peninjauan Dokumen Resmi Riset & Kebijakan</h1>
-              <div class="meta">Pemerintah Kabupaten Mimika • Badan Riset & Inovasi Daerah (BRIDA)</div>
-            </div>
-            <div class="badge">${document.proposalCode || 'SIM-RIDA MIMIKA'}</div>
-          </div>
-
-          ${mainBodyHtml}
-
-          <div class="footer">
-            Dokumen resmi diverifikasi melalui Portal SIM-RIDA Mimika • Tanggal Akses: ${new Date().toLocaleString('id-ID')}
-          </div>
-        </div>
-      </body>
-      </html>
-    `;
-
-    previewWindow.document.write(htmlContent);
-    previewWindow.document.close();
-    toast(`Membuka berkas "${document.name}" pada tab peninjauan baru...`, 'info');
   };
 
   return (
@@ -668,26 +299,30 @@ Portal SIM-RIDA (Sistem Informasi Riset dan Inovasi Daerah) Kabupaten Mimika.
 
           <div className="flex items-center justify-end gap-2 shrink-0 w-full sm:w-auto">
             <button
+              type="button"
               onClick={handleOpenInNewTab}
-              className="flex-1 sm:flex-initial px-3 py-1.5 bg-white/10 hover:bg-white/20 text-sky-200 rounded-lg text-xs font-semibold transition border border-white/20 flex items-center justify-center gap-1.5"
-              title="Buka Peninjauan Dokumen di Tab Baru"
+              disabled={isGeneratingPdf}
+              className="flex-1 sm:flex-initial px-3 py-1.5 bg-white/10 hover:bg-white/20 text-sky-200 rounded-lg text-xs font-semibold transition border border-white/20 flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50"
+              title="Buka Peninjauan Dokumen di Chrome PDF Viewer (Halaman per Halaman & Cetak)"
             >
               <ExternalLink className="w-3.5 h-3.5 shrink-0" />
-              <span>Tab Baru</span>
+              <span>{isGeneratingPdf ? 'Menyiapkan...' : 'Buka / Cetak PDF'}</span>
             </button>
 
             <button
+              type="button"
               onClick={handleDownload}
-              className="flex-1 sm:flex-initial px-3.5 py-1.5 bg-sky-500 hover:bg-sky-400 text-slate-950 font-bold text-xs rounded-lg transition flex items-center justify-center gap-1.5 shadow-sm"
-              title="Unduh File Langsung"
+              disabled={isGeneratingPdf}
+              className="flex-1 sm:flex-initial px-3.5 py-1.5 bg-sky-500 hover:bg-sky-400 text-slate-950 font-bold text-xs rounded-lg transition flex items-center justify-center gap-1.5 shadow-sm cursor-pointer disabled:opacity-50"
+              title="Unduh File PDF Resmi"
             >
               <Download className="w-3.5 h-3.5 shrink-0" />
-              <span>Unduh Berkas</span>
+              <span>Unduh PDF</span>
             </button>
 
             <button
               onClick={onClose}
-              className="p-1.5 text-slate-400 hover:text-white rounded-lg transition hidden sm:block ml-1"
+              className="p-1.5 text-slate-400 hover:text-white rounded-lg transition hidden sm:block ml-1 cursor-pointer"
               title="Tutup"
             >
               <X className="w-5 h-5" />
